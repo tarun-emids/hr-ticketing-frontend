@@ -1,0 +1,31 @@
+# Backend dependencies for the HR ticketing system (FastAPI + SQLite).
+#
+# Default setup needs NOTHING but this list — the database is a local SQLite
+# file that is created and demo-seeded automatically on first boot, so a fresh
+# machine runs the API with zero manual configuration.
+#
+# Requires Python 3.10+ (the codebase uses `str | None` type hints).
+#
+#   python3 -m venv .venv
+#   source .venv/bin/activate
+#   pip install -r requirements.txt
+#
+#   fastapi           -> web framework serving the JSON API consumed by the React screens
+#   uvicorn           -> ASGI server to run the API (python -m uvicorn app.main:app --reload)
+#   SQLAlchemy        -> ORM that defines the user/ticket/turn tables (works on
+#                        SQLite out of the box; MySQL optional below)
+#   pydantic          -> request/response validation (ships as a fastapi dependency)
+#   pydantic-settings -> reads DATABASE_URL / CORS_ORIGINS from backend/.env
+fastapi>=0.110
+uvicorn>=0.29
+SQLAlchemy>=2.0.30
+pydantic>=2.7
+pydantic-settings>=2.3
+
+# --- Optional: MySQL instead of SQLite -------------------------------------
+# If you point DATABASE_URL in backend/.env at MySQL
+#   (mysql+pymysql://user:password@localhost:3306/hr_ticketing?charset=utf8mb4)
+# uncomment these two lines and re-run pip install:
+#
+# PyMySQL>=1.1.1          # pure-Python driver, no compiler needed
+# cryptography>=43        # needed by MySQL 8's default auth (caching_sha2_password)

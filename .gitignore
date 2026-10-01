@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+
+# python backend
+.venv/
+__pycache__/
+*.pyc
+backend/hr_ticketing.db
+
+# build output
+dist/
+
+# env & secrets
+.env
+.env.*
+
+# logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# windows copy-transfer junk
+*:Zone.Identifier
+*:zone.identifier
+desktop.ini
+~$*
+
+# OS
+.DS_Store
+Thumbs.db
