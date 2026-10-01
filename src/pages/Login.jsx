@@ -2,6 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { USERS } from "../data/users";
 import { useAuth } from "../context/AuthContext";
+import logo from "../assets/emids-logo.png";
+
+const FIELD =
+  "w-full border border-surface-2 bg-surface px-3 py-2.5 text-body-lg text-warm focus:border-teal focus:outline-none";
+const LABEL = "mb-1.5 block mono-label text-[10px] text-warm/50";
 
 export default function Login() {
   const { login } = useAuth();
@@ -24,46 +29,70 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-      <div className="w-full max-w-md">
-        <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent-600 text-xl font-bold text-white">H</div>
-          <h1 className="text-xl font-bold text-slate-900">HR Desk</h1>
-          <p className="text-sm text-slate-500">Internal ticketing — pick a demo identity to sign in</p>
+    <div className="flex min-h-screen bg-canvas">
+      {/* Brand plate */}
+      <section className="relative hidden flex-1 flex-col justify-between overflow-hidden p-12 lg:flex">
+        <div
+          aria-hidden
+          className="teal-gradient pointer-events-none absolute inset-x-0 top-0 h-1"
+        />
+        <div aria-hidden className="teal-gradient pointer-events-none absolute -top-40 -left-40 h-96 w-[40rem] rotate-90 opacity-10 blur-3xl" />
+        <img src={logo} alt="Emids" className="h-8 w-fit self-start" />
+
+        <div className="max-w-xl">
+          <span className="mono-label mb-4 block text-[10px] text-teal">↘ HR DESK / INTERNAL</span>
+          <div className="rule-teal mb-6" />
+          <h1 className="text-display text-warm">
+            Outcomes you can <span className="text-teal">track.</span>
+          </h1>
+          <p className="mt-6 text-body-lg text-warm/60">
+            Raise requests, follow the thread, know exactly where each ticket stands —
+            without chasing anyone down.
+          </p>
         </div>
 
-        <form onSubmit={onSubmit} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <fieldset className="mb-5">
-            <legend className="mb-2 block text-sm font-medium text-slate-700">Sign in as</legend>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { key: "employee", label: "Employee" },
-                { key: "agent", label: "HR agent" },
-              ].map((r) => (
-                <button
-                  key={r.key}
-                  type="button"
-                  onClick={() => pickRole(r.key)}
-                  className={`rounded-lg border px-3 py-2.5 text-sm font-semibold transition-colors ${
-                    role === r.key
-                      ? "border-accent-500 bg-accent-50 text-accent-700"
-                      : "border-slate-300 text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
-          </fieldset>
+        <p className="mono-label text-[10px] text-warm/35">
+          EMIDS / HR DESK / DEMO AUTH · NO CREDENTIALS CHECKED
+        </p>
+      </section>
 
-          <label className="mb-1.5 block text-sm font-medium text-slate-700" htmlFor="login-user">
-            Demo user
-          </label>
+      {/* Sign-in card */}
+      <section className="flex w-full items-center justify-center px-6 lg:w-[38rem]">
+        <form onSubmit={onSubmit} noValidate className="soft-bl w-full max-w-md border border-surface-2 bg-surface p-8">
+          <div className="mb-8 flex items-center gap-3 lg:hidden">
+            <img src={logo} alt="Emids" className="h-7 w-fit" />
+          </div>
+
+          <span className="mono-label mb-3 block text-[10px] text-teal">↘ 0 1 /  S I G N  I N</span>
+          <div className="rule-teal mb-6" />
+
+          <span className={LABEL}>Sign in as</span>
+          <div className="mb-6 grid grid-cols-2 gap-0">
+            {[
+              { key: "employee", label: "Employee" },
+              { key: "agent", label: "HR agent" },
+            ].map((r) => (
+              <button
+                key={r.key}
+                type="button"
+                onClick={() => pickRole(r.key)}
+                className={`mono-label border py-3 text-[10px] transition-colors ${
+                  role === r.key
+                    ? "border-teal bg-teal/10 text-teal"
+                    : "border-surface-2 text-warm/50 hover:text-warm"
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+
+          <label htmlFor="login-user" className={LABEL}>Demo user</label>
           <select
             id="login-user"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-accent-500 focus:outline-none"
+            className={`${FIELD} mb-8`}
           >
             {people.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
@@ -72,15 +101,15 @@ export default function Login() {
 
           <button
             type="submit"
-            className="mt-3 w-full rounded-lg bg-accent-600 px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-500"
+            className="mono-label w-full border border-teal bg-teal py-3.5 text-[10px] text-canvas transition-colors hover:bg-teal-light"
           >
-            Continue as {role === "agent" ? "HR agent" : "employee"}
+            Continue ↘
           </button>
-          <p className="mt-3 text-center text-[11px] text-slate-400">
-            Mock auth for demo purposes only — no credentials checked.
+          <p className="mt-5 text-center text-caption text-warm/35">
+            Mock auth for demo purposes only.
           </p>
         </form>
-      </div>
+      </section>
     </div>
   );
 }

@@ -6,35 +6,33 @@ import { SkeletonList, EmptyState } from "../components/primitives";
 export default function HRInbox() {
   const { tickets, loading } = useTickets();
 
-  const openCount = tickets.filter((t) => ["Open", "In Progress"].includes(t.status)).length;
-  const urgent = tickets.filter((t) => t.priority === "Urgent" && !["Resolved", "Closed"].includes(t.status)).length;
-  const unassigned = tickets.filter((t) => !t.assigneeId).length;
-
   if (loading) {
     return (
       <div className="mx-auto max-w-6xl">
-        <header className="mb-6">
-          <h1 className="text-xl font-bold text-slate-900">All tickets</h1>
+        <header className="mb-8">
+          <h1 className="text-h3 text-warm">All tickets</h1>
         </header>
-        <div className="rounded-xl border border-slate-200 bg-white"><SkeletonList rows={6} /></div>
+        <div className="border border-surface-2 bg-surface"><SkeletonList rows={6} /></div>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-6xl">
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900">All tickets</h1>
-          <p className="text-sm text-slate-500">Every request from every employee, searchable and filterable.</p>
-        </div>
+      <header className="mb-8">
+        <span className="mono-label mb-3 block text-[10px] text-teal">↘ 0 1 /  I N B O X</span>
+        <div className="rule-teal mb-5" />
+        <h1 className="text-h3 text-warm">All tickets</h1>
+        <p className="mt-1.5 text-caption text-warm/45">
+          Every request from every employee — searchable, filterable, sortable.
+        </p>
       </header>
 
       {tickets.length === 0 ? (
         <EmptyState
           title="The inbox is empty"
           body="When employees raise tickets they will appear here. This usually means nobody has used the service yet — try submitting a demo ticket."
-          icon="📭"
+          icon="↘"
         />
       ) : (
         <TicketTable tickets={tickets} users={USERS} />

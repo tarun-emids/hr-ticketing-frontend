@@ -1,14 +1,124 @@
 @import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
 
+/*
+ * Emids Brand System v1.0 — mapped tokens.
+ * 06 COLOR: black canvas #0E0E0E · surface #141414 · surface-2 #262626 · warm white #F2F2F0
+ *           teal light/deep #ABC7CA / #47A2B0 / #2A7682 — 20% telemetry on every surface.
+ *           Signals confirm, never lead: link #00B9F9 · success #45BDA0 · error #E04F4F.
+ * 07 TYPE:  Inter variable + JetBrains Mono (labels ≤10px, caps, tracked 0.12–0.22em).
+ * 08 GRID:  8pt baseline, 4pt snap — spacing only in multiples of 4;
+ *           14px gutters, ≥30px margins, holes of 2/4/8 columns.
+ * 09 ICONS: 24px grid, 1.5px stroke, rounded caps, outline only — never filled.
+ * 04 MARK:  8px bottom-left radius is the only soft corner (hero cards, plates,
+ *           brand frames — never buttons, inputs, table cells, modals).
+ *           Elevation is colour, not shadow: never box-shadow, blur or glass.
+ */
 @theme {
-  --color-accent-50: oklch(0.962 0.018 272.314);
-  --color-accent-100: oklch(0.941 0.03 272.587);
-  --color-accent-200: oklch(0.902 0.063 272.27);
-  --color-accent-300: oklch(0.855 0.104 272.299);
-  --color-accent-400: oklch(0.802 0.164 272.532);
-  --color-accent-500: oklch(0.741 0.216 272.421);
-  --color-accent-600: oklch(0.691 0.261 272.488);
-  --color-accent-700: oklch(0.622 0.288 272.289);
-  --color-accent-800: oklch(0.566 0.288 271.729);
-  --color-accent-900: oklch(0.511 0.277 270.933);
+  --font-sans: "Inter Variable", "Inter", Aptos, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, monospace;
+
+  --color-canvas: #0e0e0e;
+  --color-surface: #141414;
+  --color-surface-2: #262626;
+  --color-warm: #f2f2f0;
+
+  --color-teal-light: #abc7ca;
+  --color-teal: #47a2b0;
+  --color-teal-deep: #2a7682;
+
+  --color-link: #00b9f9;
+  --color-ok: #45bda0;
+  --color-error: #e04f4f;
+
+  --color-mauve: #b89dcb;
+  --color-accent: #f2c94c;
+
+  --text-display: 46px;
+  --text-display--line-height: 0.85;
+  --text-display--font-weight: 700;
+  --text-h2: 36px;
+  --text-h2--line-height: 0.85;
+  --text-h2--font-weight: 700;
+  --text-h3: 20px;
+  --text-h3--line-height: 1;
+  --text-h3--font-weight: 700;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 1.2;
+  --text-body: 12px;
+  --text-body--line-height: 1.2;
+  --text-caption: 11px;
+  --text-caption--line-height: 1.4;
+  --text-caption--font-weight: 500;
+  --text-micro: 10px;
+  --text-micro--line-height: 1.3;
+}
+
+/* The brand's one soft note: 8px radius, bottom-left only. */
+@utility soft-bl {
+  border-radius: 0 0 0 8px;
+}
+
+/* Mono technical voice: all caps, tracked 0.18em (brand: 0.12–0.22em). */
+@utility mono-label {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+/* Hairline rule in teal — the eyebrow marker of the system. */
+@utility rule-teal {
+  width: 3rem;
+  height: 2px;
+  background: var(--color-teal);
+}
+
+/* The teal gradient: left → right, three stops, never rotated. */
+@utility teal-gradient {
+  background-image: linear-gradient(
+    to right,
+    #9dc6cc 0%,
+    #72b3be 50%,
+    #57a6b3 100%
+  );
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-warm);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Elevation is colour, not shadow. */
+*,
+::before,
+::after {
+  box-shadow: none !important;
+}
+
+/* Focus feedback without brand-breaking shadows. */
+:focus-visible {
+  outline: 1px solid var(--color-teal);
+  outline-offset: 1px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-teal) 35%, transparent);
+}
+
+select,
+option {
+  background-color: var(--color-surface);
+  color: var(--color-warm);
+}
+
+/* Form controls on the dark canvas */
+input,
+textarea,
+select {
+  color-scheme: dark;
 }

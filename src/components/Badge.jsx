@@ -1,47 +1,38 @@
-const SIZES = {
-  sm: "px-2 py-0.5 text-[11px]",
-  md: "px-2.5 py-1 text-xs",
-};
+const CHIP =
+  "mono-label inline-flex items-center gap-1.5 whitespace-nowrap border px-2 py-[3px]";
 
-export default function Badge({ label, color, dot = false, size = "sm" }) {
+export default function Badge({ label, className = "", size = "sm" }) {
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full font-medium whitespace-nowrap ${SIZES[size]} ${color}`}
-    >
-      {dot && <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />}
+    <span className={`${CHIP} ${size === "md" ? "text-[11px] px-2.5 py-1" : "text-[10px]"} ${className}`}>
       {label}
     </span>
   );
 }
 
-const STATUS_COLORS = {
-  Open: "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/10",
-  "In Progress": "bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-600/10",
-  "Waiting on Employee": "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/10",
-  Resolved: "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/10",
-  Closed: "bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-500/10",
+/* Signal colours confirm, never lead. Two signals max on a surface. */
+const STATUS_STYLES = {
+  Open: "text-link border-link/35",
+  "In Progress": "text-teal border-teal/45",
+  "Waiting on Employee": "text-accent border-accent/35",
+  Resolved: "text-ok border-ok/35",
+  Closed: "text-warm/45 border-warm/15",
 };
 
 export function StatusBadge({ status, size = "sm" }) {
   return (
-    <Badge
-      label={status}
-      color={STATUS_COLORS[status] ?? STATUS_COLORS.Closed}
-      dot
-      size={size}
-    />
+    <Badge label={status} size={size} className={STATUS_STYLES[status] ?? STATUS_STYLES.Closed} />
   );
 }
 
-const PRIORITY_COLORS = {
-  Urgent: "bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/10",
-  High: "bg-orange-50 text-orange-700 ring-1 ring-inset ring-orange-600/10",
-  Medium: "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/10",
-  Low: "bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-500/10",
+const PRIORITY_STYLES = {
+  Urgent: "text-error border-error/45",
+  High: "text-accent border-accent/40",
+  Medium: "text-warm/65 border-warm/20",
+  Low: "text-warm/40 border-warm/10",
 };
 
 export function PriorityBadge({ priority, size = "sm" }) {
   return (
-    <Badge label={priority} color={PRIORITY_COLORS[priority] ?? PRIORITY_COLORS.Low} size={size} />
+    <Badge label={priority} size={size} className={PRIORITY_STYLES[priority] ?? PRIORITY_STYLES.Low} />
   );
 }
