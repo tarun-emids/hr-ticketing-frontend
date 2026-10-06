@@ -51,6 +51,33 @@ export const setPriority = (id, body) =>
 export const setCategory = (id, body) =>
   request(`/tickets/${encodeURIComponent(id)}/category`, { method: "PATCH", body });
 
+// ---- ticket drafts ----------------------------------------------------------
+const withEmployee = (path, employeeId) =>
+  `${path}?employeeId=${encodeURIComponent(employeeId)}`;
+export const listDrafts = (employeeId) =>
+  request(withEmployee("/drafts", employeeId));
+export const getDraft = (id, employeeId) =>
+  request(withEmployee(`/drafts/${encodeURIComponent(id)}`, employeeId));
+export const createDraft = (body) => request("/drafts", { method: "POST", body });
+export const updateDraft = (id, employeeId, body) =>
+  request(withEmployee(`/drafts/${encodeURIComponent(id)}`, employeeId), { method: "PATCH", body });
+export const deleteDraft = (id, employeeId) =>
+  request(withEmployee(`/drafts/${encodeURIComponent(id)}`, employeeId), { method: "DELETE" });
+export const submitDraft = (id, body) =>
+  request(`/drafts/${encodeURIComponent(id)}/submit`, { method: "POST", body });
+export const uploadDraftAttachment = (id, employeeId, file) => {
+  const form = new FormData();
+  form.append("file", file);
+  return request(withEmployee(`/drafts/${encodeURIComponent(id)}/attachment`, employeeId), {
+    method: "POST",
+    form,
+  });
+};
+export const deleteDraftAttachment = (id, employeeId) =>
+  request(withEmployee(`/drafts/${encodeURIComponent(id)}/attachment`, employeeId), { method: "DELETE" });
+export const getDraftAttachmentUrl = (id, employeeId) =>
+  request(withEmployee(`/drafts/${encodeURIComponent(id)}/attachment`, employeeId));
+
 // ---- assignment -------------------------------------------------------------
 export const agentWorkload = () => request("/agents/workload"); // [{id,name,email,openCount,totalCount}]
 export const autoAssignTicket = (id) =>
