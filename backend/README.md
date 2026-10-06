@@ -129,7 +129,40 @@ Files go into the private `ticket-attachments` bucket at `<TKT-ref>/<uuid>.<ext>
 (default 1 h — tune `ATTACHMENT_SIGNED_URL_TTL`). A ticket holds one attachment;
 uploading again replaces it.
 
-## 8. Conventions
+## 7b. Assignment flows
+
+| Flow | Endpoint | Behaviour |
+| --- | --- | --- |
+| Manual assign/unassign | `PATCH /api/tickets/{id}/assignee` `{ assigneeId: uuid-or-null }` | validates agent role; auto for unanswered tickets |
+| Auto assign (routing) | `POST /api/tickets/{id}/auto-assign` | picks least-loaded agent (`openCount`, tiebreak `totalCount`); 409 if ticket is Resolved/Closed or no agents exist |
+| Agent workload | `GET /api/agents/workload` | `[{id, name, email, openCount, totalCount}]` — openCount counts Open/In Progress/Waiting on Employee |
+
+Both assign flows share one core: assigning an unanswered ticket posts the agent
+pickup reply, stamps `firstReplyAt`, and moves `Open → In Progress`. `routedTo`
+is appended to the auto-assign response so callers can show who was chosen.
+
+```bash
+curl http://localhost:8000/api/agents/workload
+curl -X POST http://localhost:8000/api/tickets/TKT-101/auto-assign
+curl -X PATCH http://localhost:8000/api/tickets/TKT-101/assignee \
+  -H "Content-Type: application/json" -d '{"assigneeId": "<agent-uuid>"}'
+```
+
+## 8. supabase-py gotchas baked into this code
+
+- **Never call `.table("X")` on the result of another `.table("Y")`** — `db()` in
+  `config.py` is a shortcut for the *tickets* builder; every other table must go
+  through `get_client().table(...)`.
+- **PostgREST response shapes vary by supabase-py version** (APIResponse with
+  `.data`, plain lists, single dicts, `(data, count)` tuples). All calls go
+  through `run()`/`rows_of()`/`unwrap()` in `tickets_core.py`, which normalise
+  every variant. `.execute().data` or `.single()` chains are used nowhere else.
+- An uncaught exception returns readable JSON (`{"error", "detail"}`) via the
+  dev handler in `main.py` and prints the traceback to the console.
+- Write this: `.is_("assignee_id", None)` (v2 rejects the string `"null"`), and
+  storage uploads use `{"contentType": ..., "upsert": "false"}`.
+
+## 9. Conventions
 
 - All write endpoints return the **full ticket including the thread**, so callers
   can update their local state in one round-trip.

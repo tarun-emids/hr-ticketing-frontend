@@ -51,6 +51,11 @@ export const setPriority = (id, body) =>
 export const setCategory = (id, body) =>
   request(`/tickets/${encodeURIComponent(id)}/category`, { method: "PATCH", body });
 
+// ---- assignment -------------------------------------------------------------
+export const agentWorkload = () => request("/agents/workload"); // [{id,name,email,openCount,totalCount}]
+export const autoAssignTicket = (id) =>
+  request(`/tickets/${encodeURIComponent(id)}/auto-assign`, { method: "POST" });
+
 // ---- attachments ------------------------------------------------------------
 export const uploadAttachment = (id, file) => {
   const form = new FormData();
