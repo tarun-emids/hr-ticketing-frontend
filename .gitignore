@@ -25,3 +25,7 @@ venv/
 env/
 ENV/
 
+
+# Python cache
+__pycache__/
+*.pyc

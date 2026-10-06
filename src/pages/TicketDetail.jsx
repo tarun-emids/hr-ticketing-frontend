@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { CATEGORIES, PRIORITIES, STATUSES } from "../data/users";
+import { agentWorkload, autoAssignTicket } from "../api/client";
 import { getTicket, subscribe, refreshTicket, updateStatus, assignTicket, setPriority, setCategory, getAttachmentUrl } from "../data/store";
 import { useAuth } from "../context/AuthContext";
 import { StatusBadge, PriorityBadge } from "../components/Badge";
@@ -22,6 +23,26 @@ function MetaItem({ label, children }) {
 
 function AgentControls({ ticket, actor, users }) {
   const agents = users.filter((u) => u.role === "agent");
+  const [workload, setWorkload] = useState([]);
+  const [routing, setRouting] = useState(false);
+
+  useEffect(() => {
+    agentWorkload().then(setWorkload).catch(() => setWorkload([]));
+  }, [ticket.assigneeId, ticket.id]);
+
+  const openCountFor = (id) => workload.find((w) => w.id === id)?.openCount;
+
+  const routeNow = async () => {
+    setRouting(true);
+    try {
+      await autoAssignTicket(ticket.id);
+    } catch (e) {
+      window.alert(`Auto-assign failed: ${e.message}`);
+    } finally {
+      setRouting(false);
+    }
+  };
+
   return (
     <div className="mt-6 grid gap-5 border-t border-surface-2 pt-6 sm:grid-cols-2">
       <MetaItem label="Status">
@@ -32,7 +53,11 @@ function AgentControls({ ticket, actor, users }) {
       <MetaItem label="Assignee">
         <select value={ticket.assigneeId ?? ""} onChange={(e) => assignTicket(ticket.id, e.target.value || null)} className={SELECT}>
           <option value="">Unassigned</option>
-          {agents.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+          {agents.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.name}{typeof openCountFor(a.id) === "number" ? ` · ${openCountFor(a.id)} open` : ""}
+            </option>
+          ))}
         </select>
       </MetaItem>
       <MetaItem label="Priority">
@@ -45,6 +70,17 @@ function AgentControls({ ticket, actor, users }) {
           {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
         </select>
       </MetaItem>
+      <div className="sm:col-span-2">
+        <button
+          type="button"
+          onClick={routeNow}
+          disabled={routing || ["Resolved", "Closed"].includes(ticket.status)}
+          className="mono-label border border-teal/50 px-3 py-2 text-[10px] text-teal transition-colors hover:bg-teal/10 disabled:cursor-not-allowed disabled:opacity-40"
+          title="Route to the least-loaded HR agent"
+        >
+          {routing ? "Routing…" : "Auto-assign ↘ least-loaded agent"}
+        </button>
+      </div>
     </div>
   );
 }
