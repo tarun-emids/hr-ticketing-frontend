@@ -1,9 +1,9 @@
 """Offline test harness: in-memory fake of the Supabase client.
 
 The routers use a small, fixed subset of the supabase-py query builder:
-select/insert/update chained with eq/is_/ilike/order/limit, then execute().
-This fake implements exactly that surface so endpoint logic can be tested
-without a real Supabase project or network access.
+select/insert/update/delete chained with eq/is_/ilike/lt/order/limit, then
+execute(). This fake implements exactly that surface so endpoint logic can be
+tested without a real Supabase project or network access.
 """
 import importlib
 import uuid as uuidlib
@@ -82,6 +82,10 @@ class FakeQueryBuilder:
         self._filters.append(("ilike", col, pattern))
         return self
 
+    def lt(self, col, val):
+        self._filters.append(("lt", col, val))
+        return self
+
     def order(self, col, desc=False, **kw):
         self._order.append((col, desc))
         return self
@@ -102,18 +106,25 @@ class FakeQueryBuilder:
             elif kind == "ilike":
                 pat = val.replace("%", "").lower()
                 rows = [r for r in rows if pat in str(r.get(col) or "").lower()]
+            elif kind == "lt":
+                rows = [r for r in rows if str(r.get(col) or "") < str(val)]
         return rows
 
     def execute(self):
         t = self._table
         if self._op == "insert":
-            data = [t.on_insert(dict(self._payload))]
+            payloads = self._payload if isinstance(self._payload, list) else [self._payload]
+            data = [t.on_insert(dict(p)) for p in payloads]
         elif self._op == "update":
             rows = self._matched()
             for r in rows:
                 r.update(self._payload)
                 t.touch(r)
             data = list(rows) if self._returning else []
+        elif self._op == "delete":
+            doomed = self._matched()
+            t.rows = [r for r in t.rows if r not in doomed]
+            data = list(doomed) if self._returning else []
         else:
             data = self._matched()
             for col, desc in self._order:
@@ -141,6 +152,9 @@ class FakeTable:
         builder = FakeQueryBuilder(self, "update")
         builder.update(patch)
         return builder
+
+    def delete(self):
+        return FakeQueryBuilder(self, "delete")
 
     def on_insert(self, payload):
         now = self.supa.clock()
@@ -177,6 +191,31 @@ class FakeTable:
             if not any(r["id"] == payload.get("author_id") for r in self.supa.users.rows):
                 raise _fk_error("insert violates foreign key on replies.author_id")
             row = {**payload, "id": str(uuidlib.uuid4()), "created_at": now}
+            self.rows.append(row)
+            return row
+        if self.name == "notifications":
+            row = {
+                "id": str(uuidlib.uuid4()),
+                "ticket_id": None,
+                "ticket_ref": None,
+                "actor_name": None,
+                "payload": {},
+                "channel": "in_app",
+                "read_at": None,
+                **payload,
+            }
+            self.rows.append(row)
+            return row
+        if self.name == "ticket_drafts":
+            row = {
+                **payload,
+                "id": str(uuidlib.uuid4()),
+                "created_at": now,
+                "updated_at": now,
+                "attachment_path": None,
+                "attachment_name": None,
+                "attachment_size": None,
+            }
             self.rows.append(row)
             return row
         row = {**payload, "id": str(uuidlib.uuid4())}
@@ -221,6 +260,8 @@ class FakeSupabase:
         self.users = FakeTable(self, "users")
         self.tickets = FakeTable(self, "tickets")
         self.replies = FakeTable(self, "replies")
+        self.notifications = FakeTable(self, "notifications")
+        self.ticket_drafts = FakeTable(self, "ticket_drafts")
         self.storage = FakeStorageClient(self)
         self.storage_files = {}
         self.fail_uploads = False
@@ -230,7 +271,13 @@ class FakeSupabase:
 
     def table(self, name):
         def tables():
-            return {"users": self.users, "tickets": self.tickets, "replies": self.replies}
+            return {
+                "users": self.users,
+                "tickets": self.tickets,
+                "replies": self.replies,
+                "notifications": self.notifications,
+                "ticket_drafts": self.ticket_drafts,
+            }
         return tables()[name]
 
     def clock(self):
@@ -305,8 +352,9 @@ def api(monkeypatch):
             monkeypatch.setattr(module, "db", lambda: fake.table("tickets"))
 
     wire(app_config)
-    for name in ("app.routers.tickets_core", "app.routers.tickets_actions",
-                 "app.routers.attachments", "app.routers.users_meta"):
+    for name in ("app.notifications", "app.routers.tickets_core", "app.routers.tickets_actions",
+                 "app.routers.attachments", "app.routers.drafts", "app.routers.notifications",
+                 "app.routers.users_meta"):
         wire(importlib.import_module(name))
 
     client = TestClient(app_main.app)
