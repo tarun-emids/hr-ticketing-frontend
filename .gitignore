@@ -25,3 +25,8 @@ venv/
 env/
 ENV/
 
+# Python artifacts & caches
+__pycache__/
+*.pyc
+.coverage
+.pytest_cache/
