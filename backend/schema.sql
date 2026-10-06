@@ -50,6 +50,27 @@ create index if not exists idx_tickets_status on public.tickets (status);
 create index if not exists idx_tickets_employee on public.tickets (employee_id);
 
 -- ------------------------------------------------------------
+-- 2a. Employee ticket drafts (not visible to HR as tickets)
+-- ------------------------------------------------------------
+create table if not exists public.ticket_drafts (
+  id               uuid primary key default gen_random_uuid(),
+  employee_id      uuid not null references public.users (id) on delete cascade,
+  category         text not null default 'Other'
+                   check (category in ('Payroll','Leave','Benefits','Onboarding','Policy','Other')),
+  subject          text not null default '',
+  description      text not null default '',
+  priority         text not null default 'Medium'
+                   check (priority in ('Low','Medium','High','Urgent')),
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now(),
+  attachment_path  text,
+  attachment_name  text,
+  attachment_size  bigint
+);
+
+create index if not exists idx_ticket_drafts_employee on public.ticket_drafts (employee_id, updated_at desc);
+
+-- ------------------------------------------------------------
 -- 3. Ticket thread (turns)
 -- ------------------------------------------------------------
 create table if not exists public.replies (
@@ -81,6 +102,11 @@ create trigger trg_tickets_updated
   before update on public.tickets
   for each row execute function public.set_updated_at();
 
+drop trigger if exists trg_ticket_drafts_updated on public.ticket_drafts;
+create trigger trg_ticket_drafts_updated
+  before update on public.ticket_drafts
+  for each row execute function public.set_updated_at();
+
 -- ------------------------------------------------------------
 -- 5. RLS: deny all client-side access; the backend talks with the
 --    service_role key which bypasses RLS. No public policies on purpose.
@@ -88,6 +114,7 @@ create trigger trg_tickets_updated
 alter table public.users   enable row level security;
 alter table public.tickets enable row level security;
 alter table public.replies enable row level security;
+alter table public.ticket_drafts enable row level security;
 
 -- ------------------------------------------------------------
 -- 6. Storage bucket for ticket attachments (private; backend reads

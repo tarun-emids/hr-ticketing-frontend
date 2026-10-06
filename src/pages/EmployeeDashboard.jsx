@@ -1,9 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTickets } from "../hooks";
 import { StatusBadge, PriorityBadge } from "../components/Badge";
 import { SkeletonList, EmptyState } from "../components/primitives";
 import { timeAgo } from "../utils";
+import { deleteDraft, listDrafts } from "../data/store";
 
 function TicketRow({ t }) {
   return (
@@ -37,6 +39,37 @@ function TicketRow({ t }) {
 export default function EmployeeDashboard() {
   const { user } = useAuth();
   const { tickets, loading } = useTickets();
+  const [drafts, setDrafts] = useState([]);
+  const [draftsLoading, setDraftsLoading] = useState(true);
+  const [draftError, setDraftError] = useState("");
+  const [deletingDraft, setDeletingDraft] = useState("");
+  const [searchParams] = useSearchParams();
+
+  const refreshDrafts = useCallback(() => {
+    setDraftsLoading(true);
+    setDraftError("");
+    return listDrafts(user.id)
+      .then(setDrafts)
+      .catch((error) => setDraftError(error.message || "Could not load drafts."))
+      .finally(() => setDraftsLoading(false));
+  }, [user.id]);
+
+  useEffect(() => {
+    refreshDrafts();
+  }, [refreshDrafts]);
+
+  const removeDraft = async (draftId) => {
+    setDeletingDraft(draftId);
+    setDraftError("");
+    try {
+      await deleteDraft(draftId, user.id);
+      setDrafts((current) => current.filter((draft) => draft.id !== draftId));
+    } catch (error) {
+      setDraftError(error.message || "Could not delete this draft.");
+    } finally {
+      setDeletingDraft("");
+    }
+  };
 
   const mine = tickets.filter((t) => t.employeeId === user.id);
 
@@ -68,20 +101,79 @@ export default function EmployeeDashboard() {
         </div>
       </header>
 
-      {loading ? (
-        <div className="border border-surface-2 bg-surface"><SkeletonList rows={4} /></div>
-      ) : mine.length === 0 ? (
+      {searchParams.get("draftSaved") === "1" && (
+        <div className="mb-5 border border-ok/40 bg-ok/10 px-4 py-3 text-body-lg text-ok" role="status">
+          Draft saved. You can continue it whenever you’re ready.
+        </div>
+      )}
+
+      {draftError && (
+        <div className="mb-5 border border-error/40 bg-error/10 px-4 py-3 text-caption text-error" role="alert">
+          {draftError}
+          <button type="button" onClick={refreshDrafts} className="ml-3 underline">Retry</button>
+        </div>
+      )}
+
+      {(draftsLoading || loading) && (
+        <div className="mb-6 border border-surface-2 bg-surface"><SkeletonList rows={2} /></div>
+      )}
+
+      {!draftsLoading && drafts.length > 0 && (
+        <section className="mb-8">
+          <h2 className="mono-label mb-3 text-[10px] text-warm/45">Saved drafts · {drafts.length}</h2>
+          <div className="flex flex-col gap-2">
+            {drafts.map((draft) => (
+              <div key={draft.id} className="flex items-center justify-between gap-4 border border-surface-2 bg-surface p-4">
+                <Link to={`/drafts/${draft.id}/edit`} className="group min-w-0 flex-1">
+                  <div className="mb-1 flex flex-wrap items-center gap-3">
+                    <span className="mono-label text-[10px] text-teal">Draft</span>
+                    <span className="text-caption text-warm/40">Saved {timeAgo(draft.updatedAt)}</span>
+                    {draft.attachment && (
+                      <span className="text-caption text-warm/35">Attachment included</span>
+                    )}
+                  </div>
+                  <p className="truncate text-body-lg font-medium text-warm group-hover:text-teal-light">
+                    {draft.subject || "Untitled draft"}
+                  </p>
+                  <p className="mono-label mt-1 text-[10px] text-warm/40">{draft.category} · {draft.priority}</p>
+                </Link>
+                <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                  <Link
+                    to={`/drafts/${draft.id}/edit`}
+                    className="mono-label border border-teal px-3 py-2 text-center text-[10px] text-teal hover:bg-teal/10"
+                  >
+                    Continue
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => removeDraft(draft.id)}
+                    disabled={Boolean(deletingDraft)}
+                    className="mono-label border border-warm/15 px-3 py-2 text-[10px] text-warm/50 hover:border-error hover:text-error disabled:opacity-40"
+                  >
+                    {deletingDraft === draft.id ? "Deleting…" : "Delete"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {loading || draftsLoading ? null : mine.length === 0 && drafts.length === 0 && !draftError ? (
         <EmptyState
           title="No tickets yet"
           body="When you raise a question with HR it will show up here with a live status so you never wonder where it stands."
           icon="↘"
         />
-      ) : (
-        <div className="flex flex-col gap-2">
-          {mine.map((t) => (
-            <TicketRow key={t.id} t={t} />
-          ))}
-        </div>
+      ) : mine.length === 0 ? null : (
+        <section>
+          <h2 className="mono-label mb-3 text-[10px] text-warm/45">Submitted tickets · {mine.length}</h2>
+          <div className="flex flex-col gap-2">
+            {mine.map((t) => (
+              <TicketRow key={t.id} t={t} />
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );

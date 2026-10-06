@@ -37,17 +37,22 @@ hr-ticketing-system/
    a DB password you can paste once — it is not used by this backend).
 2. Wait for provisioning, then open **SQL Editor** (left sidebar, `_`-shaped terminal icon → SQL Editor → New query).
 3. Paste the entire contents of `backend/schema.sql` and **Run**. It creates:
-   - `users`, `tickets`, `replies` tables with constraints (same enums as the frontend)
+   - `users`, `tickets`, `ticket_drafts`, and `replies` tables with constraints
    - a `TKT-<n>` reference generated per row, starting at **TKT-101**
    - an `updated_at` trigger, RLS enabled (server-only access), and the private
      storage bucket `ticket-attachments`
    - seeds your 7 demo users (Priya, Marcus, Dana, Tomas + Alicia, Ben, Ruth)
+   - creates private, employee-owned ticket drafts that remain separate from HR tickets
 4. Open **Project Settings → API** and copy:
    - **Project URL** → `SUPABASE_URL`
    - **service_role secret key** (localStorage "service_role") → `SUPABASE_SERVICE_ROLE_KEY`
 
 > The backend uses the **service_role** key server-side (it bypasses RLS by design).
 > Never put this key in frontend code or commit `backend/.env`.
+
+If you already created the Supabase schema before drafts were added, rerun the
+current `backend/schema.sql` in the SQL Editor. Its statements are idempotent
+and will create the missing `ticket_drafts` table and trigger.
 
 ## 3. Configure and run
 
