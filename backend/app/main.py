@@ -29,8 +29,14 @@ async def lifespan(_app: FastAPI):
             await asyncio.sleep(SLA_SWEEP_INTERVAL_SECONDS)
 
     jobs = asyncio.create_task(_jobs())
-    yield
-    jobs.cancel()
+    try:
+        yield
+    finally:
+        jobs.cancel()
+        try:
+            await jobs
+        except asyncio.CancelledError:
+            pass
 
 
 app = FastAPI(
