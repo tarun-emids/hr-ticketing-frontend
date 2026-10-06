@@ -56,6 +56,11 @@ class ReplyCreate(CamelModel):
     text: str = Field(min_length=1, max_length=5_000)
 
 
+class NotificationRead(CamelModel):
+    """Acting user for notification reads (mock-auth stand-in for a token)."""
+    user_id: str
+
+
 class StatusUpdate(CamelModel):
     status: Literal["Open", "In Progress", "Waiting on Employee", "Resolved", "Closed"]
     actor_id: str
