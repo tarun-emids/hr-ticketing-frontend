@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import CORS_ORIGINS
-from app.routers import attachments, tickets_actions, tickets_core, users_meta
+from app.routers import assignment, attachments, tickets_actions, tickets_core, users_meta
 
 app = FastAPI(
     title="HR Desk API",
@@ -30,6 +30,7 @@ app.add_middleware(
 # /api mount: frontend will call e.g. http://localhost:8000/api/tickets
 app.include_router(tickets_core.router, prefix="/api")
 app.include_router(tickets_actions.router, prefix="/api")
+app.include_router(assignment.router, prefix="/api")
 app.include_router(attachments.router, prefix="/api")
 app.include_router(users_meta.router, prefix="/api")
 
