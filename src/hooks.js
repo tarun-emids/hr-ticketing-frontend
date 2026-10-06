@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { listTickets, subscribe, refreshTickets } from "./data/store";
+import {
+  listNotifications,
+  getUnreadCount,
+  refreshNotifications,
+  subscribe as subscribeNotifications,
+} from "./data/notifications";
 
 export function useTickets(pollMs = 0) {
   const [tickets, setTickets] = useState(null);
@@ -45,4 +51,42 @@ export function useTickets(pollMs = 0) {
   }, []);
 
   return { tickets: tickets ?? [], loading, ready: tickets !== null };
+}
+
+export function useNotifications(userId, pollMs = 20000) {
+  const [state, setState] = useState({
+    items: listNotifications(),
+    unread: getUnreadCount(),
+    ready: false,
+  });
+  const alive = useRef(true);
+
+  useEffect(() => {
+    if (!userId) return undefined;
+    alive.current = true;
+    let interval;
+
+    const unsub = subscribeNotifications(() => {
+      setState({ items: listNotifications(), unread: getUnreadCount(), ready: true });
+    });
+
+    const snapshot = () => setState({ items: listNotifications(), unread: getUnreadCount(), ready: true });
+    refreshNotifications(userId)
+      .catch(() => {})
+      .finally(() => {
+        if (alive.current) snapshot();
+      });
+
+    if (pollMs > 0) {
+      interval = setInterval(() => refreshNotifications(userId).catch(() => {}), pollMs);
+    }
+
+    return () => {
+      alive.current = false;
+      clearInterval(interval);
+      unsub();
+    };
+  }, [userId, pollMs]);
+
+  return state; // { items, unread, ready }
 }
