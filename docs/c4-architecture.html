@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>C4 Architecture — HR Desk (hr-ticketing)</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    max-width: 1200px; margin: 0 auto; padding: 24px 32px 80px;
+    color: #1a2333; background: #f7f8fa;
+  }
+  h1 { font-size: 1.7rem; border-bottom: 3px solid #2563eb; padding-bottom: 8px; }
+  h2 { margin-top: 2.5rem; font-size: 1.25rem; color: #2563eb; }
+  .lede { color: #475569; max-width: 70ch; }
+  .note { background: #eef2ff; border-left: 4px solid #2563eb; padding: 10px 14px; border-radius: 6px; color: #1e293b; font-size: .92rem; }
+  .diagram { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-top: 12px; overflow-x: auto; box-shadow: 0 1px 3px rgb(0 0 0 / .04); }
+  footer { margin-top: 3rem; color: #94a3b8; font-size: .8rem; }
+  code { background: #e2e8f0; padding: 1px 5px; border-radius: 4px; font-size: .85em; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, securityLevel: "loose", fontFamily: "Segoe UI, sans-serif" });
+</script>
+</head>
+<body>
+
+<h1>HR Desk — C4 Architecture</h1>
+<p class="lede">C4 model (levels 1–4) of the <code>hr-ticketing-system</code> repo dated 2026-10-05:
+a React SPA that talks to a FastAPI backend, which persists everything in a Supabase project
+(Postgres + Storage) using the service-role key. Branch <code>initial-frontend</code>.</p>
+<div class="note">People interact with the SPA directly from the browser; the SPA calls the API
+(<code>VITE_API_URL</code>, default <code>http://localhost:8000/api</code>); only the backend touches
+Supabase (RLS blocks all client-side access).</div>
+
+<h2>Level 1 — System Context</h2>
+<div class="diagram"><pre class="mermaid">
+C4Context
+  title C1 — Who uses the system and what external services it depends on
+  Person(employee, "Employee", "Raises HR tickets, replies, uploads attachments")
+  Person(agent, "HR Agent", "Triages: assigns, replies, resolves / closes, sets priority & category")
+
+  System(sys, "HR Desk Ticketing System", "React SPA + FastAPI backend for HR ticketing")
+
+  System_Ext(supabase, "Supabase Project", "Managed Postgres + Storage (SaaS)")
+
+  Rel(employee, sys, "Raises / replies to tickets in web UI", "HTTPS")
+  Rel(agent, sys, "Triage, assignment, resolution in web UI", "HTTPS")
+  Rel(sys, supabase, "CRUD on users/tickets/replies, attachment upload + signed URLs (service_role)", "HTTPS / PostgREST")
+  SHOW_LEGEND()
+</pre></div>
+
+<h2>Level 2 — Containers</h2>
+<div class="diagram"><pre class="mermaid">
+C4Container
+  title C2 — The two deployable containers of the system + the data layer
+  Person(employee, "Employee", "")
+  Person(agent, "HR Agent", "")
+
+  System_Boundary(hrdesk, "HR Desk (repo: hr-ticketing)") {
+    Container(spa, "HR Desk SPA", "React 18, Vite 6, Tailwind 4, react-router", "Login; employee + HR dashboards; NewTicket; TicketDetail; pages call store.js not the API directly")
+    Container(api, "HR Desk API", "Python 3.11, FastAPI, uvicorn", "REST under /api mirroring store.js 1:1; holds all business rules (pickup replies, firstReplyAt, resolvedAt, closedBy); PostgREST error mapping")
+  }
+
+  System_Boundary(supabase, "Supabase Project") {
+    ContainerDb(pg, "Postgres", "Supabase Postgres", "users / tickets / replies; TKT-&lt;n&gt; refs; updated_at trigger; RLS enabled (service_role bypasses)")
+    ContainerDb(bucket, "Storage", "Supabase Storage", "Private bucket ticket-attachments, one file per ticket, signed URLs (1h)")
+  }
+
+  Rel_R(employee, spa, "Uses", "HTTPS")
+  Rel_R(agent, spa, "Triages", "HTTPS")
+  Rel(spa, api, "JSON REST + multipart upload; base URL VITE_API_URL", "HTTPS :8000")
+  Rel(api, pg, "Chained queries via supabase-py table builders", "HTTPS / PostgREST")
+  Rel(api, bucket, "upload() + create_signed_url()", "HTTPS")
+  SHOW_LEGEND()
+</pre></div>
+
+<h2>Level 3 — Frontend components <span style="font-weight:normal">(zoom on the SPA)</span></h2>
+<div class="diagram"><pre class="mermaid">
+C4Component
+  title C3 — React SPA internals (src/)
+  Container_Ext(apir, "HR Desk API", " FastAPI", "REST /api")
+
+  Container_Boundary(spaB, "HR Desk SPA (src/)") {
+    Component(pages, "pages/", "React JSX", "Login; EmployeeDashboard (/my-tickets); NewTicket (/new-ticket); TicketDetail (/tickets/:id); HRInbox (/inbox); HRDashboard (/hr-dashboard) — all gated by RequireAuth")
+    Component(auth, "context/AuthContext", "React Context", "Loads user roster once; session in localStorage hrdesk.user; exposes isAgent, login, logout")
+    Component(store, "data/store.js", "Cache + pub/sub", "Cache-first reads (listTickets / getTicket); every write merges the authoritative API response into cache then notifies")
+    Component(hooks, "hooks.js", "React hooks", "useTickets(pollMs): subscribe + refreshTickets on mount; optional polling")
+    Component(client, "api/client.js", "fetch wrapper", "Typed calls for every endpoint; JSON + FormData; extracts FastAPI error details")
+    Component(ui, "components/", "React JSX", "Layout, Sidebar, TicketTable, Thread, TicketForm, Badge, primitives, sorting; utils.js")
+    Component(legacy, "data/tickets.js, data/users.js", "Legacy mocks", "Pre-API static data, kept for reference/fallback")
+  }
+
+  Rel(pages, auth, "useAuth (session, role)")
+  Rel(pages, hooks, "useTickets for dashboards")
+  Rel(pages, store, "direct writes: createTicket, addReply, updateStatus…")
+  Rel(pages, ui, "composes tables, forms, threads")
+  Rel(hooks, store, "list / refresh / subscribe")
+  Rel(store, client, "all HTTP calls")
+  Rel(auth, client, "listUsers()")
+  Rel(store, apir, "HTTPS fetch to REST /api")
+  SHOW_LEGEND()
+</pre></div>
+
+<h2>Level 3 — Backend components <span style="font-weight:normal">(zoom on the API)</span></h2>
+<div class="diagram"><pre class="mermaid">
+C4Component
+  title C3 — FastAPI internals (backend/app/)
+  ContainerDb_Ext(pgr, "Postgres", "Supabase", "users / tickets / replies")
+  ContainerDb_Ext(bucketr, "Storage", "Supabase", "ticket-attachments")
+
+  Container_Boundary(apiB, "HR Desk API (backend/app/)") {
+    Component(main, "main.py", "FastAPI", "App + CORS middleware (CORS_ORIGINS), /health, JSON-500 exception handler, mounts routers under /api")
+    Component(core, "routers/tickets_core.py", "Router", "POST /tickets; GET /tickets (+ status/category/priority/employee/assignee/q/unassigned filters); GET /tickets/{ref|uuid|123}; POST /replies (agent stamps firstReplyAt, Open to In Progress; employee flips to Waiting on Employee)")
+    Component(actions, "routers/tickets_actions.py", "Router", "PATCH status (resolvedAt, closedBy, reopen clears both) / assignee (auto pickup reply) / priority / category")
+    Component(att, "routers/attachments.py", "Router", "POST /tickets/{id}/attachment (multipart, max 5 MB) + GET signed URL (TTL clamped 60s-86400s)")
+    Component(meta, "routers/users_meta.py", "Router", "GET /users (employees then agents), /users/agents, /meta")
+    Component(models, "models.py", "Pydantic v2", "CamelModel DTOs with camelCase aliases; Literal enums; serializers ticket_out / user_out / turn_out / attachment_out")
+    Component(config, "config.py", "Python", "dotenv settings (SUPABASE_URL, SERVICE_ROLE_KEY, CORS_ORIGINS, TTL); Supabase service-role singleton get_client() / db()")
+  }
+
+  Rel(main, core, "include_router /api")
+  Rel(main, actions, "include_router /api")
+  Rel(main, att, "include_router /api")
+  Rel(main, meta, "include_router /api")
+  Rel(core, models, "DTO validation + ticket_out")
+  Rel(actions, models, "DTO validation")
+  Rel(att, models, "via _update_and_return")
+  Rel(core, config, "db() / get_client()")
+  Rel(meta, config, "get_client()")
+  Rel(core, pgr, "tickets + replies")
+  Rel(meta, pgr, "users")
+  Rel(att, pgr, "tickets row update")
+  Rel(att, bucketr, "upload / create_signed_url")
+  SHOW_LEGEND()
+</pre></div>
+
+<h2>Level 4 — Code <span style="font-weight:normal">(module dependency graph of the backend)</span></h2>
+<div class="diagram"><pre class="mermaid">
+classDiagram
+  direction LR
+  class Main["main.py"] {
+    +app : FastAPI
+    +health()
+    +unhandled_exception()
+  }
+  class TicketsCore["routers/tickets_core.py"] {
+    +create_ticket(payload)
+    +list_tickets(filters)
+    +get_ticket(tid)
+    +add_reply(tid, payload)
+    +fetch_row(tid) dict
+    +fetch_full(tid) dict
+    +run(query) data
+  }
+  class TicketsActions["routers/tickets_actions.py"] {
+    +update_status(tid, s)
+    +assign_ticket(tid, a)
+    +set_priority(tid, p)
+    +set_category(tid, c)
+  }
+  class Attachments["routers/attachments.py"] {
+    +upload_attachment(tid, file)
+    +attachment_url(tid, ttl)
+  }
+  class UsersMeta["routers/users_meta.py"] {
+    +list_users()
+    +list_agents()
+    +meta()
+  }
+  class Models["models.py"] {
+    +CamelModel
+    +TicketCreate / ReplyCreate
+    +StatusUpdate / AssigneeUpdate
+    +ticket_out(row, replies)
+    +user_out(u)
+  }
+  class Config["config.py"] {
+    +SUPABASE_URL : str
+    +SERVICE_KEY : str
+    +get_client() Client
+    +db() Table
+  }
+  class Supabase["supabase-py (external)"] {
+    +table(name) TableBuilder
+    +storage.from_(bucket)
+  }
+  Main ..> TicketsCore : include prefix=/api
+  Main ..> TicketsActions
+  Main ..> Attachments
+  Main ..> UsersMeta
+  TicketsActions ..> TicketsCore : fetch_row / get_user / run
+  Attachments ..> TicketsCore : _update_and_return
+  UsersMeta ..> TicketsCore : rows_of
+  TicketsCore ..> Models
+  TicketsActions ..> Models
+  UsersMeta ..> Models
+  TicketsCore ..> Config
+  Attachments ..> Config
+  UsersMeta ..> Config
+  Config ..> Supabase
+</pre></div>
+
+<h2>Runtime view — flow of an agent reply <span style="font-weight:normal">(illustrates how the layers cooperate)</span></h2>
+<div class="diagram"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant B as Agent browser (SPA)
+  participant S as store.js cache
+  participant A as FastAPI /api
+  participant P as Supabase Postgres
+  B->>S: addReply(TKT-101, {authorId, text})
+  S->>A: POST /api/tickets/TKT-101/replies
+  A->>P: SELECT ticket WHERE ref/uuid
+  A->>P: SELECT user (role derived server-side)
+  A->>P: INSERT reply (author_id, author_role, body)
+  A->>P: UPDATE ticket (first_reply_at once, Open to In Progress)
+  A-->>S: 200 full ticket (ticket_out, camelCase)
+  S->>S: upsert into cache + notify
+  S-->>B: subscribed hooks re-render
+</pre></div>
+
+<h2>Rules worth remembering</h2>
+<ul>
+  <li><b>Contract</b>: endpoint shapes mirror <code>src/data/store.js</code> 1:1 (camelCase), so UI code never changed when the mock store was replaced by HTTP calls.</li>
+  <li><b>Single writer</b>: only the backend touches Supabase, with the <b>service_role key</b> (bypasses RLS). Never put that key in the frontend.</li>
+  <li><b>Business rules live in the API</b>, not the DB and not the UI: agent reply stamps <code>firstReplyAt</code> once; assigning an unanswered ticket auto-posts the pickup reply; employee replies flip to <code>Waiting on Employee</code>; Resolved stamps <code>resolvedAt</code>; Closed records <code>closedBy</code>; reopening clears both.</li>
+  <li><b>Identity of a ticket</b> for the UI is the generated reference <code>TKT-&lt;n&gt;</code> (starts at TKT-101); raw Postgres uuid is carried as <code>uuid</code> for admin/debug.</li>
+  <li><b>Writes return the full ticket</b> including its thread turns, so the SPA updates its cache in one round-trip.</li>
+  <li><b>Errors</b>: 404 unknown ticket, 413 file &gt; 5 MB, 422 validation / unknown user, 400 vs 502 mapped from PostgREST error codes (23xxx = constraint).</li>
+</ul>
+
+<footer>C4 model in Mermaid syntax for tarun-emids/hr-ticketing-system (initial-frontend @ 8b035a4). C4 is by Simon Brown. Diagrams re-render on view — see also docs/c4-architecture.md for the plain source.</footer>
+
+</body>
+</html>
