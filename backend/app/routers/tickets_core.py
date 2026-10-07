@@ -7,6 +7,14 @@ from postgrest.exceptions import APIError
 
 from app.config import db, get_client
 from app.models import ReplyCreate, TicketCreate, ticket_out
+from app.notifications import (
+    EV_CREATED,
+    EV_REPLY,
+    agent_ids,
+    created_recipients,
+    reply_recipients,
+    safe_notify,
+)
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
 
@@ -124,7 +132,10 @@ def create_ticket(payload: TicketCreate):
         "status": "Open",
     }
     created = rows_of(db().insert(row).select("*"))
-    return ticket_out(created[0], [])
+    new_row = created[0]
+    # Notify AFTER the insert; safe_notify swallows any notification failure.
+    safe_notify(new_row, EV_CREATED, employee, created_recipients(agent_ids()))
+    return ticket_out(new_row, [])
 
 
 @router.get("")
@@ -200,4 +211,13 @@ def add_reply(tid: str, payload: ReplyCreate):
 
     if patch:
         run(db().update(patch).eq("id", row["id"]))
+    safe_notify(
+        row,
+        EV_REPLY,
+        author,
+        reply_recipients(
+            row["employee_id"], row.get("assignee_id"),
+            author["id"], author["role"], agent_ids(),
+        ),
+    )
     return fetch_full(tid)

@@ -37,17 +37,22 @@ hr-ticketing-system/
    a DB password you can paste once — it is not used by this backend).
 2. Wait for provisioning, then open **SQL Editor** (left sidebar, `_`-shaped terminal icon → SQL Editor → New query).
 3. Paste the entire contents of `backend/schema.sql` and **Run**. It creates:
-   - `users`, `tickets`, `replies` tables with constraints (same enums as the frontend)
+   - `users`, `tickets`, `ticket_drafts`, and `replies` tables with constraints
    - a `TKT-<n>` reference generated per row, starting at **TKT-101**
    - an `updated_at` trigger, RLS enabled (server-only access), and the private
      storage bucket `ticket-attachments`
    - seeds your 7 demo users (Priya, Marcus, Dana, Tomas + Alicia, Ben, Ruth)
+   - creates private, employee-owned ticket drafts that remain separate from HR tickets
 4. Open **Project Settings → API** and copy:
    - **Project URL** → `SUPABASE_URL`
    - **service_role secret key** (localStorage "service_role") → `SUPABASE_SERVICE_ROLE_KEY`
 
 > The backend uses the **service_role** key server-side (it bypasses RLS by design).
 > Never put this key in frontend code or commit `backend/.env`.
+
+If you already created the Supabase schema before drafts were added, rerun the
+current `backend/schema.sql` in the SQL Editor. Its statements are idempotent
+and will create the missing `ticket_drafts` table and trigger.
 
 ## 3. Configure and run
 
@@ -170,3 +175,67 @@ curl -X PATCH http://localhost:8000/api/tickets/TKT-101/assignee \
   for the full thread.
 - Errors: `404` unknown ticket, `413` file too large, `422` validation/unknown user,
   `400/502` database or storage rejection.
+
+## 10. In-app notifications
+
+Event-driven and channel-agnostic. Ticket endpoints stay decoupled from
+notification logic: routers call `safe_notify(...)` from `app/notifications.py`
+**after** the ticket write completes, and `safe_notify` swallows (and logs) any
+failure — a broken notification path can never break a ticket action.
+
+```
+ticket endpoint (create/assign/status/reply/draft submit)
+   └─> safe_notify(event, ticket, actor, recipients)
+         └─> insert public.notifications rows  (channel='in_app')
+Background (FastAPI lifespan, every 30 min)
+   ├─> run_sla_sweep(): unassigned tickets past first-response SLA
+   └─> run_retention_cleanup(): read >30 days, anything >180 days
+```
+
+**Privacy rule:** message text is generic ("`Alicia Gomez assigned TKT-104 to
+you`", "`TKT-101 was resolved by Ben Osei`") — no subject, description or reply
+body is ever copied into a notification, since HR ticket content is sensitive.
+
+| Event (`type`) | Who gets notified | Notes |
+| --- | --- | --- |
+| `ticket_created` | all HR agents | fires from `POST /tickets` **and** draft `submit` |
+| `ticket_assigned` | new assignee | skipped when re-picking the same agent; clearing notifies nobody |
+| `ticket_status_changed` | owner + assignee, minus the actor | `Resolved`/`Closed` word the message accordingly |
+| `ticket_reply` | other party, minus the author | employee reply on an *unassigned* ticket also fans out to agents |
+| `sla_breached` | all HR agents | Urgent unassigned > 4 h, others > 24 h; **at most once per ticket/threshold** |
+
+### Endpoints (all hard-scoped to the acting `userId`)
+
+| Call | Endpoint |
+| --- | --- |
+| List (newest-first, `state=unread`, limit/offset) | `GET /api/notifications?userId=&state=all|unread&limit=&offset=` |
+| Unread badge | `GET /api/notifications/unread-count?userId=` → `{ "unread": n }` |
+| Mark one read | `POST /api/notifications/{id}/read` `{ "userId" }` (404 if not yours) |
+| Mark all read | `POST /api/notifications/read-all` `{ "userId" }` → `{ "updated": n }` |
+| Run sweep/cleanup now (ops/test) | `POST /api/notifications/sweep` `{ "userId" }` |
+
+`userId` is the mock-auth stand-in for a future JWT/server session — the router
+ignores everything except rows whose `recipient_id` equals it, so isolation is
+already enforced server-side; the auth gap is tracked under "Wiring the
+frontend later".
+
+### Schema + setup
+
+`schema.sql` section 8 is idempotent like the rest — re-run the whole file in the
+Supabase SQL editor (creates `public.notifications` + indexes + RLS, no-op parts
+stay no-ops). No migration tool; one Supabase project, one idempotent script.
+
+### Adding a new notification type
+
+1. Add the `type` value to the check constraint in `schema.sql` section 8.
+2. Add an `EV_*` constant + a message branch in `_message_for` in
+   `app/notifications.py`, keeping the text generic.
+3. Write a pure recipient rule (`*_recipients`) and unit-test it in
+   `tests/unit/test_notification_rules.py`.
+4. Call `safe_notify(ticket, EV_*, actor, recipients(recipient_rule))` at the
+   trigger point in the relevant router — *after* the write succeeds.
+5. If the frontend needs a distinct icon, add the `type` → icon path mapping in
+   `src/components/NotificationRow.jsx`.
+
+The SLA sweep/interval constants (`SLA_THRESHOLDS_HOURS`, `SLA_SWEEP_INTERVAL_SECONDS`,
+`RETENTION_*`) also live in `app/notifications.py`.

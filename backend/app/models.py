@@ -32,9 +32,33 @@ class TicketCreate(CamelModel):
     priority: Literal["Low", "Medium", "High", "Urgent"] = "Medium"
 
 
+class DraftCreate(CamelModel):
+    employee_id: str
+    category: Literal["Payroll", "Leave", "Benefits", "Onboarding", "Policy", "Other"] = "Other"
+    subject: str = Field(default="", max_length=200)
+    description: str = Field(default="", max_length=10_000)
+    priority: Literal["Low", "Medium", "High", "Urgent"] = "Medium"
+
+
+class DraftUpdate(CamelModel):
+    category: Optional[Literal["Payroll", "Leave", "Benefits", "Onboarding", "Policy", "Other"]] = None
+    subject: Optional[str] = Field(default=None, max_length=200)
+    description: Optional[str] = Field(default=None, max_length=10_000)
+    priority: Optional[Literal["Low", "Medium", "High", "Urgent"]] = None
+
+
+class DraftSubmit(CamelModel):
+    employee_id: str
+
+
 class ReplyCreate(CamelModel):
     author_id: str
     text: str = Field(min_length=1, max_length=5_000)
+
+
+class NotificationRead(CamelModel):
+    """Acting user for notification reads (mock-auth stand-in for a token)."""
+    user_id: str
 
 
 class StatusUpdate(CamelModel):
@@ -100,5 +124,19 @@ def ticket_out(row: dict, replies: list[dict]) -> dict:
         "resolvedAt": row.get("resolved_at"),
         "closedBy": row.get("closed_by"),
         "turns": [turn_out(r) for r in (replies or [])],
+        "attachment": attachment_out(row),
+    }
+
+
+def draft_out(row: dict) -> dict:
+    return {
+        "id": row["id"],
+        "employeeId": row["employee_id"],
+        "category": row["category"],
+        "subject": row["subject"],
+        "description": row["description"],
+        "priority": row["priority"],
+        "createdAt": row["created_at"],
+        "updatedAt": row["updated_at"],
         "attachment": attachment_out(row),
     }

@@ -94,3 +94,18 @@ export const setCategory = (ticketId, category) =>
 export function getAttachmentUrl(ticketId) {
   return api.getAttachmentUrl(ticketId);
 }
+
+// ---- ticket drafts ----------------------------------------------------------
+export const listDrafts = (employeeId) => api.listDrafts(employeeId);
+export const getDraft = (draftId, employeeId) => api.getDraft(draftId, employeeId);
+export const createDraft = (payload) => api.createDraft(payload);
+export const updateDraft = (draftId, employeeId, payload) =>
+  api.updateDraft(draftId, employeeId, payload);
+export const deleteDraft = (draftId, employeeId) => api.deleteDraft(draftId, employeeId);
+export const submitDraft = (draftId, payload) => updateCache(api.submitDraft(draftId, payload));
+export const uploadDraftAttachment = (draftId, employeeId, file) =>
+  api.uploadDraftAttachment(draftId, employeeId, file);
+export const deleteDraftAttachment = (draftId, employeeId) =>
+  api.deleteDraftAttachment(draftId, employeeId);
+export const getDraftAttachmentUrl = (draftId, employeeId) =>
+  api.getDraftAttachmentUrl(draftId, employeeId);

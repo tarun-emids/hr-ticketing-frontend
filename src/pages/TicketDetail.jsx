@@ -87,17 +87,150 @@ function AgentControls({ ticket, actor, users }) {
 
 function AttachmentChip({ ticket }) {
   const [busy, setBusy] = useState(false);
+  const [url, setUrl] = useState("");
+  const [error, setError] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const isImage = /\.(apng|avif|bmp|gif|jpe?g|png|svg|webp)$/i.test(ticket.attachment.name);
+
+  const fetchUrl = async () => {
+    const res = await getAttachmentUrl(ticket.id);
+    if (!res?.url) throw new Error("The attachment URL was not returned.");
+    return res.url;
+  };
+
+  useEffect(() => {
+    if (!isImage) return undefined;
+    let active = true;
+    setBusy(true);
+    setError("");
+    fetchUrl()
+      .then((attachmentUrl) => {
+        if (active) setUrl(attachmentUrl);
+      })
+      .catch((e) => {
+        if (active) setError(e.message ?? String(e));
+      })
+      .finally(() => {
+        if (active) setBusy(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [ticket.id, isImage]);
+
+  useEffect(() => {
+    if (!previewOpen) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setPreviewOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [previewOpen]);
+
   const open = async () => {
+    if (isImage) {
+      if (url) setPreviewOpen(true);
+      return;
+    }
     setBusy(true);
     try {
-      const res = await getAttachmentUrl(ticket.id); // { url, name, size }
-      if (res?.url) window.open(res.url, "_blank", "noopener");
+      const attachmentUrl = await fetchUrl();
+      window.open(attachmentUrl, "_blank", "noopener");
     } catch (e) {
       window.alert(`Could not open attachment: ${e.message}`);
     } finally {
       setBusy(false);
     }
   };
+
+  const retryImageLoad = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      setUrl(await fetchUrl());
+    } catch (e) {
+      setError(e.message ?? String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (isImage) {
+    return (
+      <>
+        <div className="mt-5 border border-surface-2 bg-canvas p-3">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-body text-warm/80">
+            <span className="min-w-0 truncate">{ticket.attachment.name}</span>
+            <span className="mono-label shrink-0 text-[10px] text-warm/35">
+              {(ticket.attachment.size / 1024).toFixed(0)} KB
+            </span>
+          </div>
+          {url ? (
+            <button
+              type="button"
+              onClick={() => setPreviewOpen(true)}
+              className="block max-w-full cursor-zoom-in text-left"
+              aria-label={`View ${ticket.attachment.name} full size`}
+            >
+              <img
+                src={url}
+                alt={ticket.attachment.name}
+                className="max-h-80 max-w-full object-contain object-left"
+              />
+              <span className="mono-label mt-2 block text-[10px] text-warm/35">
+                Click image to enlarge
+              </span>
+            </button>
+          ) : (
+            <div className="text-caption text-warm/55" role={error ? "alert" : "status"}>
+              {error ? (
+                <>
+                  Could not load image: {error}{" "}
+                  <button type="button" onClick={retryImageLoad} disabled={busy} className="text-teal underline disabled:opacity-40">
+                    Retry
+                  </button>
+                </>
+              ) : (
+                "Loading image…"
+              )}
+            </div>
+          )}
+        </div>
+
+        {previewOpen && url && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-canvas/95 p-4 sm:p-8"
+            onClick={() => setPreviewOpen(false)}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label={`Image preview: ${ticket.attachment.name}`}
+              className="flex max-h-full max-w-full flex-col items-end gap-3"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setPreviewOpen(false)}
+                className="mono-label border border-warm/30 px-3 py-2 text-[10px] text-warm transition-colors hover:border-teal hover:text-teal"
+                aria-label="Close image preview"
+              >
+                Close ×
+              </button>
+              <img
+                src={url}
+                alt={ticket.attachment.name}
+                className="max-h-[calc(100vh-7rem)] max-w-full object-contain"
+              />
+              <p className="max-w-full truncate text-caption text-warm/60">{ticket.attachment.name}</p>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
+
   return (
     <div className="mt-5 flex flex-wrap items-center gap-2 border border-surface-2 bg-canvas px-3 py-2.5 text-body text-warm/80">
       <svg className="h-3.5 w-3.5 text-teal/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

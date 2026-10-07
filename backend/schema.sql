@@ -50,6 +50,27 @@ create index if not exists idx_tickets_status on public.tickets (status);
 create index if not exists idx_tickets_employee on public.tickets (employee_id);
 
 -- ------------------------------------------------------------
+-- 2a. Employee ticket drafts (not visible to HR as tickets)
+-- ------------------------------------------------------------
+create table if not exists public.ticket_drafts (
+  id               uuid primary key default gen_random_uuid(),
+  employee_id      uuid not null references public.users (id) on delete cascade,
+  category         text not null default 'Other'
+                   check (category in ('Payroll','Leave','Benefits','Onboarding','Policy','Other')),
+  subject          text not null default '',
+  description      text not null default '',
+  priority         text not null default 'Medium'
+                   check (priority in ('Low','Medium','High','Urgent')),
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now(),
+  attachment_path  text,
+  attachment_name  text,
+  attachment_size  bigint
+);
+
+create index if not exists idx_ticket_drafts_employee on public.ticket_drafts (employee_id, updated_at desc);
+
+-- ------------------------------------------------------------
 -- 3. Ticket thread (turns)
 -- ------------------------------------------------------------
 create table if not exists public.replies (
@@ -81,6 +102,11 @@ create trigger trg_tickets_updated
   before update on public.tickets
   for each row execute function public.set_updated_at();
 
+drop trigger if exists trg_ticket_drafts_updated on public.ticket_drafts;
+create trigger trg_ticket_drafts_updated
+  before update on public.ticket_drafts
+  for each row execute function public.set_updated_at();
+
 -- ------------------------------------------------------------
 -- 5. RLS: deny all client-side access; the backend talks with the
 --    service_role key which bypasses RLS. No public policies on purpose.
@@ -88,6 +114,7 @@ create trigger trg_tickets_updated
 alter table public.users   enable row level security;
 alter table public.tickets enable row level security;
 alter table public.replies enable row level security;
+alter table public.ticket_drafts enable row level security;
 
 -- ------------------------------------------------------------
 -- 6. Storage bucket for ticket attachments (private; backend reads
@@ -110,3 +137,38 @@ insert into public.users (name, email, role) values
   ('Ben Osei',     'ben.hr@acme.com',   'agent'),
   ('Ruth Meyer',   'ruth.hr@acme.com',  'agent')
 on conflict (email) do nothing;
+
+-- ------------------------------------------------------------
+-- 8. In-app notifications
+--    One row per (recipient, event). Message text is intentionally
+--    generic — HR ticket content (subject/description/replies) must
+--    never be copied into a notification row. `channel` keeps the
+--    store channel-agnostic so other delivery channels can be added
+--    later without reshaping this table.
+-- ------------------------------------------------------------
+create table if not exists public.notifications (
+  id            uuid primary key default gen_random_uuid(),
+  recipient_id  uuid not null references public.users (id) on delete cascade,
+  ticket_id     uuid references public.tickets (id) on delete cascade,
+  ticket_ref    text,
+  type          text not null
+                check (type in ('ticket_created','ticket_assigned',
+                                'ticket_status_changed','ticket_reply','sla_breached')),
+  channel       text not null default 'in_app',
+  actor_name    text,
+  payload       jsonb not null default '{}'::jsonb,
+  message       text not null,
+  read          boolean not null default false,
+  created_at    timestamptz not null default now(),
+  read_at       timestamptz
+);
+
+-- unread badge + dropdown listing hot paths
+create index if not exists idx_notifications_recipient_created
+  on public.notifications (recipient_id, created_at desc);
+create index if not exists idx_notifications_recipient_unread
+  on public.notifications (recipient_id) where not read;
+create index if not exists idx_notifications_ticket
+  on public.notifications (ticket_id);
+
+alter table public.notifications enable row level security;

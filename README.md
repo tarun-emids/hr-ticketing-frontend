@@ -1,9 +1,9 @@
 # HR Desk — internal HR ticketing
 
-React + Vite + Tailwind CSS + React Router on the frontend, FastAPI + Supabase
-(Postgres + Storage + Auth) behind `backend/`. Ticket data and the user list
-come from the API; there is no signup anywhere — accounts are
-organisation-managed.
+React + Vite + Tailwind CSS + React Router frontend over a FastAPI +
+Supabase (Postgres/Storage) backend in `backend/` — see
+[backend/README.md](backend/README.md) for setup, endpoint map and the
+notifications domain.
 
 ## Run it
 
@@ -86,28 +86,34 @@ in `src/index.css` (Tailwind v4 `@theme` + `@utility`):
 
 ## Swapping mock data for an API
 
-Everything the UI reads/writes goes through `src/data/store.js`
-(`listTickets`, `getTicket`, `createTicket`, `addReply`, `updateStatus`,
-`assignTicket`, `setPriority`, `setCategory`) and the static lookups in
-`src/data/users.js`; the API calls live in `src/api/client.js`, and login is
-handled by `AuthContext.jsx` (credentials → backend → Supabase Auth).
-`src/data/tickets.js` is only the seed fixture.
+Done — `src/data/store.js` mirrors the backend endpoints 1:1 (create/list/get,
+replies, status, assignee, priority, category, drafts, auto-assign, attachments)
+through `src/api/client.js`. `src/data/tickets.js` remains only a fixture.
+
+## In-app notifications
+
+Ticket events (created / assigned / status change / reply / first-response SLA
+breach) become `notifications` rows with generic, non-confidential text and
+reach users through a bell + dropdown in every page header and a full
+`/notifications` page (`feat: in-app notification system`). Python domain logic:
+`backend/app/notifications.py`; frontend cache/hook: `src/data/notifications.js`
++ `useNotifications` in `src/hooks.js`; other channels (email/Slack) are out of
+scope and would plug into the same store via the `channel` column.
+How to add a new notification type: see `backend/README.md` §10.
 
 ## Structure
 
 ```
 src/
   components/   Badge (signal chips), TicketTable, TicketForm, Thread,
-                Sidebar, Layout, primitives (Button/Spinner/Skeleton/EmptyState/StatCard/Avatar)
-  pages/        Login, EmployeeDashboard, NewTicket, TicketDetail, HRInbox, HRDashboard
-  data/         users.js (lookups), tickets.js (seed), store.js (API cache)
-  api/          client.js (REST calls incl. /auth/login)
+                Sidebar, Layout, primitives (Button/Spinner/Skeleton/EmptyState/StatCard/Avatar),
+                NotificationBell + NotificationRow (+ Notifications page)
+  pages/        Login, EmployeeDashboard, NewTicket, TicketDetail, HRInbox, HRDashboard, Notifications
+  data/         users.js (lookups), tickets.js (fixture), store.js, notifications.js (caches)
+  api/          client.js (typed REST calls)
   assets/       emids-logo.png, emids-mark.png (from the brand guidelines)
-  context/      AuthContext (real login via Supabase Auth, session persisted in localStorage)
-backend/
-  app/          FastAPI entrypoint, config, routers (auth, tickets, assignment, attachments, users)
-  scripts/      provision_auth_users.py (one-time account provisioning)
-  schema.sql    Supabase schema (public.users, tickets, replies, storage bucket)
+  context/      AuthContext (mock session, persisted in localStorage)
+  hooks.js      useTickets(...) and useNotifications(userId, pollMs=20s)
 ```
 
 Tailwind v4 (via `@tailwindcss/vite`). Brand tokens configured in `src/index.css`.

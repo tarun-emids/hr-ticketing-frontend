@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import NewTicket from "./pages/NewTicket";
 import TicketDetail from "./pages/TicketDetail";
+import Notifications from "./pages/Notifications";
 import HRInbox from "./pages/HRInbox";
 import HRDashboard from "./pages/HRDashboard";
 import "./index.css";
@@ -15,7 +16,9 @@ function RequireAuth({ role, children }) {
   const { user } = useAuth();
   const location = useLocation();
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
-  if (role === "agent" && user.role !== "agent") return <Navigate to="/my-tickets" replace />;
+  if (role && user.role !== role) {
+    return <Navigate to={user.role === "agent" ? "/inbox" : "/my-tickets"} replace />;
+  }
   return children;
 }
 
@@ -32,9 +35,11 @@ function App() {
               </RequireAuth>
             }
           >
-            <Route path="/my-tickets" element={<EmployeeDashboard />} />
-            <Route path="/new-ticket" element={<NewTicket />} />
+            <Route path="/my-tickets" element={<RequireAuth role="employee"><EmployeeDashboard /></RequireAuth>} />
+            <Route path="/new-ticket" element={<RequireAuth role="employee"><NewTicket /></RequireAuth>} />
+            <Route path="/drafts/:id/edit" element={<RequireAuth role="employee"><NewTicket /></RequireAuth>} />
             <Route path="/tickets/:id" element={<TicketDetail />} />
+            <Route path="/notifications" element={<Notifications />} />
             <Route path="/inbox" element={<RequireAuth role="agent"><HRInbox /></RequireAuth>} />
             <Route path="/hr-dashboard" element={<RequireAuth role="agent"><HRDashboard /></RequireAuth>} />
           </Route>
