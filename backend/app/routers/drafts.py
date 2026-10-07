@@ -12,6 +12,7 @@ from app.config import (
     get_client,
 )
 from app.models import DraftCreate, DraftSubmit, DraftUpdate, draft_out, ticket_out
+from app.notifications import EV_CREATED, agent_ids, created_recipients, safe_notify
 from app.routers.tickets_core import get_user, rows_of, run
 
 router = APIRouter(prefix="/drafts", tags=["drafts"])
@@ -34,10 +35,11 @@ def fetch_draft(draft_id: str, employee_id: str) -> dict:
     return rows[0]
 
 
-def _verify_employee(employee_id: str) -> None:
+def _verify_employee(employee_id: str) -> dict:
     employee = get_user(employee_id)
     if not employee or employee["role"] != "employee":
         raise HTTPException(status_code=422, detail="employeeId must belong to a known employee")
+    return employee
 
 
 def _remove_attachment(path: str) -> None:
@@ -107,7 +109,7 @@ def delete_draft(draft_id: str, employeeId: str):
 def submit_draft(draft_id: str, payload: DraftSubmit):
     """Validate and convert the saved draft into a normal ticket."""
     draft = fetch_draft(draft_id, payload.employee_id)
-    _verify_employee(payload.employee_id)
+    employee = _verify_employee(payload.employee_id)
     subject = draft["subject"].strip()
     description = draft["description"].strip()
     if len(subject) < 5:
@@ -132,6 +134,7 @@ def submit_draft(draft_id: str, payload: DraftSubmit):
     )
     ticket = created[0]
     run(_table().delete().eq("id", draft["id"]))
+    safe_notify(ticket, EV_CREATED, employee, created_recipients(agent_ids()))
     return ticket_out(ticket, [])
 
 

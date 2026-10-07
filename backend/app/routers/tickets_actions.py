@@ -15,6 +15,13 @@ from app.models import (
     PriorityUpdate,
     StatusUpdate,
 )
+from app.notifications import (
+    EV_ASSIGNED,
+    EV_STATUS,
+    assigned_recipients,
+    safe_notify,
+    status_recipients,
+)
 from app.routers.tickets_core import (
     _update_and_return,
     fetch_row,
@@ -50,7 +57,15 @@ def update_status(tid: str, payload: StatusUpdate):
         patch["resolved_at"] = None
         patch["closed_by"] = None
     # Waiting on Employee: no timestamp changes
-    return _update_and_return(tid, patch)
+    result = _update_and_return(tid, patch)
+    safe_notify(
+        result,
+        EV_STATUS,
+        actor,
+        status_recipients(row["employee_id"], row.get("assignee_id"), actor["id"]),
+        payload={"status": payload.status},
+    )
+    return result
 
 
 def _assign(row: dict, assignee_id: str | None) -> dict:
@@ -86,9 +101,19 @@ def _assign(row: dict, assignee_id: str | None) -> dict:
         patch: dict = {"assignee_id": assignee_id, "first_reply_at": now}
         if row["status"] == "Open":
             patch["status"] = "In Progress"
-        return _update_and_return(row["ref"], patch)
+        result = _update_and_return(row["ref"], patch)
+        _notify_assign(row, assignee_id)
+        return result
 
-    return _update_and_return(row["ref"], {"assignee_id": assignee_id})
+    result = _update_and_return(row["ref"], {"assignee_id": assignee_id})
+    _notify_assign(row, assignee_id)
+    return result
+
+
+def _notify_assign(pre_row: dict, assignee_id: str | None):
+    """Notify on actual reassignment only (re-picking the same agent stays quiet)."""
+    if pre_row.get("assignee_id") != assignee_id:
+        safe_notify(pre_row, EV_ASSIGNED, None, assigned_recipients(assignee_id, None))
 
 
 @router.patch("/{tid}/assignee")

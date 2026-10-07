@@ -83,6 +83,23 @@ export const agentWorkload = () => request("/agents/workload"); // [{id,name,ema
 export const autoAssignTicket = (id) =>
   request(`/tickets/${encodeURIComponent(id)}/auto-assign`, { method: "POST" });
 
+// ---- notifications ----------------------------------------------------------
+const withQuery = (path, params) => {
+  const usp = new URLSearchParams();
+  for (const [k, v] of Object.entries(params ?? {})) {
+    if (v !== undefined && v !== null) usp.append(k, v);
+  }
+  const qs = usp.toString();
+  return qs ? `${path}?${qs}` : path;
+};
+export const listNotifications = (params) => request(withQuery("/notifications", params));
+export const unreadCount = (userId) =>
+  request(withQuery("/notifications/unread-count", { userId })); // { unread }
+export const markNotificationRead = (id, userId) =>
+  request(`/notifications/${encodeURIComponent(id)}/read`, { method: "POST", body: { userId } });
+export const markAllNotificationsRead = (userId) =>
+  request("/notifications/read-all", { method: "POST", body: { userId } }); // { updated }
+
 // ---- attachments ------------------------------------------------------------
 export const uploadAttachment = (id, file) => {
   const form = new FormData();

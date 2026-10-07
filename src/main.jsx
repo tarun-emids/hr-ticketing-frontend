@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import NewTicket from "./pages/NewTicket";
 import TicketDetail from "./pages/TicketDetail";
+import Notifications from "./pages/Notifications";
 import HRInbox from "./pages/HRInbox";
 import HRDashboard from "./pages/HRDashboard";
 import "./index.css";
@@ -38,6 +39,7 @@ function App() {
             <Route path="/new-ticket" element={<RequireAuth role="employee"><NewTicket /></RequireAuth>} />
             <Route path="/drafts/:id/edit" element={<RequireAuth role="employee"><NewTicket /></RequireAuth>} />
             <Route path="/tickets/:id" element={<TicketDetail />} />
+            <Route path="/notifications" element={<Notifications />} />
             <Route path="/inbox" element={<RequireAuth role="agent"><HRInbox /></RequireAuth>} />
             <Route path="/hr-dashboard" element={<RequireAuth role="agent"><HRDashboard /></RequireAuth>} />
           </Route>
