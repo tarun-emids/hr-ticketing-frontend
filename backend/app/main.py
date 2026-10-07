@@ -14,8 +14,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import CORS_ORIGINS
 from app.notifications import SLA_SWEEP_INTERVAL_SECONDS, run_retention_cleanup, run_sla_sweep
-from app.routers import assignment, attachments, drafts, notifications, tickets_actions, tickets_core, users_meta
-
+from app.routers import auth, assignment, attachments, drafts, notifications, tickets_actions, tickets_core, users_meta
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
