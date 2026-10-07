@@ -76,6 +76,14 @@ export const updateStatus = (ticketId, status, actorId) =>
 export const assignTicket = (ticketId, assigneeId) =>
   updateCache(api.assignTicket(ticketId, { assigneeId }));
 
+// Auto-assign returns the updated ticket plus routing metadata
+// (routedTo); cache only the ticket itself so entries keep the
+// canonical shape.
+export const autoAssignTicket = (ticketId) =>
+  updateCache(
+    api.autoAssignTicket(ticketId).then(({ routedTo, ...ticket }) => ticket)
+  );
+
 export const setPriority = (ticketId, priority) =>
   updateCache(api.setPriority(ticketId, { priority }));
 

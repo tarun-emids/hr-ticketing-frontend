@@ -33,6 +33,12 @@ async function request(path, { method = "GET", body, form } = {}) {
   return res.json();
 }
 
+// ---- auth -------------------------------------------------------------------
+// Credentials are verified server-side against Supabase Auth; the backend
+// returns the matching public.users row. No secrets cross the wire either way.
+export const login = (email, password) =>
+  request("/auth/login", { method: "POST", body: { email, password } }); // { user: {id,name,email,role} }
+
 // ---- users ----------------------------------------------------------------
 export const listUsers = () => request("/users");
 

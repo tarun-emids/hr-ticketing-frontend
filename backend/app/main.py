@@ -55,6 +55,7 @@ app.add_middleware(
 )
 
 # /api mount: frontend will call e.g. http://localhost:8000/api/tickets
+app.include_router(auth.router, prefix="/api")
 app.include_router(tickets_core.router, prefix="/api")
 app.include_router(tickets_actions.router, prefix="/api")
 app.include_router(assignment.router, prefix="/api")
