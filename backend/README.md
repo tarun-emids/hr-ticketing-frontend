@@ -28,6 +28,8 @@ hr-ticketing-system/
         tickets_actions.py  # status / assignee / priority / category
         attachments.py      # file upload + signed URL
         users_meta.py       # users / agents / meta lookups
+  tests/
+    test_drafts.py
   src/ ... (existing frontend, unchanged)
 ```
 
@@ -68,6 +70,12 @@ uvicorn app.main:app --reload --port 8000
 
 - Interactive docs: http://localhost:8000/docs
 - Liveness: http://localhost:8000/health
+
+Run the backend unit tests from `backend/` with:
+
+```bash
+python -m unittest discover -s tests -v
+```
 
 ## 4. Smoke test (curl) — create a ticket
 
