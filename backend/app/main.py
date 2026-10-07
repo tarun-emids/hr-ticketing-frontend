@@ -11,12 +11,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import CORS_ORIGINS
-from app.routers import assignment, attachments, tickets_actions, tickets_core, users_meta
+from app.routers import assignment, attachments, auth, tickets_actions, tickets_core, users_meta
 
 app = FastAPI(
     title="HR Desk API",
     description="Ticketing backend for the Emids HR Desk frontend (Supabase Postgres + Storage).",
-    version="0.1.1",
+    version="0.2.0",
 )
 
 app.add_middleware(
@@ -28,6 +28,7 @@ app.add_middleware(
 )
 
 # /api mount: frontend will call e.g. http://localhost:8000/api/tickets
+app.include_router(auth.router, prefix="/api")
 app.include_router(tickets_core.router, prefix="/api")
 app.include_router(tickets_actions.router, prefix="/api")
 app.include_router(assignment.router, prefix="/api")
