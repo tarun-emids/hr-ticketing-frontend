@@ -4,13 +4,13 @@ import { useAuth } from "../context/AuthContext";
 import Logo from "./Logo";
 
 const EMPLOYEE_NAV = [
-  { to: "/my-tickets", label: "My tickets", Icon: IconClipboardList },
+  { to: "/my-tickets", label: "Tickets", Icon: IconClipboardList },
   { to: "/new-ticket", label: "New ticket", Icon: IconPlus },
 ];
 
 const AGENT_NAV = [
   { to: "/inbox", label: "Inbox", Icon: IconInbox },
-  { to: "/hr-dashboard", label: "HR dashboard", Icon: IconChartBar },
+  { to: "/hr-dashboard", label: "Dashboard", Icon: IconChartBar },
 ];
 
 function NavItems({ items, onNavigate }) {
