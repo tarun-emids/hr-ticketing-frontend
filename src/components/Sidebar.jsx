@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import logo from "../assets/emids-logo.png";
+import Logo from "./Logo";
 
 const EMPLOYEE_NAV = [
   { to: "/my-tickets", label: "My tickets", icon: "M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" },
@@ -23,15 +23,15 @@ function NavItems({ items, onNavigate }) {
           className={({ isActive }) =>
             `flex items-center gap-3 border-b py-3 text-[10px] transition-colors mono-label ${
               isActive
-                ? "border-b-warm/10 text-teal"
-                : "border-b-warm/10 text-warm/50 hover:text-warm"
+                ? "border-b-warm/20 text-teal-deep"
+                : "border-b-warm/20 text-warm/50 hover:text-warm"
             }`
           }
         >
           {({ isActive }) => (
             <>
               <svg
-                className={`h-4 w-4 shrink-0 ${isActive ? "text-teal" : "text-warm/40"}`}
+                className={`h-4 w-4 shrink-0 ${isActive ? "text-teal-deep" : "text-warm/40"}`}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -55,13 +55,13 @@ export default function Sidebar({ mobileOpen, onNavigate, onHide }) {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-surface-2 bg-canvas transition-transform lg:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-40 flex w-42 flex-col border-r border-surface-2 bg-canvas transition-transform lg:translate-x-0 ${
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
       <button
         onClick={onHide}
-        className="absolute right-3 top-3 border border-warm/15 p-1 text-warm/50 hover:text-warm lg:hidden"
+        className="absolute right-3 top-3 border border-warm/25 p-1 text-warm/50 hover:text-warm lg:hidden"
         aria-label="Close menu"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
@@ -69,8 +69,8 @@ export default function Sidebar({ mobileOpen, onNavigate, onHide }) {
         </svg>
       </button>
 
-      <div className="flex flex-col gap-2 border-b border-surface-2 px-6 pb-5 pt-6">
-        <img src={logo} alt="Emids" className="h-7 w-auto self-start" />
+      <div className="flex flex-col gap-4 border-b border-surface-2 px-6 pb-5 pt-6">
+        <Logo size="nav" />
         <p className="mono-label text-[10px] text-warm/40">HR Desk / Internal ticketing</p>
       </div>
 
@@ -83,7 +83,7 @@ export default function Sidebar({ mobileOpen, onNavigate, onHide }) {
 
       <div className="border-t border-surface-2 p-4">
         <div className="flex items-center gap-3">
-          <span className="soft-bl flex h-9 w-9 shrink-0 items-center justify-center bg-surface-2 font-mono text-[10px] text-teal-light">
+          <span className="soft-bl flex h-9 w-9 shrink-0 items-center justify-center bg-surface-2 font-mono text-[10px] text-teal-deep">
             {user?.name.split(" ").map((p) => p[0]).slice(0, 2).join("")}
           </span>
           <div className="min-w-0 flex-1">
@@ -93,7 +93,7 @@ export default function Sidebar({ mobileOpen, onNavigate, onHide }) {
           <button
             onClick={logout}
             title="Sign out"
-            className="border border-warm/15 p-1.5 text-warm/50 hover:border-teal hover:text-teal"
+            className="border border-warm/25 p-1.5 text-warm/50 hover:border-teal hover:text-teal-deep"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 15l-3-3m0 0 3-3m-3 3h9" />

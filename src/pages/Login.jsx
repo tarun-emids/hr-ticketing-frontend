@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import logo from "../assets/emids-logo.png";
+import Logo from "../components/Logo";
 
 const FIELD =
   "w-full border border-surface-2 bg-surface px-3 py-2.5 text-body-lg text-warm focus:border-teal focus:outline-none";
@@ -38,19 +38,28 @@ export default function Login() {
   return (
     <div className="flex min-h-screen bg-canvas">
       {/* Brand plate */}
-      <section className="relative hidden flex-1 flex-col justify-between overflow-hidden p-12 lg:flex">
+      <section className="relative hidden flex-1 flex-col overflow-hidden p-12 lg:flex">
         <div
           aria-hidden
           className="teal-gradient pointer-events-none absolute inset-x-0 top-0 h-1"
         />
-        <div aria-hidden className="teal-gradient pointer-events-none absolute -top-40 -left-40 h-96 w-[40rem] rotate-90 opacity-10 blur-3xl" />
-        <img src={logo} alt="Emids" className="h-8 w-fit self-start" />
+        {/* Frame mid-bar: x 7-28 · y 21-28 of the 60×48 modular grid */}
+        <div
+          aria-hidden
+          className="absolute bg-teal"
+          style={{ left: "11.67%", top: "43.75%", width: "35%", height: "14.58%" }}
+        >
+          <span className="mono-label absolute bottom-0 right-0 px-4 pb-3 text-[10px] text-warm">
+            0 1 / H R  W O R K S P A C E
+          </span>
+        </div>
+        <Logo size="lg" />
 
-        <div className="max-w-xl">
-          <span className="mono-label mb-4 block text-[10px] text-teal">↘ HR DESK / INTERNAL</span>
+        <div className="relative z-10 mt-16 max-w-xl">
+          <span className="mono-label mb-4 block text-[10px] text-teal-deep">↘ HR DESK / INTERNAL</span>
           <div className="rule-teal mb-6" />
           <h1 className="text-display text-warm">
-            Outcomes you can <span className="text-teal">track.</span>
+            Outcomes you can <span className="text-teal-deep">track.</span>
           </h1>
           <p className="mt-6 text-body-lg text-warm/60">
             Raise requests, follow the thread, know exactly where each ticket stands —
@@ -58,7 +67,7 @@ export default function Login() {
           </p>
         </div>
 
-        <p className="mono-label text-[10px] text-warm/35">
+        <p className="mono-label mt-auto text-[10px] text-warm/35">
           EMIDS / HR DESK / DEMO AUTH · NO CREDENTIALS CHECKED
         </p>
       </section>
@@ -67,7 +76,7 @@ export default function Login() {
       <section className="flex w-full items-center justify-center px-6 lg:w-[38rem]">
         <form onSubmit={onSubmit} noValidate className="soft-bl w-full max-w-md border border-surface-2 bg-surface p-8">
           <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <img src={logo} alt="Emids" className="h-7 w-fit" />
+            <Logo size="nav" />
           </div>
 
           <span className="mono-label mb-3 block text-[10px] text-teal">↘ 0 1 /  S I G N  I N</span>
@@ -85,7 +94,7 @@ export default function Login() {
                 onClick={() => pickRole(r.key)}
                 className={`mono-label border py-3 text-[10px] transition-colors ${
                   role === r.key
-                    ? "border-teal bg-teal/10 text-teal"
+                    ? "border-teal bg-teal/10 text-teal-deep"
                     : "border-surface-2 text-warm/50 hover:text-warm"
                 }`}
               >
@@ -110,7 +119,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={!userId}
-            className="mono-label w-full border border-teal bg-teal py-3.5 text-[10px] text-canvas transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
+            className="mono-label w-full border border-teal bg-teal py-3.5 text-[10px] text-warm transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
           >
             Continue ↘
           </button>
