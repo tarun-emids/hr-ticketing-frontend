@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/emids-logo.png";
+import mark from "../assets/emids-mark.png";
 
 const EMPLOYEE_NAV = [
   { to: "/my-tickets", label: "My tickets", icon: "M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" },
@@ -79,7 +80,7 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
 
       <div className={`flex flex-col gap-2 border-b border-surface-2 px-6 pb-5 pt-6 ${collapsed ? "lg:items-center lg:px-3" : ""}`}>
         <img src={logo} alt="Emids" className={`h-7 w-auto self-start ${collapsed ? "lg:hidden" : ""}`} />
-        {collapsed && <span className="hidden h-7 items-center justify-center font-mono text-sm text-teal lg:flex" aria-hidden="true">E</span>}
+        {collapsed && <img src={mark} alt="Emids" className="hidden h-7 w-7 object-contain lg:block" />}
         <p className={`mono-label text-[10px] text-warm/40 ${collapsed ? "lg:hidden" : ""}`}>
           HR Desk / Internal ticketing
         </p>
