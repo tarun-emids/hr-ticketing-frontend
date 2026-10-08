@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
+import { IconArrowDownRight, IconPaperclip, IconPlus } from "@tabler/icons-react";
 import { useAuth } from "../context/AuthContext";
 import { useTickets } from "../hooks";
 import { StatusBadge, PriorityBadge } from "../components/Badge";
@@ -18,11 +19,7 @@ function TicketRow({ t }) {
           <div className="mb-1 flex items-center gap-3">
             <span className="mono-label text-[10px] text-warm/35">{t.id}</span>
             <span className="text-caption text-warm/40">{timeAgo(t.updatedAt)}</span>
-            {t.attachment && (
-              <svg className="h-3 w-3 text-warm/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m18.4 9.7-6.7 6.7a4 4 0 0 1-5.7-5.7l7.1-7.1a2.6 2.6 0 1 1 3.8 3.6l-6.5 6.5a1.4 1.4 0 0 1-2-2l5.9-6" />
-              </svg>
-            )}
+            {t.attachment && <IconPaperclip size={16} aria-hidden className="text-warm/30" />}
           </div>
           <p className="truncate text-body-lg font-medium text-warm group-hover:text-teal-light">{t.subject}</p>
           <p className="mono-label mt-1 text-[10px] text-warm/40">{t.category}</p>
@@ -76,7 +73,10 @@ export default function EmployeeDashboard() {
   return (
     <div className="mx-auto max-w-4xl">
       <header className="mb-8">
-        <span className="mono-label mb-3 block text-[10px] text-teal">↘ 0 1 /  E M P L O Y E E</span>
+        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal">
+          <IconArrowDownRight size={16} aria-hidden />
+          01 / EMPLOYEE
+        </span>
         <div className="rule-teal mb-5" />
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -93,9 +93,7 @@ export default function EmployeeDashboard() {
             to="/new-ticket"
             className="mono-label inline-flex items-center gap-2 border border-teal bg-teal px-4 py-2.5 text-[10px] text-canvas transition-colors hover:bg-teal-light"
           >
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-              <path d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
+            <IconPlus size={16} aria-hidden />
             New ticket
           </Link>
         </div>
@@ -163,7 +161,7 @@ export default function EmployeeDashboard() {
         <EmptyState
           title="No tickets yet"
           body="When you raise a question with HR it will show up here with a live status so you never wonder where it stands."
-          icon="↘"
+          icon={<IconArrowDownRight size={32} />}
         />
       ) : mine.length === 0 ? null : (
         <section>

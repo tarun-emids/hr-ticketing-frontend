@@ -1,3 +1,4 @@
+import { IconArrowDownRight } from "@tabler/icons-react";
 import { useAuth } from "../context/AuthContext";
 import { useTickets } from "../hooks";
 import TicketTable from "../components/TicketTable";
@@ -21,7 +22,10 @@ export default function HRInbox() {
   return (
     <div className="mx-auto max-w-6xl">
       <header className="mb-8">
-        <span className="mono-label mb-3 block text-[10px] text-teal">↘ 0 1 /  I N B O X</span>
+        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal">
+          <IconArrowDownRight size={16} aria-hidden />
+          01 / INBOX
+        </span>
         <div className="rule-teal mb-5" />
         <h1 className="text-h3 text-warm">All tickets</h1>
         <p className="mt-1.5 text-caption text-warm/45">
@@ -33,7 +37,7 @@ export default function HRInbox() {
         <EmptyState
           title="The inbox is empty"
           body="When employees raise tickets they will appear here. This usually means nobody has used the service yet — try submitting a demo ticket."
-          icon="↘"
+          icon={<IconArrowDownRight size={32} />}
         />
       ) : (
         <TicketTable tickets={tickets} users={users} />

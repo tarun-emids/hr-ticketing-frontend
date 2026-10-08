@@ -1,10 +1,12 @@
+import {
+  IconInbox,
+  IconLoader2,
+} from "@tabler/icons-react";
+
 export function Spinner({ label = "Loading" }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-16">
-      <svg className="h-6 w-6 animate-spin text-teal" viewBox="0 0 24 24" fill="none" strokeWidth="1.5">
-        <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" />
-        <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V2A10 10 0 1 0 22 12h-2a8 8 0 0 0-8-8z" />
-      </svg>
+      <IconLoader2 size={24} className="animate-spin text-teal" />
       <p className="mono-label text-[10px] text-warm/40">{label}</p>
     </div>
   );
@@ -23,10 +25,12 @@ export function SkeletonList({ rows = 5 }) {
   );
 }
 
-export function EmptyState({ icon = "▚", title, body }) {
+export function EmptyState({ icon = <IconInbox />, title, body }) {
   return (
     <div className="soft-bl flex flex-col items-center justify-center gap-2 border border-surface-2 bg-surface px-6 py-14 text-center">
-      <div className="text-lg text-teal/70" aria-hidden>{icon}</div>
+      <div className="text-teal/70" aria-hidden>
+        {icon}
+      </div>
       <h3 className="mono-label text-[10px] text-warm">{title}</h3>
       {body && <p className="max-w-sm text-caption text-warm/50">{body}</p>}
     </div>

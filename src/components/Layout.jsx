@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
+import { IconMenu2 } from "@tabler/icons-react";
 import Sidebar from "./Sidebar";
 import NotificationBell from "./NotificationBell";
 
@@ -20,9 +21,7 @@ export default function Layout() {
               className="mono-label inline-flex items-center gap-2 border border-warm/30 bg-transparent px-3 py-3 text-[10px] text-warm lg:hidden"
               aria-label="Open menu"
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
+              <IconMenu2 size={16} aria-hidden />
               Menu
             </button>
             <NotificationBell />

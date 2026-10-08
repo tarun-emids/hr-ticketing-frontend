@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { IconArrowDownRight } from "@tabler/icons-react";
 import { STATUSES, CATEGORIES } from "../data/users";
 import { useTickets } from "../hooks";
 import { StatCard, Spinner, EmptyState } from "../components/primitives";
@@ -35,7 +36,7 @@ export default function HRDashboard() {
         <EmptyState
           title="No data to chart yet"
           body="Once tickets flow in, status counts, category load and response-time stats appear here."
-          icon="↘"
+          icon={<IconArrowDownRight size={32} />}
         />
       </div>
     );
@@ -49,7 +50,10 @@ export default function HRDashboard() {
   return (
     <div className="mx-auto max-w-5xl">
       <header className="mb-10">
-        <span className="mono-label mb-3 block text-[10px] text-teal">↘ 0 2 /  O V E R S I G H T</span>
+        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal">
+          <IconArrowDownRight size={16} aria-hidden />
+          02 / OVERSIGHT
+        </span>
         <div className="rule-teal mb-5" />
         <h1 className="text-h3 text-warm">HR dashboard</h1>
         <p className="mt-1.5 text-caption text-warm/45">

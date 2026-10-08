@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { IconArrowDownRight } from "@tabler/icons-react";
 import { useAuth } from "../context/AuthContext";
 import Logo from "../components/Logo";
 
@@ -36,13 +37,13 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen bg-canvas">
+    <div className="relative flex min-h-screen bg-canvas">
+      <div
+        aria-hidden
+        className="teal-gradient pointer-events-none absolute inset-x-0 top-0 h-1"
+      />
       {/* Brand plate */}
       <section className="relative hidden flex-1 flex-col overflow-hidden p-12 lg:flex">
-        <div
-          aria-hidden
-          className="teal-gradient pointer-events-none absolute inset-x-0 top-0 h-1"
-        />
         {/* Frame mid-bar: x 7-28 · y 21-28 of the 60×48 modular grid */}
         <div
           aria-hidden
@@ -50,18 +51,21 @@ export default function Login() {
           style={{ left: "11.67%", top: "43.75%", width: "35%", height: "14.58%" }}
         >
           <span className="mono-label absolute bottom-0 right-0 px-4 pb-3 text-[10px] text-warm">
-            0 1 / H R  W O R K S P A C E
+            0 1 / H R  D E S K
           </span>
         </div>
         <Logo size="lg" />
 
         <div className="relative z-10 mt-16 max-w-xl">
-          <span className="mono-label mb-4 block text-[10px] text-teal-deep">↘ HR DESK / INTERNAL</span>
+          <span className="mono-label mb-4 flex items-center gap-2 text-[10px] text-teal-deep">
+            <IconArrowDownRight size={16} aria-hidden />
+            HR DESK / INTERNAL
+          </span>
           <div className="rule-teal mb-6" />
           <h1 className="text-display text-warm">
             Outcomes you can <span className="text-teal-deep">track.</span>
           </h1>
-          <p className="mt-6 text-body-lg text-warm/60">
+          <p className="mt-6 text-body-lg text-warm">
             Raise requests, follow the thread, know exactly where each ticket stands —
             without chasing anyone down.
           </p>
@@ -79,7 +83,10 @@ export default function Login() {
             <Logo size="nav" />
           </div>
 
-          <span className="mono-label mb-3 block text-[10px] text-teal">↘ 0 1 /  S I G N  I N</span>
+          <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal">
+            <IconArrowDownRight size={16} aria-hidden />
+            01 / SIGN IN
+          </span>
           <div className="rule-teal mb-6" />
 
           <span className={LABEL}>Sign in as</span>
@@ -119,9 +126,10 @@ export default function Login() {
           <button
             type="submit"
             disabled={!userId}
-            className="mono-label w-full border border-teal bg-teal py-3.5 text-[10px] text-warm transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
+            className="mono-label flex w-full items-center justify-center gap-2 border border-teal bg-teal py-3.5 text-[10px] text-warm transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Continue ↘
+            Continue
+            <IconArrowDownRight size={16} aria-hidden />
           </button>
           <p className="mt-5 text-center text-caption text-warm/35">
             Mock auth for demo purposes only — real users come from the backend.

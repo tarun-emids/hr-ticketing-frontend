@@ -1,15 +1,16 @@
 import { NavLink } from "react-router-dom";
+import { IconChartBar, IconClipboardList, IconInbox, IconLogout, IconPlus, IconX } from "@tabler/icons-react";
 import { useAuth } from "../context/AuthContext";
 import Logo from "./Logo";
 
 const EMPLOYEE_NAV = [
-  { to: "/my-tickets", label: "My tickets", icon: "M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" },
-  { to: "/new-ticket", label: "New ticket", icon: "M12 4.5v15m7.5-7.5h-15" },
+  { to: "/my-tickets", label: "My tickets", Icon: IconClipboardList },
+  { to: "/new-ticket", label: "New ticket", Icon: IconPlus },
 ];
 
 const AGENT_NAV = [
-  { to: "/inbox", label: "Inbox", icon: "M9 12.75h6m-9 3h3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" },
-  { to: "/hr-dashboard", label: "HR dashboard", icon: "M3 13.2V20h6v-6.8M14.5 4v16h-6V9.5M21 20h-6V8h6Z" },
+  { to: "/inbox", label: "Inbox", Icon: IconInbox },
+  { to: "/hr-dashboard", label: "HR dashboard", Icon: IconChartBar },
 ];
 
 function NavItems({ items, onNavigate }) {
@@ -30,16 +31,7 @@ function NavItems({ items, onNavigate }) {
         >
           {({ isActive }) => (
             <>
-              <svg
-                className={`h-4 w-4 shrink-0 ${isActive ? "text-teal-deep" : "text-warm/40"}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              >
-                <path d={item.icon} />
-              </svg>
+              <item.Icon size={16} className={`shrink-0 ${isActive ? "text-teal-deep" : "text-warm/40"}`} />
               {item.label}
               {isActive && <span className="ml-auto h-[2px] w-6 bg-teal" />}
             </>
@@ -64,9 +56,7 @@ export default function Sidebar({ mobileOpen, onNavigate, onHide }) {
         className="absolute right-3 top-3 border border-warm/25 p-1 text-warm/50 hover:text-warm lg:hidden"
         aria-label="Close menu"
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-          <path d="M6 18 18 6M6 6l12 12" />
-        </svg>
+        <IconX size={16} aria-hidden />
       </button>
 
       <div className="flex flex-col gap-4 border-b border-surface-2 px-6 pb-5 pt-6">
@@ -95,9 +85,7 @@ export default function Sidebar({ mobileOpen, onNavigate, onHide }) {
             title="Sign out"
             className="border border-warm/25 p-1.5 text-warm/50 hover:border-teal hover:text-teal-deep"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 15l-3-3m0 0 3-3m-3 3h9" />
-            </svg>
+            <IconLogout size={16} aria-hidden />
           </button>
         </div>
       </div>

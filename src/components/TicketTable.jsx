@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { IconArrowDown, IconArrowUp, IconArrowsSort, IconSearch } from "@tabler/icons-react";
 import { StatusBadge, PriorityBadge } from "./Badge";
 import { PRIO_ORDER } from "./sorting";
 import { timeAgo } from "../utils";
@@ -47,8 +48,8 @@ function SortButton({ label, mode, sortMode, setSortMode }) {
       title={`Sort by ${label}`}
     >
       {label}
-      <span className={active ? "opacity-100" : "opacity-0 group-hover/head:opacity-40"}>
-        {sortMode === `-${mode}` ? "↓" : active ? "↑" : "↕"}
+      <span aria-hidden className={active ? "opacity-100" : "opacity-0 group-hover/head:opacity-40"}>
+        {sortMode === `-${mode}` ? <IconArrowDown size={12} /> : active ? <IconArrowUp size={12} /> : <IconArrowsSort size={12} />}
       </span>
     </button>
   );
@@ -109,9 +110,11 @@ export default function TicketTable({ tickets, users }) {
       <div className="flex flex-col gap-4 border border-b-0 border-surface-2 bg-surface-2/40 p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="relative flex-1">
-            <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-warm/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <path d="m21 21-5.2-5.2M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" />
-            </svg>
+            <IconSearch
+              size={16}
+              aria-hidden
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-warm/30"
+            />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}

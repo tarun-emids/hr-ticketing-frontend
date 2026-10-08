@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { IconArrowDownRight } from "@tabler/icons-react";
 import { addReply } from "../data/store";
 import { formatDateTime } from "../utils";
 import { Avatar } from "./primitives";
@@ -105,9 +106,10 @@ export default function Thread({ ticket, users, viewer }) {
               <button
                 type="submit"
                 disabled={sending || text.trim().length < 2}
-                className="mono-label border border-teal bg-teal px-4 py-2.5 text-[10px] text-canvas transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
+                className="mono-label inline-flex items-center gap-2 border border-teal bg-teal px-4 py-2.5 text-[10px] text-canvas transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {sending ? "Sending…" : "Send reply ↘"}
+                {sending ? "Sending…" : "Send reply"}
+                <IconArrowDownRight size={16} aria-hidden />
               </button>
             </div>
           </div>

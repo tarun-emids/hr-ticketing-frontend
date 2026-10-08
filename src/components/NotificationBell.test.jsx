@@ -86,7 +86,7 @@ it("the view-all footer buttons are present in the dropdown", () => {
   renderBell();
   fireEvent.click(screen.getByRole("button", { name: /Notifications, 1 unread/ }));
   expect(screen.getByText("Mark all read")).toBeTruthy();
-  expect(screen.getByText("View all ↘")).toBeTruthy();
+  expect(screen.getByText("View all")).toBeTruthy();
 });
 
 it("clicking Mark all read calls the store once per acting user", async () => {
