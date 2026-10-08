@@ -91,8 +91,10 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
           aria-controls="workspace-navigation"
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="3.75" y="4.5" width="16.5" height="15" rx="1.5" />
+            <path d="M9 4.5v15" />
+            <path d={collapsed ? "m13.5 9 3 3-3 3" : "m15 9-3 3 3 3"} />
           </svg>
         </button>
       </div>
