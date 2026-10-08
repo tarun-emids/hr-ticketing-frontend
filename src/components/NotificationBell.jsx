@@ -82,13 +82,13 @@ export default function NotificationBell() {
         aria-expanded={open}
         aria-label={ariaLabel}
         title={ariaLabel}
-        className="relative border border-warm/15 p-1.5 text-warm/50 transition-colors hover:border-teal hover:text-teal focus:border-teal focus:outline-none"
+        className="relative border border-warm/25 p-1.5 text-warm/50 transition-colors hover:border-teal hover:text-teal-deep focus:border-teal focus:outline-none"
       >
         <IconBell size={16} aria-hidden />
         {unread > 0 && (
           <span
             data-testid="unread-badge"
-            className="mono-label absolute -right-1.5 -top-1.5 min-w-[14px] bg-teal px-[3px] text-center text-[9px] leading-[14px] text-canvas"
+            className="mono-label absolute -right-1.5 -top-1.5 min-w-[14px] bg-teal px-[3px] text-center text-[9px] leading-[14px] text-warm"
           >
             {badge}
           </span>
@@ -124,16 +124,16 @@ export default function NotificationBell() {
             </ul>
           )}
 
-          <div className="flex items-center justify-between border-t border-surface-2 px-4 py-2.5">
+          <div className="flex items-center justify-between border-t border-surface-2 px-4 py-3">
             <button
               onClick={() => { if (user?.id) markAllNotificationsRead(user.id).catch(() => {}); }}
-              className="mono-label text-[10px] text-warm/45 transition-colors hover:text-teal focus:outline-none focus-visible:text-teal"
+              className="mono-label text-[10px] text-warm/45 transition-colors hover:text-teal-deep focus:outline-none focus-visible:text-teal-deep"
             >
               Mark all read
             </button>
             <button
               onClick={() => { navigate("/notifications"); closeAndRefocus(); }}
-              className="mono-label inline-flex items-center gap-1.5 text-[10px] text-teal transition-colors hover:text-teal-light focus:outline-none focus-visible:text-teal-light"
+              className="mono-label inline-flex items-center gap-1.5 text-[10px] text-teal-deep transition-colors hover:text-teal-deep focus:outline-none focus-visible:text-teal-deep"
             >
               View all
               <IconArrowDownRight size={16} aria-hidden />

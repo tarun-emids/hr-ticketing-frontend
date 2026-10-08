@@ -37,7 +37,7 @@ export default function NotificationRow({
       } ${n.ticketRef ? "hover:bg-surface-2/60" : "cursor-default"}`}
     >
       <span aria-hidden className={`mt-1.5 w-1.5 shrink-0 ${n.read ? "" : "bg-teal h-1.5"}`} />
-      <Row size={16} aria-hidden className="mt-0.5 shrink-0 text-teal/70" />
+      <Row size={16} aria-hidden className="mt-0.5 shrink-0 text-teal-deep/80" />
       <span className="min-w-0">
         <span className="block text-body text-warm/90">{n.message}</span>
         <span className="mono-label mt-1 block text-[10px] text-warm/35">{timeAgo(n.createdAt)}</span>

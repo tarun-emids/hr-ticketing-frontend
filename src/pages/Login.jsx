@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import Logo from "../components/Logo";
 
 const FIELD =
-  "w-full border border-surface-2 bg-surface px-3 py-2.5 text-body-lg text-warm focus:border-teal focus:outline-none";
+  "w-full border border-surface-2 bg-surface px-3 py-3 text-body-lg text-warm focus:border-teal focus:outline-none";
 const LABEL = "mb-1.5 block mono-label text-[10px] text-warm/50";
 
 export default function Login() {
@@ -83,7 +83,7 @@ export default function Login() {
             <Logo size="nav" />
           </div>
 
-          <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal">
+          <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
             <IconArrowDownRight size={16} aria-hidden />
             01 / SIGN IN
           </span>

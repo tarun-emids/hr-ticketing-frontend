@@ -22,7 +22,7 @@ export default function HRInbox() {
   return (
     <div className="mx-auto max-w-6xl">
       <header className="mb-8">
-        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal">
+        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
           <IconArrowDownRight size={16} aria-hidden />
           01 / INBOX
         </span>

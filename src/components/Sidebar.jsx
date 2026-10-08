@@ -53,7 +53,7 @@ export default function Sidebar({ mobileOpen, onNavigate, onHide }) {
     >
       <button
         onClick={onHide}
-        className="absolute right-3 top-3 border border-warm/25 p-1 text-warm/50 hover:text-warm lg:hidden"
+        className="absolute right-3 top-3 border border-warm/35 p-1 text-warm/50 hover:text-warm lg:hidden"
         aria-label="Close menu"
       >
         <IconX size={16} aria-hidden />
@@ -83,7 +83,7 @@ export default function Sidebar({ mobileOpen, onNavigate, onHide }) {
           <button
             onClick={logout}
             title="Sign out"
-            className="border border-warm/25 p-1.5 text-warm/50 hover:border-teal hover:text-teal-deep"
+            className="border border-warm/35 p-1.5 text-warm/50 hover:border-teal hover:text-teal-deep"
           >
             <IconLogout size={16} aria-hidden />
           </button>

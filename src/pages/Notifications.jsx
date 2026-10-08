@@ -62,13 +62,13 @@ export default function Notifications() {
     <div className="mx-auto max-w-3xl">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal">
+          <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
             <IconArrowDownRight size={16} aria-hidden />
             NOTIFICATIONS
           </span>
           <h1 className="text-h3 text-warm">
             All notifications
-            {unread > 0 && <span className="mono-label ml-3 align-middle text-[10px] text-teal">{unread} unread</span>}
+            {unread > 0 && <span className="mono-label ml-3 align-middle text-[10px] text-teal-deep">{unread} unread</span>}
           </h1>
           <p className="mt-2 text-caption text-warm/50">
             Your own ticket updates. Notification text stays generic on purpose — open the ticket for detail.
@@ -77,7 +77,7 @@ export default function Notifications() {
         {unread > 0 && (
           <button
             onClick={() => { if (user?.id) markAllNotificationsRead(user.id).catch(() => {}); }}
-            className="mono-label border border-warm/20 px-3 py-1.5 text-[10px] text-warm/60 transition-colors hover:border-teal hover:text-teal"
+            className="mono-label border border-warm/30 px-3 py-1.5 text-[10px] text-warm/60 transition-colors hover:border-teal hover:text-teal-deep"
           >
             Mark all read
           </button>
@@ -91,7 +91,7 @@ export default function Notifications() {
           icon={<IconCircleCheck size={32} />}
         />
       ) : (
-        <ol className="soft-bl border border-surface-2 bg-surface-2/20">
+        <ol className="soft-bl border border-surface-2 bg-surface">
           {rows.map((n) => (
             <li key={n.id}>
               <NotificationRow notification={n} onOpen={openItem} />
@@ -105,7 +105,7 @@ export default function Notifications() {
           <button
             onClick={loadMore}
             disabled={loadingMore}
-            className="mono-label inline-flex items-center gap-2 border border-warm/20 px-4 py-2.5 text-[10px] text-warm/60 transition-colors hover:border-teal hover:text-teal disabled:opacity-40"
+            className="mono-label inline-flex items-center gap-2 border border-warm/30 px-4 py-3 text-[10px] text-warm/60 transition-colors hover:border-teal hover:text-teal-deep disabled:opacity-40"
           >
             {loadingMore ? "Loading…" : "Load older"}
             <IconArrowDownRight size={16} aria-hidden />

@@ -84,7 +84,7 @@ function AgentControls({ ticket, actor, users }) {
           type="button"
           onClick={routeNow}
           disabled={routing || ["Resolved", "Closed"].includes(ticket.status)}
-          className="mono-label border border-teal/50 px-3 py-2 text-[10px] text-teal transition-colors hover:bg-teal/10 disabled:cursor-not-allowed disabled:opacity-40"
+          className="mono-label border border-teal/50 px-3 py-2 text-[10px] text-teal-deep transition-colors hover:bg-teal/10 disabled:cursor-not-allowed disabled:opacity-40"
           title="Route to the least-loaded HR agent"
         >
           {routing ? "Routing…" : "Auto-assign"}
@@ -197,7 +197,7 @@ function AttachmentChip({ ticket }) {
               {error ? (
                 <>
                   Could not load image: {error}{" "}
-                  <button type="button" onClick={retryImageLoad} disabled={busy} className="text-teal underline disabled:opacity-40">
+                  <button type="button" onClick={retryImageLoad} disabled={busy} className="text-teal-deep underline disabled:opacity-40">
                     Retry
                   </button>
                 </>
@@ -224,7 +224,7 @@ function AttachmentChip({ ticket }) {
                 type="button"
                 autoFocus
                 onClick={() => setPreviewOpen(false)}
-                className="mono-label border border-warm/30 px-3 py-2 text-[10px] text-warm transition-colors hover:border-teal hover:text-teal"
+                className="mono-label border border-warm/40 px-3 py-2 text-[10px] text-warm transition-colors hover:border-teal hover:text-teal-deep"
                 aria-label="Close image preview"
               >
                 Close ×
@@ -243,9 +243,9 @@ function AttachmentChip({ ticket }) {
   }
 
   return (
-    <div className="mt-5 flex flex-wrap items-center gap-2 border border-surface-2 bg-canvas px-3 py-2.5 text-body text-warm/80">
-      <IconPaperclip size={16} aria-hidden className="text-teal/80" />
-      <button type="button" onClick={open} disabled={busy} className="underline decoration-teal/50 underline-offset-4 transition-colors hover:text-teal disabled:opacity-40">
+    <div className="mt-5 flex flex-wrap items-center gap-2 border border-surface-2 bg-canvas px-3 py-3 text-body text-warm/80">
+      <IconPaperclip size={16} aria-hidden className="text-teal-deep/80" />
+      <button type="button" onClick={open} disabled={busy} className="underline decoration-teal/50 underline-offset-4 transition-colors hover:text-teal-deep disabled:opacity-40">
         {ticket.attachment.name}
       </button>
       <span className="mono-label text-[10px] text-warm/35">{(ticket.attachment.size / 1024).toFixed(0)} KB</span>
@@ -340,20 +340,20 @@ export default function TicketDetail() {
     <div className="mx-auto max-w-4xl">
       <button
         onClick={() => navigate(isAgent ? "/inbox" : "/my-tickets")}
-        className="mono-label inline-flex items-center gap-2 text-[10px] text-warm/45 transition-colors hover:text-teal"
+        className="mono-label inline-flex items-center gap-2 text-[10px] text-warm/45 transition-colors hover:text-teal-deep"
       >
         <IconArrowLeft size={16} aria-hidden />
         Back to {isAgent ? "inbox" : "my tickets"}
       </button>
 
       {banner && (
-        <div className="mt-4 flex items-center gap-2 border border-ok/40 bg-ok/10 px-4 py-3 text-body-lg text-ok">
+        <div className="mt-4 flex items-center gap-2 border border-ok/40 bg-ok/10 px-4 py-3 text-body-lg text-ok-deep">
           <IconCircleCheck size={16} aria-hidden className="shrink-0" /> Ticket {ticket.id} submitted — HR has been notified.
         </div>
       )}
 
       <header className="mt-6 mb-6">
-        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal">
+        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
           <IconArrowDownRight size={16} aria-hidden />
           TICKET
         </span>
@@ -368,7 +368,7 @@ export default function TicketDetail() {
         </p>
       </header>
 
-      <section className="soft-bl mb-8 border border-surface-2 bg-surface-2/40 p-5">
+      <section className="soft-bl mb-8 border border-surface-2 bg-surface-2 p-5">
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
           <MetaItem label="Category">{ticket.category}</MetaItem>
           <MetaItem label="Opened">{formatDateTime(ticket.createdAt)}</MetaItem>

@@ -75,7 +75,7 @@ export default function Thread({ ticket, users, viewer }) {
         ))}
       </ol>
 
-      <form onSubmit={send} className="border border-surface-2 bg-surface-2/40 p-4">
+      <form onSubmit={send} className="border border-surface-2 bg-surface-2 p-4">
         <div className="flex items-start gap-3">
           <Avatar name={viewer.name} tone={isEmployee ? "surface" : "teal"} />
           <div className="flex-1">
@@ -88,7 +88,7 @@ export default function Thread({ ticket, users, viewer }) {
                   ? "Reply to HR — add any extra detail that helps."
                   : "Write a reply — the response clock and status update automatically."
               }
-              className="w-full resize-y border border-surface-2 bg-canvas px-3 py-2.5 text-body-lg text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+              className="w-full resize-y border border-surface-2 bg-canvas px-3 py-3 text-body-lg text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
             />
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap gap-2">
@@ -96,7 +96,7 @@ export default function Thread({ ticket, users, viewer }) {
                   <button
                     type="button"
                     onClick={() => setText(SUGGESTED[ticket.category] ?? SUGGESTED.Other)}
-                    className="mono-label border border-warm/20 px-3 py-1.5 text-[10px] text-warm/60 transition-colors hover:border-teal hover:text-teal"
+                    className="mono-label border border-warm/30 px-3 py-1.5 text-[10px] text-warm/60 transition-colors hover:border-teal hover:text-teal-deep"
                     title="Insert a reply frame for this category (mock assist)"
                   >
                     Suggested reply
@@ -106,7 +106,7 @@ export default function Thread({ ticket, users, viewer }) {
               <button
                 type="submit"
                 disabled={sending || text.trim().length < 2}
-                className="mono-label inline-flex items-center gap-2 border border-teal bg-teal px-4 py-2.5 text-[10px] text-canvas transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
+                className="mono-label inline-flex items-center gap-2 border border-teal bg-teal px-4 py-3 text-[10px] text-warm transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {sending ? "Sending…" : "Send reply"}
                 <IconArrowDownRight size={16} aria-hidden />
