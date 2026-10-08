@@ -5,7 +5,7 @@ import Logo from "./Logo";
 
 const EMPLOYEE_NAV = [
   { to: "/my-tickets", label: "Tickets", Icon: IconClipboardList },
-  { to: "/new-ticket", label: "New ticket", Icon: IconPlus },
+  { to: "/new-ticket", label: "New", Icon: IconPlus },
 ];
 
 const AGENT_NAV = [
@@ -71,15 +71,11 @@ export default function Sidebar({ mobileOpen, onNavigate, onHide }) {
         <NavItems items={isAgent ? AGENT_NAV : EMPLOYEE_NAV} onNavigate={onNavigate} />
       </div>
 
-      <div className="border-t border-surface-2 p-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-2 border-t border-surface-2 p-3">
+        <div className="flex items-center justify-between gap-2">
           <span className="soft-bl flex h-9 w-9 shrink-0 items-center justify-center bg-surface-2 font-mono text-[10px] text-teal-deep">
             {user?.name.split(" ").map((p) => p[0]).slice(0, 2).join("")}
           </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-body font-medium text-warm">{user?.name}</p>
-            <p className="mono-label text-[10px] text-warm/40">{isAgent ? "HR agent" : "Employee"}</p>
-          </div>
           <button
             onClick={logout}
             title="Sign out"
@@ -87,6 +83,10 @@ export default function Sidebar({ mobileOpen, onNavigate, onHide }) {
           >
             <IconLogout size={16} aria-hidden />
           </button>
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-body font-medium text-warm">{user?.name}</p>
+          <p className="mono-label text-[10px] text-warm/40">{isAgent ? "HR agent" : "Employee"}</p>
         </div>
       </div>
     </aside>
