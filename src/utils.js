@@ -7,6 +7,21 @@ export function formatDateTime(iso) {
   });
 }
 
+// Bytes -> human size for knowledge-base documents ("1.2 MB").
+export function formatBytes(bytes) {
+  if (bytes == null) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+// Effective dates can arrive as "2026-04-01" — render as a locale date.
+export function effectiveFormatter(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso.length > 10 ? iso : `${iso}T00:00:00`);
+  return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+}
+
 export function timeAgo(iso) {
   const diff = Date.now() - Date.parse(iso);
   const mins = Math.round(diff / 60000);

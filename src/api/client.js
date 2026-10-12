@@ -89,6 +89,24 @@ export const agentWorkload = () => request("/agents/workload"); // [{id,name,ema
 export const autoAssignTicket = (id) =>
   request(`/tickets/${encodeURIComponent(id)}/auto-assign`, { method: "POST" });
 
+// ---- knowledge base ----------------------------------------------------------
+// viewerId drives server-side visibility (employee → employee docs,
+// agent → employee + hr docs, admin → both). Never trust the pool to match
+// by luck: the backend resolves the viewer's role from public.users itself.
+export const searchKb = (viewerId, q) =>
+  request(`/kb?viewerId=${encodeURIComponent(viewerId)}&q=${encodeURIComponent(q ?? "")}`);
+export const listKbPopular = (viewerId) =>
+  request(`/kb/popular?viewerId=${encodeURIComponent(viewerId)}`);
+export const getKbDoc = (slug, viewerId) =>
+  request(`/kb/${encodeURIComponent(slug)}?viewerId=${encodeURIComponent(viewerId)}`);
+// download=true mints an attachment-disposition link whose save dialog proposes
+// the policy title as the filename; the default flavour renders the PDF inline.
+export const getKbDocUrl = (slug, viewerId, download = false) =>
+  request(
+    `/kb/${encodeURIComponent(slug)}/file?viewerId=${encodeURIComponent(viewerId)}` +
+      `&download=${download ? "true" : "false"}`,
+  );
+
 // ---- notifications ----------------------------------------------------------
 const withQuery = (path, params) => {
   const usp = new URLSearchParams();
