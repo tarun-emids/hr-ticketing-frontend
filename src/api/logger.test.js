@@ -50,6 +50,30 @@ describe("frontend logger (logger.js)", () => {
     expect(b.logId).not.toBe(a.logId);
   });
 
+  it("ingest POSTs do not trigger further ingest calls (no logging loop)", async () => {
+    // The ingest hop itself must be silent: one event -> exactly one POST,
+    // and nothing cascades after the backend answers 202.
+    logEvent("http_request_start", { correlationId: newCorrelationId() });
+    logEvent("http_request_succeeded", { correlationId: newCorrelationId() });
+    await vi.waitFor(() => expect(ingestCalls).toHaveLength(2));
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    expect(ingestCalls).toHaveLength(2); // no echo/amplification
+  });
+
+  it("forwards arbitrary fields (traceId/spanId) to the ingest payload", async () => {
+    logEvent("http_request_start", {
+      correlationId: newCorrelationId(),
+      method: "GET",
+      endpoint: "/tickets",
+      traceId: "a".repeat(32),
+      spanId: "b".repeat(16),
+    });
+    await vi.waitFor(() => expect(ingestCalls).toHaveLength(1));
+    const event = JSON.parse(ingestCalls[0].init.body).events[0];
+    expect(event.traceId).toBe("a".repeat(32));   // camelCase on the wire,
+    expect(event.spanId).toBe("b".repeat(16));    // trace_id/span_id server-side
+  });
+
   it("VITE_LOGS=false disables the remote sink entirely", async () => {
     import.meta.env.VITE_LOGS = "false";
     logEvent("http_request_start", {});

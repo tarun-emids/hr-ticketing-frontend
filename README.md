@@ -90,16 +90,55 @@ Done — `src/data/store.js` mirrors the backend endpoints 1:1 (create/list/get,
 replies, status, assignee, priority, category, drafts, auto-assign, attachments)
 through `src/api/client.js`. `src/data/tickets.js` remains only a fixture.
 
+## Logs, request IDs and tracing
+
+Every `src/api/client.js` request carries three identifiers:
+
+- **`X-Request-ID` (correlation id)** — one UUID per API operation, generated in
+  `logger.js`. The backend validates it (strict format, regenerated if invalid),
+  echoes it in the response header, and stamps every backend log record with it,
+  so frontend + backend + Supabase-hop entries for one operation share one id
+  in `backend/logs/app.log` (search: `grep "<request-id>" backend/logs/app.log`).
+- **`traceparent` (W3C trace context)** — real OpenTelemetry, not fabricated:
+  `src/api/trace.js` starts an `@opentelemetry/sdk-trace-web` span per operation
+  and injects the header from that span's context; the ids ride along in the
+  ingested log events so backend records show the ORIGINAL operation's trace.
+  Tracing in the Jaeger UI: see `backend/README.md` §11.
+- **`operation` label** — every API call additionally tags its log events with a
+  business operation name (`tickets.create`, `auth.login`, `drafts.submit`,
+  `attachment.upload`, …) that matches the backend's `hrdesk.flow` event naming.
+  Filter either side by the same label.
+
+Browser lifecycle events (`http_request_start/succeeded/…` from `src/api/logger.js`)
+POST to `POST /api/logs/ingest` and land in the same `backend/logs/app.log` tagged
+with the operation's `correlationId` (+ trace pair). Designed behavior:
+
+- the ingest hop is its own backend request (its own `request_id`/trace) —
+  the original ids live in the event payload, per backend README §11;
+- `client.js` never logs `/logs` traffic (no recursion/DoS through the sink);
+- the sink is fire-and-forget (no retries, failures only console.debug'd) —
+  logging can never break a ticket operation.
+
+Toggles (vite env — there is no frontend `.env.example`; document any override
+in your own `.env.local`):
+
+| Variable | Effect |
+| --- | --- |
+| `VITE_TRACE` (default on) | `false` → no OTel span, no `traceparent`, no trace ids on events |
+| `VITE_LOGS` (default on) | `false` → no distant log sink at all (X-Request-ID correlation still flows) |
+| `VITE_API_URL` | backend base URL (default `http://localhost:8000/api`) |
+
 ## In-app notifications
 
 Ticket events (created / assigned / status change / reply / first-response SLA
 breach) become `notifications` rows with generic, non-confidential text and
 reach users through a bell + dropdown in every page header and a full
-`/notifications` page (`feat: in-app notification system`). Python domain logic:
-`backend/app/notifications.py`; frontend cache/hook: `src/data/notifications.js`
-+ `useNotifications` in `src/hooks.js`; other channels (email/Slack) are out of
-scope and would plug into the same store via the `channel` column.
-How to add a new notification type: see `backend/README.md` §10.
+`/notifications` page. Python domain logic:
+`backend/app/services/notification_service.py`; frontend cache/hook:
+`src/data/notifications.js` + `useNotifications` in `src/hooks.js`; other
+channels (email/Slack) are out of scope and would plug into the same store via
+the `channel` column. How to add a new notification type: see
+`backend/README.md` §10.
 
 ## Structure
 
@@ -110,7 +149,9 @@ src/
                 NotificationBell + NotificationRow (+ Notifications page)
   pages/        Login, EmployeeDashboard, NewTicket, TicketDetail, HRInbox, HRDashboard, Notifications
   data/         users.js (lookups), tickets.js (fixture), store.js, notifications.js (caches)
-  api/          client.js (typed REST calls)
+  api/          client.js (typed REST calls, each stamped with an `operation`),
+                logger.js (lifecycle events → backend log),
+                trace.js (real OTel trace context: span + traceparent per operation)
   assets/       emids-logo.png, emids-mark.png (from the brand guidelines)
   context/      AuthContext (mock session, persisted in localStorage)
   hooks.js      useTickets(...) and useNotifications(userId, pollMs=20s)
