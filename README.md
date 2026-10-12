@@ -7,16 +7,50 @@ notifications domain.
 
 ## Run it
 
+Frontend:
+
 ```bash
 npm install
 npm run dev
 ```
 
-Then open http://localhost:5173.
+Backend (needs `backend/.env`, see `backend/.env.example`):
+
+```bash
+cd backend
+uvicorn app.main:app --reload --port 8000
+```
+
+Then open http://localhost:5173 (API docs at http://localhost:8000/docs).
+
+## Login (Supabase Auth)
+
+Sign-in at `/login` is real: email + password verified server-side by the
+backend against **Supabase Auth** (GoTrue). The response is joined with the
+matching `public.users` row, which supplies the app-level identity and role
+(`employee` | `agent`). Users see only their role's workspace; HR-only routes
+(`/inbox`, `/hr-dashboard`) are role-gated.
+
+Accounts are provisioned — no signup, no self-registration:
+
+1. After adding people to `public.users` (see `backend/schema.sql`), create
+   their Supabase Auth credentials once:
+
+   ```bash
+   cd backend
+   python scripts/provision_auth_users.py
+   ```
+
+   It asks for an initial password (or take `--password` / the
+   `HR_DESK_TEMP_PASSWORD` env var), creates a confirmed auth user per row,
+   and skips accounts that already exist. It never prints the password.
+2. Passwords can be changed later from the Supabase Dashboard
+   (Authentication → Users) or by deleting the auth user and re-running the
+   script — HR Desk stores no passwords itself.
+3. If a user's auth email is ever removed from `public.users`, the next app
+   start silently drops their session.
 
 ## Demo flow
-
-The login screen has a **role switcher** (mock auth — no credentials):
 
 1. **Employee** (e.g. Priya Sharma) — see *My tickets*, open one, reply in the thread,
    submit a *New ticket* (validation: subject ≥ 5 chars, description ≥ 20 chars,
@@ -28,8 +62,8 @@ The login screen has a **role switcher** (mock auth — no credentials):
 3. Check *HR dashboard* — counts by status, open tickets by category, average
    first-response time.
 
-State lives in a small in-memory pub/sub store (`src/data/store.js`), so actions in
-one view reflect everywhere. Reassigning an unanswered ticket automatically creates
+State is API-backed; a small in-memory cache keeps views consistent
+(`src/data/store.js`). Reassigning an unanswered ticket automatically creates
 the first agent reply; employee replies flip status to *Waiting on Employee*.
 
 ## Emids brand system v1.0

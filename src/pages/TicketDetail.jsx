@@ -10,8 +10,8 @@ import {
   IconPaperclip,
 } from "@tabler/icons-react";
 import { CATEGORIES, PRIORITIES, STATUSES } from "../data/users";
-import { agentWorkload, autoAssignTicket } from "../api/client";
-import { getTicket, subscribe, refreshTicket, updateStatus, assignTicket, setPriority, setCategory, getAttachmentUrl } from "../data/store";
+import { agentWorkload } from "../api/client";
+import { getTicket, subscribe, refreshTicket, updateStatus, assignTicket, autoAssignTicket, setPriority, setCategory, getAttachmentUrl } from "../data/store";
 import { useAuth } from "../context/AuthContext";
 import { StatusBadge, PriorityBadge } from "../components/Badge";
 import Thread from "../components/Thread";
