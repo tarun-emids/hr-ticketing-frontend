@@ -34,3 +34,6 @@ __pycache__/
 # Test artifacts
 .coverage
 .pytest_cache/
+
+# husky runtime (regenerated on npm install)
+.husky/_/

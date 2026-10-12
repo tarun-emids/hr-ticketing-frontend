@@ -117,3 +117,21 @@ src/
 ```
 
 Tailwind v4 (via `@tailwindcss/vite`). Brand tokens configured in `src/index.css`.
+
+## Code style & commit hooks
+
+Formatting and linting run through the commit hooks — every commit formats
+and lints only what it changes (`prettier --write` + `eslint --fix` on the
+staged files, configured in `package.json` → `lint-staged`; `husky`
+activates the hook when `npm install` runs its `prepare` script).
+
+```bash
+npm install                 # installs prettier + eslint + husky/lint-staged, enables the hook
+npm run lint                # eslint over src/
+npm run format              # prettier over the repo (one-time pass / manual reformat)
+npm run format:check        # CI-style check without writing
+```
+
+Style is decided by `.prettierrc.json` (100 char width) and
+`eslint.config.js` (flat config, react-hooks rules). To skip the hook for a
+single emergency commit explicitly: `git commit --no-verify`.

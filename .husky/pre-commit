@@ -1,0 +1,3 @@
+# Formats and lints only what is being committed:
+#   eslint --fix  then prettier --write on staged files (defined in package.json)
+npx lint-staged

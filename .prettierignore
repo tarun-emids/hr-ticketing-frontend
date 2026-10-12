@@ -1,0 +1,9 @@
+# Build output and dependencies are never formatted
+dist/
+node_modules/
+coverage/
+
+# Vendored/binary assets
+*.png
+*.ico
+package-lock.json
