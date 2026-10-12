@@ -48,7 +48,7 @@ function renderBell() {
 // agent session so the bell has an acting user (mock-auth world).
 beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn(() => Promise.reject(new Error("offline test"))));
-  localStorage.setItem("hrdesk.user", JSON.stringify({ id: "agent-1", name: "Alicia Gomez", role: "agent" }));
+  localStorage.setItem("hrdesk.user", JSON.stringify({ id: "agent-1", name: "Alicia Gomez", role: "agent", via: "password" }));
 });
 
 afterEach(() => {
