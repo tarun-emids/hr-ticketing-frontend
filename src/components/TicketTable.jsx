@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { IconArrowDown, IconArrowUp, IconArrowsSort, IconSearch } from "@tabler/icons-react";
 import { StatusBadge, PriorityBadge } from "./Badge";
 import { PRIO_ORDER } from "./sorting";
 import { timeAgo } from "../utils";
@@ -42,13 +43,13 @@ function SortButton({ label, mode, sortMode, setSortMode }) {
     <button
       onClick={() => setSortMode(active ? `-${mode}` : mode)}
       className={`mono-label flex items-center gap-1 transition-colors ${
-        active ? "text-teal" : "hover:text-warm/80"
+        active ? "text-teal-deep" : "hover:text-warm/80"
       }`}
       title={`Sort by ${label}`}
     >
       {label}
-      <span className={active ? "opacity-100" : "opacity-0 group-hover/head:opacity-40"}>
-        {sortMode === `-${mode}` ? "↓" : active ? "↑" : "↕"}
+      <span aria-hidden className={active ? "opacity-100" : "opacity-0 group-hover/head:opacity-40"}>
+        {sortMode === `-${mode}` ? <IconArrowDown size={12} /> : active ? <IconArrowUp size={12} /> : <IconArrowsSort size={12} />}
       </span>
     </button>
   );
@@ -106,17 +107,19 @@ export default function TicketTable({ tickets, users }) {
 
   return (
     <section>
-      <div className="flex flex-col gap-4 border border-b-0 border-surface-2 bg-surface-2/40 p-4">
+      <div className="flex flex-col gap-4 border border-b-0 border-surface-2 bg-surface-2 p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="relative flex-1">
-            <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-warm/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <path d="m21 21-5.2-5.2M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" />
-            </svg>
+            <IconSearch
+              size={16}
+              aria-hidden
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-warm/30"
+            />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search subject, description, ID or employee…"
-              className="w-full border border-surface-2 bg-canvas py-2.5 pl-9 pr-3 text-body-lg text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+              className="w-full border border-surface-2 bg-canvas py-3 pl-9 pr-3 text-body-lg text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
             />
           </div>
           <p className="mono-label shrink-0 text-[10px] text-warm/40">
@@ -139,7 +142,7 @@ export default function TicketTable({ tickets, users }) {
           {filtersActive && (
             <button
               onClick={() => { setStatus(""); setCategory(""); setPriority(""); setAssignee(""); setQuery(""); }}
-              className="mono-label text-[10px] text-teal hover:underline"
+              className="mono-label text-[10px] text-teal-deep hover:underline"
             >
               Reset filters
             </button>
@@ -166,7 +169,7 @@ export default function TicketTable({ tickets, users }) {
               <tr key={t.id} className="group transition-colors hover:bg-surface-2/60">
                 <td className="px-5 py-3.5">
                   <Link to={`/tickets/${t.id}`}>
-                    <span className="text-body-lg font-medium text-warm group-hover:text-teal-light">{t.subject}</span>
+                    <span className="text-body-lg font-medium text-warm group-hover:text-teal-deep">{t.subject}</span>
                     <span className="mono-label block pt-0.5 text-[10px] text-warm/35">{t.id}</span>
                   </Link>
                 </td>
@@ -213,7 +216,7 @@ export default function TicketTable({ tickets, users }) {
               <div className="mt-2 flex flex-wrap gap-1.5">
                 <StatusBadge status={t.status} />
                 <PriorityBadge priority={t.priority} />
-                <span className="inline-flex items-center gap-1.5 border border-warm/15 px-2 py-[3px] mono-label text-[10px] text-warm/55">
+                <span className="inline-flex items-center gap-1.5 border border-warm/25 px-2 py-1 mono-label text-[10px] text-warm/55">
                   <span className={`h-2 w-2 ${CAT_DOTS[t.category] ?? "bg-warm/30"}`} />
                   {t.category}
                 </span>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { IconArrowDownRight, IconPaperclip, IconUpload } from "@tabler/icons-react";
 import { CATEGORIES, PRIORITIES } from "../data/users";
 import {
   createDraft,
@@ -16,13 +17,13 @@ import { useAuth } from "../context/AuthContext";
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB — same cap the backend enforces
 
 const FIELD =
-  "w-full border bg-canvas px-3 py-2.5 text-body-lg text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none";
+  "w-full border bg-canvas px-3 py-3 text-body-lg text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none";
 const LABEL = "mb-1.5 block mono-label text-[10px] text-warm/50";
 
 function FieldError({ msg }) {
   if (!msg) return null;
   return (
-    <p className="mt-1.5 flex items-start gap-1.5 text-caption text-error">
+    <p className="mt-1.5 flex items-start gap-1.5 text-caption text-error-deep">
       <span aria-hidden className="mt-0.5 block h-2 w-2 shrink-0 bg-error" />
       {msg}
     </p>
@@ -235,15 +236,13 @@ export default function TicketForm() {
           <label htmlFor="tf-file" className={LABEL}>Attachment · Optional</label>
           {file ? (
             <div className="flex items-center gap-3 border border-teal/40 bg-teal/5 px-3 py-3">
-              <svg className="h-4 w-4 shrink-0 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m18.4 9.7-6.7 6.7a4 4 0 0 1-5.7-5.7l7.1-7.1a2.6 2.6 0 1 1 3.8 3.6l-6.5 6.5a1.4 1.4 0 0 1-2-2l5.9-6" />
-              </svg>
+              <IconPaperclip size={16} aria-hidden className="shrink-0 text-teal-deep" />
               <span className="min-w-0 flex-1 truncate text-body-lg text-warm">{file.name}</span>
               <span className="mono-label shrink-0 text-[10px] text-warm/40">{(file.size / 1024).toFixed(0)} KB</span>
               <button
                 type="button"
                 onClick={() => setFile(null)}
-                className="mono-label shrink-0 text-[10px] text-error hover:underline"
+                className="mono-label shrink-0 text-[10px] text-error-deep hover:underline"
               >
                 Remove
               </button>
@@ -252,13 +251,13 @@ export default function TicketForm() {
             <div className="flex items-center gap-3 border border-teal/40 bg-teal/5 px-3 py-3">
               <span className="min-w-0 flex-1 truncate text-body-lg text-warm">{savedAttachment.name}</span>
               <span className="mono-label shrink-0 text-[10px] text-warm/40">{(savedAttachment.size / 1024).toFixed(0)} KB</span>
-              <label htmlFor="tf-file" className="mono-label shrink-0 cursor-pointer text-[10px] text-teal hover:underline">
+              <label htmlFor="tf-file" className="mono-label shrink-0 cursor-pointer text-[10px] text-teal-deep hover:underline">
                 Replace
               </label>
               <button
                 type="button"
                 onClick={onRemoveSavedAttachment}
-                className="mono-label shrink-0 text-[10px] text-error hover:underline"
+                className="mono-label shrink-0 text-[10px] text-error-deep hover:underline"
               >
                 Remove
               </button>
@@ -266,11 +265,9 @@ export default function TicketForm() {
           ) : (
             <label
               htmlFor="tf-file"
-              className="flex cursor-pointer items-center gap-3 border border-dashed border-warm/20 bg-canvas px-3 py-5 text-body text-warm/50 transition-colors hover:border-teal/50 hover:text-warm"
+              className="flex cursor-pointer items-center gap-3 border border-dashed border-warm/30 bg-canvas px-3 py-5 text-body text-warm/50 transition-colors hover:border-teal/50 hover:text-warm"
             >
-              <svg className="h-4 w-4 text-teal/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 4.5v10m0 0 4-4m-4 4-4-4M4.5 16.5v1.5A2.25 2.25 0 0 0 6.75 20h10.5a2.25 2.25 0 0 0 2.25-2.25V16.5" />
-              </svg>
+              <IconUpload size={16} aria-hidden className="text-teal-deep/80" />
               Click to attach a screenshot or document
             </label>
           )}
@@ -291,16 +288,17 @@ export default function TicketForm() {
           type="button"
           onClick={onSaveDraft}
           disabled={submitting || savingDraft}
-          className="mono-label border border-warm/25 px-4 py-3 text-[10px] text-warm/65 transition-colors hover:border-teal hover:text-teal disabled:cursor-not-allowed disabled:opacity-40"
+          className="mono-label border border-warm/35 px-4 py-3 text-[10px] text-warm/65 transition-colors hover:border-teal hover:text-teal-deep disabled:cursor-not-allowed disabled:opacity-40"
         >
           {savingDraft ? "Saving…" : "Save draft"}
         </button>
         <button
           type="submit"
           disabled={submitting || savingDraft}
-          className="mono-label inline-flex items-center gap-2 border border-teal bg-teal px-5 py-3 text-[10px] text-canvas transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
+          className="mono-label inline-flex items-center gap-2 border border-teal bg-teal px-5 py-3 text-[10px] text-warm transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {submitting ? "Submitting…" : "Submit ticket ↘"}
+          {submitting ? "Submitting…" : "Submit ticket"}
+          <IconArrowDownRight size={16} aria-hidden />
         </button>
       </div>
 
