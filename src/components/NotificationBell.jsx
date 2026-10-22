@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNotifications } from "../hooks";
 import { markAllNotificationsRead, markNotificationRead } from "../data/notifications";
 import NotificationRow from "./NotificationRow";
+import { IconArrowDownRight, IconBell } from "@tabler/icons-react";
 
 const BADGE_CAP = 9;
 
@@ -81,15 +82,13 @@ export default function NotificationBell() {
         aria-expanded={open}
         aria-label={ariaLabel}
         title={ariaLabel}
-        className="relative border border-warm/15 p-1.5 text-warm/50 transition-colors hover:border-teal hover:text-teal focus:border-teal focus:outline-none"
+        className="relative border border-warm/25 p-1.5 text-warm/50 transition-colors hover:border-teal hover:text-teal-deep focus:border-teal focus:outline-none"
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-        </svg>
+        <IconBell size={16} aria-hidden />
         {unread > 0 && (
           <span
             data-testid="unread-badge"
-            className="mono-label absolute -right-1.5 -top-1.5 min-w-[14px] bg-teal px-[3px] text-center text-[9px] leading-[14px] text-canvas"
+            className="mono-label absolute -right-1.5 -top-1.5 min-w-[14px] bg-teal px-[3px] text-center text-[9px] leading-[14px] text-warm"
           >
             {badge}
           </span>
@@ -125,18 +124,19 @@ export default function NotificationBell() {
             </ul>
           )}
 
-          <div className="flex items-center justify-between border-t border-surface-2 px-4 py-2.5">
+          <div className="flex items-center justify-between border-t border-surface-2 px-4 py-3">
             <button
               onClick={() => { if (user?.id) markAllNotificationsRead(user.id).catch(() => {}); }}
-              className="mono-label text-[10px] text-warm/45 transition-colors hover:text-teal focus:outline-none focus-visible:text-teal"
+              className="mono-label text-[10px] text-warm/45 transition-colors hover:text-teal-deep focus:outline-none focus-visible:text-teal-deep"
             >
               Mark all read
             </button>
             <button
               onClick={() => { navigate("/notifications"); closeAndRefocus(); }}
-              className="mono-label text-[10px] text-teal transition-colors hover:text-teal-light focus:outline-none focus-visible:text-teal-light"
+              className="mono-label inline-flex items-center gap-1.5 text-[10px] text-teal-deep transition-colors hover:text-teal-deep focus:outline-none focus-visible:text-teal-deep"
             >
-              View all ↘
+              View all
+              <IconArrowDownRight size={16} aria-hidden />
             </button>
           </div>
         </div>

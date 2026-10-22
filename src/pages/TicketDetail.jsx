@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  IconAlertTriangle,
+  IconArrowDownRight,
+  IconArrowLeft,
+  IconArrowUpRight,
+  IconCircleCheck,
+  IconLock,
+  IconPaperclip,
+} from "@tabler/icons-react";
 import { CATEGORIES, PRIORITIES, STATUSES } from "../data/users";
 import { agentWorkload } from "../api/client";
 import { getTicket, subscribe, refreshTicket, updateStatus, assignTicket, autoAssignTicket, setPriority, setCategory, getAttachmentUrl } from "../data/store";
@@ -75,10 +84,12 @@ function AgentControls({ ticket, actor, users }) {
           type="button"
           onClick={routeNow}
           disabled={routing || ["Resolved", "Closed"].includes(ticket.status)}
-          className="mono-label border border-teal/50 px-3 py-2 text-[10px] text-teal transition-colors hover:bg-teal/10 disabled:cursor-not-allowed disabled:opacity-40"
+          className="mono-label border border-teal/50 px-3 py-2 text-[10px] text-teal-deep transition-colors hover:bg-teal/10 disabled:cursor-not-allowed disabled:opacity-40"
           title="Route to the least-loaded HR agent"
         >
-          {routing ? "Routing…" : "Auto-assign ↘ least-loaded agent"}
+          {routing ? "Routing…" : "Auto-assign"}
+          <IconArrowDownRight size={16} aria-hidden />
+          least-loaded agent
         </button>
       </div>
     </div>
@@ -186,7 +197,7 @@ function AttachmentChip({ ticket }) {
               {error ? (
                 <>
                   Could not load image: {error}{" "}
-                  <button type="button" onClick={retryImageLoad} disabled={busy} className="text-teal underline disabled:opacity-40">
+                  <button type="button" onClick={retryImageLoad} disabled={busy} className="text-teal-deep underline disabled:opacity-40">
                     Retry
                   </button>
                 </>
@@ -213,7 +224,7 @@ function AttachmentChip({ ticket }) {
                 type="button"
                 autoFocus
                 onClick={() => setPreviewOpen(false)}
-                className="mono-label border border-warm/30 px-3 py-2 text-[10px] text-warm transition-colors hover:border-teal hover:text-teal"
+                className="mono-label border border-warm/40 px-3 py-2 text-[10px] text-warm transition-colors hover:border-teal hover:text-teal-deep"
                 aria-label="Close image preview"
               >
                 Close ×
@@ -232,15 +243,19 @@ function AttachmentChip({ ticket }) {
   }
 
   return (
-    <div className="mt-5 flex flex-wrap items-center gap-2 border border-surface-2 bg-canvas px-3 py-2.5 text-body text-warm/80">
-      <svg className="h-3.5 w-3.5 text-teal/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="m18.4 9.7-6.7 6.7a4 4 0 0 1-5.7-5.7l7.1-7.1a2.6 2.6 0 1 1 3.8 3.6l-6.5 6.5a1.4 1.4 0 0 1-2-2l5.9-6" />
-      </svg>
-      <button type="button" onClick={open} disabled={busy} className="underline decoration-teal/50 underline-offset-4 transition-colors hover:text-teal disabled:opacity-40">
+    <div className="mt-5 flex flex-wrap items-center gap-2 border border-surface-2 bg-canvas px-3 py-3 text-body text-warm/80">
+      <IconPaperclip size={16} aria-hidden className="text-teal-deep/80" />
+      <button type="button" onClick={open} disabled={busy} className="underline decoration-teal/50 underline-offset-4 transition-colors hover:text-teal-deep disabled:opacity-40">
         {ticket.attachment.name}
       </button>
       <span className="mono-label text-[10px] text-warm/35">{(ticket.attachment.size / 1024).toFixed(0)} KB</span>
-      <span className="mono-label text-[10px] text-warm/25">{busy ? "opening…" : "open ↗"}</span>
+      {busy ? (
+        <span className="mono-label text-[10px] text-warm/25">opening…</span>
+      ) : (
+        <span className="mono-label inline-flex items-center gap-1 text-[10px] text-warm/25">
+          open <IconArrowUpRight size={12} aria-hidden />
+        </span>
+      )}
     </div>
   );
 }
@@ -288,7 +303,7 @@ export default function TicketDetail() {
   if (!user) {
     return (
       <div className="mx-auto max-w-4xl pt-8">
-        <EmptyState title="Session expired" body="Your saved user no longer exists in the backend — please sign in again." icon="▸" />
+        <EmptyState title="Session expired" body="Your saved user no longer exists in the backend — please sign in again." icon={<IconAlertTriangle size={32} />} />
       </div>
     );
   }
@@ -301,7 +316,7 @@ export default function TicketDetail() {
         <EmptyState
           title={`Ticket ${id} not available`}
           body={error ?? "It may have been removed, or the link is wrong."}
-          icon="↘"
+          icon={<IconArrowDownRight size={32} />}
         />
       </div>
     );
@@ -312,7 +327,7 @@ export default function TicketDetail() {
   if (!isAgent && !isMine) {
     return (
       <div className="mx-auto max-w-4xl pt-8">
-        <EmptyState title="No access to this ticket" body="You can only view your own tickets." icon="▸" />
+        <EmptyState title="No access to this ticket" body="You can only view your own tickets." icon={<IconLock size={32} />} />
       </div>
     );
   }
@@ -325,22 +340,23 @@ export default function TicketDetail() {
     <div className="mx-auto max-w-4xl">
       <button
         onClick={() => navigate(isAgent ? "/inbox" : "/my-tickets")}
-        className="mono-label inline-flex items-center gap-2 text-[10px] text-warm/45 transition-colors hover:text-teal"
+        className="mono-label inline-flex items-center gap-2 text-[10px] text-warm/45 transition-colors hover:text-teal-deep"
       >
-        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-        </svg>
+        <IconArrowLeft size={16} aria-hidden />
         Back to {isAgent ? "inbox" : "my tickets"}
       </button>
 
       {banner && (
-        <div className="mt-4 flex items-center gap-2 border border-ok/40 bg-ok/10 px-4 py-3 text-body-lg text-ok">
-          <span aria-hidden>▸</span> Ticket {ticket.id} submitted — HR has been notified.
+        <div className="mt-4 flex items-center gap-2 border border-ok/40 bg-ok/10 px-4 py-3 text-body-lg text-ok-deep">
+          <IconCircleCheck size={16} aria-hidden className="shrink-0" /> Ticket {ticket.id} submitted — HR has been notified.
         </div>
       )}
 
       <header className="mt-6 mb-6">
-        <span className="mono-label mb-3 block text-[10px] text-teal">↘ T I C K E T</span>
+        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
+          <IconArrowDownRight size={16} aria-hidden />
+          TICKET
+        </span>
         <div className="mb-3 flex flex-wrap items-center gap-3">
           <span className="mono-label text-[10px] text-warm/40">{ticket.id}</span>
           <StatusBadge status={ticket.status} size="md" />
@@ -352,7 +368,7 @@ export default function TicketDetail() {
         </p>
       </header>
 
-      <section className="soft-bl mb-8 border border-surface-2 bg-surface-2/40 p-5">
+      <section className="soft-bl mb-8 border border-surface-2 bg-surface-2 p-5">
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
           <MetaItem label="Category">{ticket.category}</MetaItem>
           <MetaItem label="Opened">{formatDateTime(ticket.createdAt)}</MetaItem>
