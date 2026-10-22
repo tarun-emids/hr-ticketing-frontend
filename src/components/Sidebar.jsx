@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
+import { IconChartBar, IconClipboardList, IconInbox, IconLogout, IconPlus, IconX } from "@tabler/icons-react";
 import { useAuth } from "../context/AuthContext";
-import logo from "../assets/emids-logo.png";
+import Logo from "./Logo";
 
 // Shared landing page: role-aware nav boxes + knowledge-base search.
 const HOME_ITEM = {
@@ -21,7 +22,7 @@ const AGENT_NAV = [
   { to: "/hr-dashboard", label: "HR dashboard", icon: "M3 13.2V20h6v-6.8M14.5 4v16h-6V9.5M21 20h-6V8h6Z" },
 ];
 
-function NavItems({ items, onNavigate }) {
+function NavItems({ items, onNavigate, collapsed }) {
   return (
     <nav className="flex flex-col">
       {items.map((item) => (
@@ -29,11 +30,15 @@ function NavItems({ items, onNavigate }) {
           key={item.to}
           to={item.to}
           onClick={onNavigate}
+          title={collapsed ? item.label : undefined}
+          aria-label={item.label}
           className={({ isActive }) =>
-            `flex items-center gap-3 border-b py-3 text-[10px] transition-colors mono-label ${
+            `flex items-center gap-3 border-b border-warm/10 py-3 text-[10px] transition-colors mono-label ${
+              collapsed ? "lg:justify-center" : ""
+            } ${
               isActive
-                ? "border-b-warm/10 text-teal"
-                : "border-b-warm/10 text-warm/50 hover:text-warm"
+                ? "text-teal"
+                : "text-warm/50 hover:text-warm"
             }`
           }
         >
@@ -49,8 +54,10 @@ function NavItems({ items, onNavigate }) {
               >
                 <path d={item.icon} />
               </svg>
-              {item.label}
-              {isActive && <span className="ml-auto h-[2px] w-6 bg-teal" />}
+              <span className={collapsed ? "lg:hidden" : ""}>{item.label}</span>
+              {isActive && (
+                <span className={`ml-auto h-[2px] w-6 bg-teal ${collapsed ? "lg:hidden" : ""}`} />
+              )}
             </>
           )}
         </NavLink>
@@ -59,54 +66,76 @@ function NavItems({ items, onNavigate }) {
   );
 }
 
-export default function Sidebar({ mobileOpen, onNavigate, onHide }) {
+export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNavigate, onHide }) {
   const { user, isAgent, logout } = useAuth();
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-surface-2 bg-canvas transition-transform lg:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-surface-2 bg-canvas transition-[width,transform] lg:translate-x-0 ${
+        collapsed ? "lg:w-16" : "lg:w-64"
+      } ${
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
       <button
         onClick={onHide}
-        className="absolute right-3 top-3 border border-warm/15 p-1 text-warm/50 hover:text-warm lg:hidden"
+        className="absolute right-3 top-3 border border-warm/35 p-1 text-warm/50 hover:text-warm lg:hidden"
         aria-label="Close menu"
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-          <path d="M6 18 18 6M6 6l12 12" />
-        </svg>
+        <IconX size={16} aria-hidden />
       </button>
 
-      <div className="flex flex-col gap-2 border-b border-surface-2 px-6 pb-5 pt-6">
-        <img src={logo} alt="Emids" className="h-7 w-auto self-start" />
-        <p className="mono-label text-[10px] text-warm/40">HR Desk / Internal ticketing</p>
+      <div className={`flex flex-col gap-2 border-b border-surface-2 px-6 pb-5 pt-6 ${collapsed ? "lg:items-center lg:px-2" : ""}`}>
+        <span className={collapsed ? "lg:hidden" : ""}>
+          <Logo size="nav" />
+        </span>
+        {collapsed && (
+          <span className="hidden lg:block">
+            <Logo size="nav" markOnly />
+          </span>
+        )}
+        <p className={`mono-label text-[10px] text-warm/40 ${collapsed ? "lg:hidden" : ""}`}>
+          HR Desk / Internal ticketing
+        </p>
+        <button
+          onClick={onToggleCollapse}
+          className={`hidden border border-warm/15 p-1.5 text-warm/50 hover:border-teal hover:text-teal lg:block ${collapsed ? "self-center" : "self-start"}`}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-expanded={!collapsed}
+          aria-controls="workspace-navigation"
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="3.75" y="4.5" width="16.5" height="15" rx="1.5" />
+            <path d="M9 4.5v15" />
+            <path d={collapsed ? "m13.5 9 3 3-3 3" : "m15 9-3 3 3 3"} />
+          </svg>
+        </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6">
-        <p className="mb-3 mono-label text-[10px] text-warm/35">
+      <div id="workspace-navigation" className={`flex-1 overflow-y-auto p-6 ${collapsed ? "lg:px-2" : ""}`}>
+        <p className={`mb-3 mono-label text-[10px] text-warm/35 ${collapsed ? "lg:hidden" : ""}`}>
           {isAgent ? "HR workspace" : "Employee workspace"}
         </p>
-        <NavItems items={isAgent ? AGENT_NAV : EMPLOYEE_NAV} onNavigate={onNavigate} />
+        <NavItems items={isAgent ? AGENT_NAV : EMPLOYEE_NAV} onNavigate={onNavigate} collapsed={collapsed} />
       </div>
 
-      <div className="border-t border-surface-2 p-4">
-        <div className="flex items-center gap-3">
+      <div className={`border-t border-surface-2 p-4 ${collapsed ? "lg:px-2" : ""}`}>
+        <div className={`flex items-center gap-3 ${collapsed ? "lg:flex-col lg:gap-2" : ""}`}>
           <span className="soft-bl flex h-9 w-9 shrink-0 items-center justify-center bg-surface-2 font-mono text-[10px] text-teal-light">
             {user?.name.split(" ").map((p) => p[0]).slice(0, 2).join("")}
           </span>
-          <div className="min-w-0 flex-1">
+          <div className={`min-w-0 flex-1 ${collapsed ? "lg:hidden" : ""}`}>
             <p className="truncate text-body font-medium text-warm">{user?.name}</p>
             <p className="mono-label text-[10px] text-warm/40">{isAgent ? "HR agent" : "Employee"}</p>
           </div>
           <button
             onClick={logout}
             title="Sign out"
-            className="border border-warm/15 p-1.5 text-warm/50 hover:border-teal hover:text-teal"
+            aria-label="Sign out"
+            className={`border border-warm/15 p-1.5 text-warm/50 hover:border-teal hover:text-teal ${collapsed ? "lg:self-center" : ""}`}
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 15l-3-3m0 0 3-3m-3 3h9" />
-            </svg>
+            <IconLogout size={16} aria-hidden />
           </button>
         </div>
       </div>

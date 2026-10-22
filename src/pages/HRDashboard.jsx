@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { IconArrowDownRight } from "@tabler/icons-react";
 import { STATUSES, CATEGORIES } from "../data/users";
 import { useTickets } from "../hooks";
 import { StatCard, Spinner, EmptyState } from "../components/primitives";
@@ -35,7 +36,7 @@ export default function HRDashboard() {
         <EmptyState
           title="No data to chart yet"
           body="Once tickets flow in, status counts, category load and response-time stats appear here."
-          icon="↘"
+          icon={<IconArrowDownRight size={32} />}
         />
       </div>
     );
@@ -49,18 +50,22 @@ export default function HRDashboard() {
   return (
     <div className="mx-auto max-w-5xl">
       <header className="mb-10">
-        <span className="mono-label mb-3 block text-[10px] text-teal">↘ 0 2 /  O V E R S I G H T</span>
+        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
+          <IconArrowDownRight size={16} aria-hidden />
+          02 / OVERSIGHT
+        </span>
         <div className="rule-teal mb-5" />
         <h1 className="text-h3 text-warm">HR dashboard</h1>
         <p className="mt-1.5 text-caption text-warm/45">
-          {stats.total} tickets tracked · {stats.active} still being worked on.
+          {stats.total} tickets tracked · {stats.active} still being worked on · {stats.byStatus.Closed} closed.
         </p>
       </header>
 
       <section aria-label="Counts by status" className="mb-10">
         <p className="mono-label mb-4 text-[10px] text-warm/40">FIG. 01 · COUNTS BY STATUS</p>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-          {STATUSES.map((s) => (
+        {/* Brand grid: subdivide 2/3/4/6, never 5 — the Closed count moves to the header meta line. */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+          {STATUSES.filter((s) => s !== "Closed").map((s) => (
             <StatCard
               key={s}
               label={s}
@@ -88,7 +93,7 @@ export default function HRDashboard() {
                   <span className="truncate font-medium text-warm/75">{cat}</span>
                   <div className="h-2.5 bg-surface-2">
                     <div
-                      className={`h-full ${isTop ? "bg-teal" : "bg-teal/50"}`}
+                      className={`h-full ${isTop ? "bg-teal" : "bg-teal/40"}`}
                       style={{ width: `${(n / maxCat) * 100}%` }}
                     />
                   </div>

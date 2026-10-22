@@ -4,26 +4,33 @@
 @import "@fontsource/jetbrains-mono/500.css";
 
 /*
- * Emids Brand System v1.0 — mapped tokens.
- * 06 COLOR: black canvas #0E0E0E · surface #141414 · surface-2 #262626 · warm white #F2F2F0
- *           teal light/deep #ABC7CA / #47A2B0 / #2A7682 — 20% telemetry on every surface.
- *           Signals confirm, never lead: link #00B9F9 · success #45BDA0 · error #E04F4F.
+ * Emids Brand System v1.0 — mapped tokens, LIGHT execution.
+ * 06 COLOR: warm-white canvas #F2F2F0 · surface #FBFBF9 · surface-2 #E8E8E3 · ink #0E0E0E
+ *           (token names are neutral: canvas = page bg, warm = ink, surface = card).
+ *           Teal light/deep #ABC7CA / #47A2B0 / #2A7682 — teal is the anchor fill;
+ *           meaningful teal TEXT renders in teal-deep (≥4.5:1 on warm white).
+ *           Signals confirm, never lead: link #00B9F9 · success #45BDA0 · error #E04F4F —
+ *           fills/borders/dots in the signal color, signal TEXT in its -deep pair
+ *           (link-deep/ok-deep/error-deep/accent-deep) for AA on light.
  * 07 TYPE:  Inter variable + JetBrains Mono (labels ≤10px, caps, tracked 0.12–0.22em).
  * 08 GRID:  8pt baseline, 4pt snap — spacing only in multiples of 4;
  *           14px gutters, ≥30px margins, holes of 2/4/8 columns.
- * 09 ICONS: 24px grid, 1.5px stroke, rounded caps, outline only — never filled.
+ * 09 ICONS: Tabler v3 — 24px grid, 1.5px stroke, rounded caps, outline only.
  * 04 MARK:  8px bottom-left radius is the only soft corner (hero cards, plates,
  *           brand frames — never buttons, inputs, table cells, modals).
  *           Elevation is colour, not shadow: never box-shadow, blur or glass.
+ * SHELL:    frame maps to 1440px design width at 8px/unit: spine = 168px (7/60),
+ *           top bar = 56px (7/48), mid-bar band on hero plates at
+ *           left 11.67% · width 35% · top 43.75% · height 14.58%.
  */
 @theme {
   --font-sans: "Inter Variable", "Inter", Aptos, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", Consolas, monospace;
 
-  --color-canvas: #0e0e0e;
-  --color-surface: #141414;
-  --color-surface-2: #262626;
-  --color-warm: #f2f2f0;
+  --color-canvas: #f2f2f0;
+  --color-surface: #fbfbf9;
+  --color-surface-2: #e8e8e3;
+  --color-warm: #0e0e0e;
 
   --color-teal-light: #abc7ca;
   --color-teal: #47a2b0;
@@ -32,6 +39,12 @@
   --color-link: #00b9f9;
   --color-ok: #45bda0;
   --color-error: #e04f4f;
+
+  /* Accessible signal TEXT pairs for the light surface ladder. */
+  --color-link-deep: #0b6aa8;
+  --color-ok-deep: #0e7a55;
+  --color-error-deep: #c0392b;
+  --color-accent-deep: #7a5c10;
 
   --color-mauve: #b89dcb;
   --color-accent: #f2c94c;
@@ -116,9 +129,9 @@ option {
   color: var(--color-warm);
 }
 
-/* Form controls on the dark canvas */
+/* Form controls on the warm-white canvas */
 input,
 textarea,
 select {
-  color-scheme: dark;
+  color-scheme: light;
 }

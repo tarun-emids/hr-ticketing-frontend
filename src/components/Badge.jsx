@@ -1,5 +1,5 @@
 const CHIP =
-  "mono-label inline-flex items-center gap-1.5 whitespace-nowrap border px-2 py-[3px]";
+  "mono-label inline-flex items-center gap-1.5 whitespace-nowrap border px-2 py-1";
 
 export default function Badge({ label, className = "", size = "sm" }) {
   return (
@@ -11,11 +11,11 @@ export default function Badge({ label, className = "", size = "sm" }) {
 
 /* Signal colours confirm, never lead. Two signals max on a surface. */
 const STATUS_STYLES = {
-  Open: "text-link border-link/35",
-  "In Progress": "text-teal border-teal/45",
-  "Waiting on Employee": "text-accent border-accent/35",
-  Resolved: "text-ok border-ok/35",
-  Closed: "text-warm/45 border-warm/15",
+  Open: "text-link-deep border-link/35",
+  "In Progress": "text-teal-deep border-teal/45",
+  "Waiting on Employee": "text-accent-deep border-accent/35",
+  Resolved: "text-ok-deep border-ok/35",
+  Closed: "text-warm/45 border-warm/25",
 };
 
 export function StatusBadge({ status, size = "sm" }) {
@@ -25,10 +25,10 @@ export function StatusBadge({ status, size = "sm" }) {
 }
 
 const PRIORITY_STYLES = {
-  Urgent: "text-error border-error/45",
-  High: "text-accent border-accent/40",
-  Medium: "text-warm/65 border-warm/20",
-  Low: "text-warm/40 border-warm/10",
+  Urgent: "text-error-deep border-error/45",
+  High: "text-accent-deep border-accent/40",
+  Medium: "text-warm/65 border-warm/30",
+  Low: "text-warm/40 border-warm/20",
 };
 
 export function PriorityBadge({ priority, size = "sm" }) {

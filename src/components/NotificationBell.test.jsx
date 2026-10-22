@@ -48,7 +48,7 @@ function renderBell() {
 // agent session so the bell has an acting user (mock-auth world).
 beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn(() => Promise.reject(new Error("offline test"))));
-  localStorage.setItem("hrdesk.user", JSON.stringify({ id: "agent-1", name: "Alicia Gomez", role: "agent" }));
+  localStorage.setItem("hrdesk.user", JSON.stringify({ id: "agent-1", name: "Alicia Gomez", role: "agent", via: "password" }));
 });
 
 afterEach(() => {
@@ -86,7 +86,7 @@ it("the view-all footer buttons are present in the dropdown", () => {
   renderBell();
   fireEvent.click(screen.getByRole("button", { name: /Notifications, 1 unread/ }));
   expect(screen.getByText("Mark all read")).toBeTruthy();
-  expect(screen.getByText("View all ↘")).toBeTruthy();
+  expect(screen.getByText("View all")).toBeTruthy();
 });
 
 it("clicking Mark all read calls the store once per acting user", async () => {

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { IconArrowDownRight } from "@tabler/icons-react";
 import { useAuth } from "../context/AuthContext";
-import logo from "../assets/emids-logo.png";
+import Logo from "../components/Logo";
 
 const FIELD =
   "w-full border border-surface-2 bg-surface px-3 py-2.5 text-body-lg text-warm placeholder:text-warm/25 focus:border-teal focus:outline-none";
@@ -48,29 +49,42 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen bg-canvas">
+    <div className="relative flex min-h-screen bg-canvas">
+      <div
+        aria-hidden
+        className="teal-gradient pointer-events-none absolute inset-x-0 top-0 h-1"
+      />
       {/* Brand plate */}
-      <section className="relative hidden flex-1 flex-col justify-between overflow-hidden p-12 lg:flex">
+      <section className="relative hidden flex-1 flex-col overflow-hidden p-12 lg:flex">
+        {/* Frame mid-bar: x 7-28 of the 60×48 modular grid, parked in the
+            empty lower band of the plate so it never collides with copy. */}
         <div
           aria-hidden
-          className="teal-gradient pointer-events-none absolute inset-x-0 top-0 h-1"
-        />
-        <div aria-hidden className="teal-gradient pointer-events-none absolute -top-40 -left-40 h-96 w-[40rem] rotate-90 opacity-10 blur-3xl" />
-        <img src={logo} alt="Emids" className="h-8 w-fit self-start" />
+          className="absolute z-0 bg-teal"
+          style={{ left: "11.67%", top: "70%", width: "35%", height: "14.58%" }}
+        >
+          <span className="mono-label absolute bottom-0 right-0 px-4 pb-3 text-[10px] text-warm">
+            0 1 / H R  D E S K
+          </span>
+        </div>
+        <Logo size="lg" />
 
-        <div className="max-w-xl">
-          <span className="mono-label mb-4 block text-[10px] text-teal">↘ HR DESK / INTERNAL</span>
+        <div className="relative z-10 mt-16 max-w-xl">
+          <span className="mono-label mb-4 flex items-center gap-2 text-[10px] text-teal-deep">
+            <IconArrowDownRight size={16} aria-hidden />
+            HR DESK / INTERNAL
+          </span>
           <div className="rule-teal mb-6" />
           <h1 className="text-display text-warm">
-            Outcomes you can <span className="text-teal">track.</span>
+            Outcomes you can <span className="text-teal-deep">track.</span>
           </h1>
-          <p className="mt-6 text-body-lg text-warm/60">
+          <p className="mt-6 text-body-lg text-warm">
             Raise requests, follow the thread, know exactly where each ticket stands —
             without chasing anyone down.
           </p>
         </div>
 
-        <p className="mono-label text-[10px] text-warm/35">
+        <p className="mono-label mt-auto text-[10px] text-warm/35">
           EMIDS / HR DESK / INTERNAL · CONFIDENTIAL
         </p>
       </section>
@@ -79,10 +93,13 @@ export default function Login() {
       <section className="flex w-full items-center justify-center px-6 lg:w-[38rem]">
         <form onSubmit={onSubmit} noValidate className="soft-bl w-full max-w-md border border-surface-2 bg-surface p-8">
           <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <img src={logo} alt="Emids" className="h-7 w-fit" />
+            <Logo size="nav" />
           </div>
 
-          <span className="mono-label mb-3 block text-[10px] text-teal">↘ 0 1 /  S I G N  I N</span>
+          <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
+            <IconArrowDownRight size={16} aria-hidden />
+            01 / SIGN IN
+          </span>
           <div className="rule-teal mb-6" />
 
           <label htmlFor="login-email" className={LABEL}>Work email</label>
