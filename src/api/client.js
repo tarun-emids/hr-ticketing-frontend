@@ -22,12 +22,7 @@
 //   VITE_LOGS=false disables the remote event sink (backend keeps its own
 //   logs either way); the console correlation line always stays.
 import { logEvent, newCorrelationId } from "./logger";
-import {
-  endRequestSpan,
-  injectTraceHeaders,
-  startRequestSpan,
-  traceContextFields,
-} from "./trace";
+import { endRequestSpan, injectTraceHeaders, startRequestSpan, traceContextFields } from "./trace";
 
 const BASE = (import.meta.env.VITE_API_URL || "http://localhost:8000/api").replace(/\/+$/, "");
 
@@ -195,12 +190,13 @@ export const setCategory = (id, body) =>
   });
 
 // ---- ticket drafts ----------------------------------------------------------
-const withEmployee = (path, employeeId) =>
-  `${path}?employeeId=${encodeURIComponent(employeeId)}`;
+const withEmployee = (path, employeeId) => `${path}?employeeId=${encodeURIComponent(employeeId)}`;
 export const listDrafts = (employeeId) =>
   request(withEmployee("/drafts", employeeId), { operation: "drafts.list" }); // employeeId rides the query — never logged
 export const getDraft = (id, employeeId) =>
-  request(withEmployee(`/drafts/${encodeURIComponent(id)}`, employeeId), { operation: "drafts.get" });
+  request(withEmployee(`/drafts/${encodeURIComponent(id)}`, employeeId), {
+    operation: "drafts.get",
+  });
 export const createDraft = (body) =>
   request("/drafts", { method: "POST", body, operation: "drafts.create" });
 export const updateDraft = (id, employeeId, body) =>
@@ -240,8 +236,7 @@ export const getDraftAttachmentUrl = (id, employeeId) =>
   });
 
 // ---- assignment -------------------------------------------------------------
-export const agentWorkload = () =>
-  request("/agents/workload", { operation: "agents.workload" }); // [{id,name,email,openCount,totalCount}]
+export const agentWorkload = () => request("/agents/workload", { operation: "agents.workload" }); // [{id,name,email,openCount,totalCount}]
 export const autoAssignTicket = (id) =>
   request(`/tickets/${encodeURIComponent(id)}/auto-assign`, {
     method: "POST",
@@ -258,13 +253,16 @@ export const listKbPopular = (viewerId) =>
   request(`/kb/popular?viewerId=${encodeURIComponent(viewerId)}`);
 export const getKbDoc = (slug, viewerId) =>
   request(`/kb/${encodeURIComponent(slug)}?viewerId=${encodeURIComponent(viewerId)}`);
-// download=true mints an attachment-disposition link whose save dialog proposes
-// the policy title as the filename; the default flavour renders the PDF inline.
+// The file endpoint streams the PDF itself (it is gated by viewerId on the
+// server), so this resolves to a plain URL — no JSON hop, no signed token.
+// download=true eats the response as an attachment (save dialog proposes the
+// policy title); the default flavour renders the PDF inline.
 export const getKbDocUrl = (slug, viewerId, download = false) =>
-  request(
-    `/kb/${encodeURIComponent(slug)}/file?viewerId=${encodeURIComponent(viewerId)}` +
+  Promise.resolve({
+    url:
+      `${BASE}/kb/${encodeURIComponent(slug)}/file?viewerId=${encodeURIComponent(viewerId)}` +
       `&download=${download ? "true" : "false"}`,
-  );
+  });
 
 // ---- notifications ----------------------------------------------------------
 const withQuery = (path, params) => {

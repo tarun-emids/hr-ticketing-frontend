@@ -24,8 +24,10 @@ export default [
   {
     files: ["src/**/*.{js,jsx}"],
     languageOptions: {
-      ecmaVersion: 2022,
+      ecmaVersion: "latest",
       sourceType: "module",
+      // flat-config blocks override espree's defaults — JSX must be re-enabled here
+      parserOptions: { ecmaFeatures: { jsx: true } },
       globals: { ...globals.browser },
     },
     plugins: { "react-hooks": reactHooks, "react-refresh": reactRefresh },

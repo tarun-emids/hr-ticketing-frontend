@@ -9,10 +9,16 @@ import { Icon, PATHS } from "../components/icons";
 
 const SEARCH_ICON = PATHS.search;
 const ARROW = PATHS.arrow;
-const TICKETS_ICON = "M9 12h6m-9 3.3h4.5M8.7 21h6.6a2.7 2.7 0 0 0 2.7-2.7V5.7A2.7 2.7 0 0 0 15.3 3H8.7A2.7 2.7 0 0 0 6 5.7v12.6A2.7 2.7 0 0 0 8.7 21Z";
+const TICKETS_ICON =
+  "M9 12h6m-9 3.3h4.5M8.7 21h6.6a2.7 2.7 0 0 0 2.7-2.7V5.7A2.7 2.7 0 0 0 15.3 3H8.7A2.7 2.7 0 0 0 6 5.7v12.6A2.7 2.7 0 0 0 8.7 21Z";
 const NEW_ICON = "M12 4.5v15m7.5-7.5h-15";
-const INBOX_ICON = "M3 13.1h5l1.8 2.7h4.4l1.8-2.7h5M4.9 6.2h5.2M4.9 6.2A2 2 0 0 0 3 8.2v9.6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.2a2 2 0 0 0-1.9-2H4.9Z";
+const INBOX_ICON =
+  "M3 13.1h5l1.8 2.7h4.4l1.8-2.7h5M4.9 6.2h5.2M4.9 6.2A2 2 0 0 0 3 8.2v9.6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.2a2 2 0 0 0-1.9-2H4.9Z";
 const CHART_ICON = "M3 13.2V20h6v-6.8M14.5 4v16h-6V9.5M21 20h-6V8h6Z";
+const KB_ICON =
+  "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zm20 0h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z";
+const CHAT_ICON =
+  "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z";
 
 const QUICK_TERMS = ["Leave", "Payroll", "Payslip", "Benefits", "Insurance", "POSH", "Hybrid"];
 
@@ -37,6 +43,54 @@ function NavBox({ to, icon, title, body, stat, className = "" }) {
         className="h-5 w-5 shrink-0 text-warm/25 transition-all group-hover:translate-x-0.5 group-hover:text-teal"
       />
     </Link>
+  );
+}
+
+// Floating HR-assistant bubble: opens a small conversational window. The
+// RAG backend is not wired yet — the window is a placeholder on purpose.
+function ChatAssistant() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
+      {open && (
+        <div
+          role="dialog"
+          aria-label="HR assistant"
+          className="soft-bl w-80 border border-surface-2 bg-surface p-5"
+        >
+          <div className="mb-2 flex items-center justify-between">
+            <span className="mono-label text-[10px] text-teal">↘ H R · A S S I S T A N T</span>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Close HR assistant"
+              className="border border-warm/15 px-1.5 text-warm/50 transition-colors hover:text-warm"
+            >
+              ×
+            </button>
+          </div>
+          <div className="rule-teal mb-4" />
+          <p className="mono-label mb-2 text-[10px] text-warm/40">
+            Answers from the policy library
+          </p>
+          <div className="border border-surface-2 bg-canvas px-4 py-8 text-center">
+            <p className="text-h3 text-warm/85">Coming soon…</p>
+            <p className="mono-label mt-2 text-[9px] text-warm/35">
+              RAG answers over the knowledge base will land here
+            </p>
+          </div>
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label={open ? "Close HR assistant" : "Open HR assistant"}
+        title="HR assistant (coming soon)"
+        className="soft-bl flex h-12 w-12 items-center justify-center border border-teal bg-teal text-canvas transition-colors hover:bg-teal-light"
+      >
+        <Icon d={CHAT_ICON} className="h-5 w-5" />
+      </button>
+    </div>
   );
 }
 
@@ -120,7 +174,7 @@ export default function HomeDashboard() {
       (t) => t.assigneeId === user.id && !["Resolved", "Closed"].includes(t.status),
     ).length;
     boxes = (
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
         <NavBox
           to="/inbox"
           icon={INBOX_ICON}
@@ -135,6 +189,13 @@ export default function HomeDashboard() {
           body="Counts by status, category load and first-response performance."
           stat={tickets.length ? `${tickets.length} tickets tracked` : "No tickets yet"}
         />
+        <NavBox
+          to="/kb"
+          icon={KB_ICON}
+          title="Knowledge base"
+          body="Every policy document your role can read — searchable, viewable in page, downloadable."
+          stat="Employee + HR library"
+        />
       </div>
     );
   } else if (isAdmin) {
@@ -144,10 +205,16 @@ export default function HomeDashboard() {
         <NavBox
           to="/hr-dashboard"
           icon={CHART_ICON}
-          className="md:col-span-2"
           title="HR dashboard"
-          body="Oversight across all employee tickets — status counts, category load, response times. Your library search spans both employee and HR documents."
+          body="Oversight across all employee tickets — status counts, category load, response times."
           stat={active > 0 ? `${active} active · ${tickets.length} tracked` : "No tickets yet"}
+        />
+        <NavBox
+          to="/kb"
+          icon={KB_ICON}
+          title="Knowledge base"
+          body="Your library search spans both employee and HR documents."
+          stat="Employee + HR library"
         />
       </div>
     );
@@ -155,7 +222,7 @@ export default function HomeDashboard() {
     const mine = tickets.filter((t) => t.employeeId === user.id);
     const mineActive = mine.filter((t) => !["Resolved", "Closed"].includes(t.status)).length;
     boxes = (
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
         <NavBox
           to="/my-tickets"
           icon={TICKETS_ICON}
@@ -176,6 +243,13 @@ export default function HomeDashboard() {
           body="Raise a payroll, leave, benefits or policy question — attach files if needed."
           stat="HR replies on the thread"
         />
+        <NavBox
+          to="/kb"
+          icon={KB_ICON}
+          title="Knowledge base"
+          body="Browse every policy document you are allowed to read — in one catalogue."
+          stat="Your role's library"
+        />
       </div>
     );
   }
@@ -185,7 +259,9 @@ export default function HomeDashboard() {
       return <p className="px-5 py-4 text-caption text-warm/40">Searching the library…</p>;
     }
     if (suggestState === "error") {
-      return <p className="px-5 py-4 text-caption text-error/80">Search is unavailable right now.</p>;
+      return (
+        <p className="px-5 py-4 text-caption text-error/80">Search is unavailable right now.</p>
+      );
     }
     if (!suggestions?.length) {
       return (
@@ -231,9 +307,7 @@ export default function HomeDashboard() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="mono-label text-[10px] text-teal-light">↘ 0 0 / HR DESK</p>
-              <h1 className="mt-3 text-h2 text-warm">
-                Hello, {firstName ? firstName : "there"}.
-              </h1>
+              <h1 className="mt-3 text-h2 text-warm">Hello, {firstName ? firstName : "there"}.</h1>
               <p className="mt-2 text-body-lg text-warm/65">
                 {isAdmin
                   ? "Search the full policy library — employee and HR documents."
@@ -242,9 +316,7 @@ export default function HomeDashboard() {
                     : "Search the policy library, or jump into your workspace."}
               </p>
             </div>
-            <p className="mono-label text-[10px] text-warm/35">
-              EMIDS / KNOWLEDGE BASE
-            </p>
+            <p className="mono-label text-[10px] text-warm/35">EMIDS / KNOWLEDGE BASE</p>
           </div>
 
           {/* Search bar */}
@@ -306,6 +378,9 @@ export default function HomeDashboard() {
         <div className="rule-teal mb-6" />
         {boxes}
       </section>
+
+      {/* ---- Floating HR-assistant placeholder (chat bubble) ---- */}
+      <ChatAssistant />
     </div>
   );
 }
