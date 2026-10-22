@@ -10,6 +10,9 @@ import TicketDetail from "./pages/TicketDetail";
 import Notifications from "./pages/Notifications";
 import HRInbox from "./pages/HRInbox";
 import HRDashboard from "./pages/HRDashboard";
+import HomeDashboard from "./pages/HomeDashboard";
+import KbSearch from "./pages/KbSearch";
+import KbViewer from "./pages/KbViewer";
 import "./index.css";
 
 function RequireAuth({ role, children }) {
@@ -35,6 +38,9 @@ function App() {
               </RequireAuth>
             }
           >
+            <Route path="/dashboard" element={<HomeDashboard />} />
+            <Route path="/kb" element={<KbSearch />} />
+            <Route path="/kb/:slug" element={<KbViewer />} />
             <Route path="/my-tickets" element={<RequireAuth role="employee"><EmployeeDashboard /></RequireAuth>} />
             <Route path="/new-ticket" element={<RequireAuth role="employee"><NewTicket /></RequireAuth>} />
             <Route path="/drafts/:id/edit" element={<RequireAuth role="employee"><NewTicket /></RequireAuth>} />
@@ -54,7 +60,9 @@ function App() {
 function RootRedirect() {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
-  return <Navigate to={user.role === "agent" ? "/inbox" : "/my-tickets"} replace />;
+  // The home dashboard is the shared landing page (role-aware nav boxes +
+  // knowledge-base search): every signed-in role starts there.
+  return <Navigate to="/dashboard" replace />;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(
