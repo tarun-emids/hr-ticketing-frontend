@@ -1,8 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { IconChartBar, IconClipboardList, IconInbox, IconLogout, IconPlus, IconX } from "@tabler/icons-react";
 import { useAuth } from "../context/AuthContext";
-import logo from "../assets/emids-logo.png";
-import mark from "../assets/emids-mark.png";
+import Logo from "./Logo";
 
 const EMPLOYEE_NAV = [
   { to: "/my-tickets", label: "Tickets", Icon: IconClipboardList },
@@ -77,15 +76,21 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
         <IconX size={16} aria-hidden />
       </button>
 
-      <div className={`flex flex-col gap-2 border-b border-surface-2 px-6 pb-5 pt-6 ${collapsed ? "lg:items-center lg:px-3" : ""}`}>
-        <img src={logo} alt="Emids" className={`h-7 w-auto self-start ${collapsed ? "lg:hidden" : ""}`} />
-        {collapsed && <img src={mark} alt="Emids" className="hidden h-7 w-7 object-contain lg:block" />}
+      <div className={`flex flex-col gap-2 border-b border-surface-2 px-6 pb-5 pt-6 ${collapsed ? "lg:items-center lg:px-2" : ""}`}>
+        <span className={collapsed ? "lg:hidden" : ""}>
+          <Logo size="nav" />
+        </span>
+        {collapsed && (
+          <span className="hidden lg:block">
+            <Logo size="nav" markOnly />
+          </span>
+        )}
         <p className={`mono-label text-[10px] text-warm/40 ${collapsed ? "lg:hidden" : ""}`}>
           HR Desk / Internal ticketing
         </p>
         <button
           onClick={onToggleCollapse}
-          className="hidden border border-warm/15 p-1.5 text-warm/50 hover:border-teal hover:text-teal lg:block"
+          className={`hidden border border-warm/15 p-1.5 text-warm/50 hover:border-teal hover:text-teal lg:block ${collapsed ? "self-center" : "self-start"}`}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-expanded={!collapsed}
           aria-controls="workspace-navigation"
@@ -119,14 +124,10 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
             onClick={logout}
             title="Sign out"
             aria-label="Sign out"
-            className="border border-warm/15 p-1.5 text-warm/50 hover:border-teal hover:text-teal"
+            className={`border border-warm/15 p-1.5 text-warm/50 hover:border-teal hover:text-teal ${collapsed ? "lg:self-center" : ""}`}
           >
             <IconLogout size={16} aria-hidden />
           </button>
-        </div>
-        <div className="min-w-0">
-          <p className="truncate text-body font-medium text-warm">{user?.name}</p>
-          <p className="mono-label text-[10px] text-warm/40">{isAgent ? "HR agent" : "Employee"}</p>
         </div>
       </div>
     </aside>

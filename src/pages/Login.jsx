@@ -56,11 +56,12 @@ export default function Login() {
       />
       {/* Brand plate */}
       <section className="relative hidden flex-1 flex-col overflow-hidden p-12 lg:flex">
-        {/* Frame mid-bar: x 7-28 · y 21-28 of the 60×48 modular grid */}
+        {/* Frame mid-bar: x 7-28 of the 60×48 modular grid, parked in the
+            empty lower band of the plate so it never collides with copy. */}
         <div
           aria-hidden
-          className="absolute bg-teal"
-          style={{ left: "11.67%", top: "43.75%", width: "35%", height: "14.58%" }}
+          className="absolute z-0 bg-teal"
+          style={{ left: "11.67%", top: "70%", width: "35%", height: "14.58%" }}
         >
           <span className="mono-label absolute bottom-0 right-0 px-4 pb-3 text-[10px] text-warm">
             0 1 / H R  D E S K
@@ -83,7 +84,7 @@ export default function Login() {
           </p>
         </div>
 
-        <p className="mono-label text-[10px] text-warm/35">
+        <p className="mono-label mt-auto text-[10px] text-warm/35">
           EMIDS / HR DESK / INTERNAL · CONFIDENTIAL
         </p>
       </section>
