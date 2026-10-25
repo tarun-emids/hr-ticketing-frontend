@@ -47,7 +47,9 @@ function logRequest(method, path, status, durationMs, traceId, requestId) {
   else console.debug(line);
 }
 
-async function request(path, { method = "GET", body, form, operation } = {}) {
+// Exported for feature modules (src/rag) so every call keeps the shared
+// logging/tracing pipeline; domain endpoints keep their own thin wrappers.
+export async function request(path, { method = "GET", body, form, operation } = {}) {
   const correlationId = newCorrelationId();
   const startedAt = performance.now();
   const endpoint = path.split("?")[0]; // path only — query strings are never logged
