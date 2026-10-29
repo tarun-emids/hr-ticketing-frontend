@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { agentMetrics } from "./api";
 import { Spinner, EmptyState } from "../components/primitives";
-import { DualCountLines, HistogramBars } from "./charts";
+import { CountBars, DualCountLines, HistogramBars, RankedBars, TimeLines } from "./charts";
 import { formatHrs } from "../utils";
 
 const PERIODS = [
@@ -20,7 +21,7 @@ const PERIODS = [
 // Period basis (server-defined, printed under the stats): accepted/pending =
 // tickets assigned and created inside the window; completed = resolved inside
 // the window; response/solve = first-reply / resolution durations.
-export default function AgentMetricsView({ agentId, agentName, selfMode = false }) {
+export default function AgentMetricsView({ agentId, agentName, selfMode = false, peers = null }) {
   const { user } = useAuth();
   const actorId = user?.id;
   const [period, setPeriod] = useState("7d");
@@ -126,6 +127,18 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false 
               sub="Half completed within"
               tone="teal"
             />
+            <Stat
+              label="SLA COMPLIANCE"
+              value={metrics.slaComplianceRate == null ? "—" : `${metrics.slaComplianceRate}%`}
+              sub={`${metrics.slaWithinTarget ?? 0} / ${metrics.slaWindowCompletions ?? 0} completions in target`}
+              tone="ok"
+            />
+            <Stat
+              label="PERF. SCORE"
+              value={metrics.score == null ? "—" : `${metrics.score}/100`}
+              sub="SLA · response · throughput"
+              tone="teal"
+            />
           </div>
 
           {/* created vs resolved across the window */}
@@ -141,7 +154,73 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false 
                     { key: "created", label: "Created" },
                     { key: "resolved", label: "Resolved" },
                   ]}
+                  yLabel="tickets"
+                  xLabel={period === "24h" ? "hour of day" : "day (ends at)"}
                 />
+              </div>
+            </section>
+          )}
+
+          {/* response + solve HOURS per bucket — how quickly work moves */}
+          {metrics.series?.some((b) => b.avgResponseHrs != null || b.avgSolveHrs != null) && (
+            <section className="mb-8">
+              <p className="mono-label mb-3 text-[10px] text-warm/40">
+                FIG. 02 · RESPONSE &amp; SOLVE SPEED PER {period === "24h" ? "HOUR" : "DAY"} (
+                {period.toUpperCase()})
+              </p>
+              <div className="border border-surface-2 bg-surface p-4">
+                <TimeLines
+                  data={metrics.series}
+                  series={[
+                    { key: "avgResponseHrs", label: "avg first response (h)", color: "#abc7ca" },
+                    { key: "avgSolveHrs", label: "avg time to solve (h)", color: "#47a2b0" },
+                  ]}
+                  yLabel="hours"
+                  xLabel={period === "24h" ? "hour of day" : "day (ends at)"}
+                />
+              </div>
+            </section>
+          )}
+
+          {/* workload by current status of the pending side */}
+          {metrics.workload?.length > 0 && (
+            <section className="mb-8">
+              <p className="mono-label mb-3 text-[10px] text-warm/40">
+                FIG. 03 · WORKLOAD · THE PENDING SIDE BY CURRENT STATUS
+              </p>
+              <div className="border border-surface-2 bg-surface p-4">
+                <CountBars
+                  data={metrics.workload}
+                  xKey="status"
+                  yKey="count"
+                  height={160}
+                  yLabel="open tickets"
+                  xLabel="current status"
+                />
+              </div>
+            </section>
+          )}
+
+          {/* what the agent solves, by category */}
+          {metrics.categories?.length > 0 && (
+            <section className="mb-8">
+              <p className="mono-label mb-3 text-[10px] text-warm/40">
+                FIG. 04 · RESOLUTIONS BY CATEGORY (COMPLETED IN WINDOW)
+              </p>
+              <div className="border border-surface-2 bg-surface p-5">
+                <RankedBars rows={metrics.categories} labelKey="category" valueKey="resolved" />
+              </div>
+            </section>
+          )}
+
+          {/* peer comparison (admin drill-down only — passes leaderboard rows) */}
+          {peers?.length > 1 && (
+            <section className="mb-8">
+              <p className="mono-label mb-3 text-[10px] text-warm/40">
+                FIG. 05 · TEAM SCORE COMPARISON ({period.toUpperCase()})
+              </p>
+              <div className="border border-surface-2 bg-surface p-5">
+                <RankedBars rows={peers} labelKey="name" valueKey="score" />
               </div>
             </section>
           )}
@@ -151,20 +230,28 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false 
             {metrics.responseDistribution?.length > 0 && (
               <section>
                 <p className="mono-label mb-3 text-[10px] text-warm/40">
-                  FIG. 02 · FIRST RESPONSE TIME
+                  FIG. 06 · FIRST RESPONSE TIME
                 </p>
                 <div className="border border-surface-2 bg-surface p-4">
-                  <HistogramBars data={metrics.responseDistribution} />
+                  <HistogramBars
+                    data={metrics.responseDistribution}
+                    xLabel="tickets"
+                    yLabel="answered within"
+                  />
                 </div>
               </section>
             )}
             {metrics.solveDistribution?.length > 0 && (
               <section>
                 <p className="mono-label mb-3 text-[10px] text-warm/40">
-                  FIG. 03 · TOTAL TIME TO RESOLVE
+                  FIG. 07 · TOTAL TIME TO RESOLVE
                 </p>
                 <div className="border border-surface-2 bg-surface p-4">
-                  <HistogramBars data={metrics.solveDistribution} />
+                  <HistogramBars
+                    data={metrics.solveDistribution}
+                    xLabel="tickets"
+                    yLabel="solved within"
+                  />
                 </div>
               </section>
             )}

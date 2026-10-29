@@ -9,6 +9,7 @@ import NewTicket from "./pages/NewTicket";
 import TicketDetail from "./pages/TicketDetail";
 import Notifications from "./pages/Notifications";
 import HRInbox from "./pages/HRInbox";
+import AgentMyTickets from "./pages/AgentMyTickets";
 import HRDashboard from "./pages/HRDashboard";
 import HomeDashboard from "./pages/HomeDashboard";
 import AdminOverview from "./admin/AdminOverview";
@@ -82,6 +83,14 @@ function App() {
               element={
                 <RequireAuth role="agent">
                   <HRInbox />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/assigned-to-me"
+              element={
+                <RequireAuth role="agent">
+                  <AgentMyTickets />
                 </RequireAuth>
               }
             />

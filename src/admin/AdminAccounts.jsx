@@ -10,6 +10,14 @@ import { Spinner, EmptyState } from "../components/primitives";
 
 const ROLES = ["employee", "agent", "admin"];
 
+// Directory grouping: admins first, then HR agents, then employees —
+// alphabetically inside each group (the org reads top-down by authority).
+const ROLE_SECTIONS = [
+  { role: "admin", label: "ADMINISTRATORS" },
+  { role: "agent", label: "HR AGENTS" },
+  { role: "employee", label: "EMPLOYEES" },
+];
+
 // Accounts administration (route /admin/accounts): create, delete and move
 // people between roles (promotion). Server-side guards surface as 409s and
 // are printed verbatim: open-ticket demotions, history-preserving deletes,
@@ -21,6 +29,7 @@ export default function AdminAccounts() {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", role: "employee", password: "" });
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     let alive = true;
@@ -105,6 +114,27 @@ export default function AdminAccounts() {
       )}
       {error && <EmptyState icon="↘" title="Accounts unavailable" body={error} />}
 
+      {/* search — above the create tab; matches jump to the top of the list */}
+      {rows !== null && !error && (
+        <div className="mb-6">
+          <label
+            htmlFor="account-search"
+            className="mono-label mb-2 block text-[10px] text-warm/45"
+          >
+            SEARCH THE DIRECTORY
+          </label>
+          <input
+            id="account-search"
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Type a name or email — matches filter the whole directory instantly…"
+            aria-label="Search accounts"
+            className="w-full border-2 border-teal/40 bg-surface px-4 py-3.5 text-body-lg text-warm placeholder:text-warm/35 focus:border-teal focus:outline-none"
+          />
+        </div>
+      )}
+
       {/* create form */}
       <form
         onSubmit={submit}
@@ -162,43 +192,114 @@ export default function AdminAccounts() {
       {rows === null && !error ? (
         <Spinner label="Loading accounts" />
       ) : (
-        <div className="flex flex-col gap-2">
-          {(rows ?? []).map((row) => (
-            <div
-              key={row.id}
-              className="flex flex-wrap items-center gap-3 border border-surface-2 bg-surface p-4"
-            >
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-body-lg text-warm">{row.name}</span>
-                <span className="mono-label block text-[9px] text-warm/35">{row.email}</span>
-              </span>
-              <select
-                value={row.role}
-                onChange={(e) => reRole(row, e.target.value)}
-                disabled={busy}
-                aria-label={`Role for ${row.name}`}
-                className="mono-label border border-warm/20 bg-canvas px-2 py-1.5 text-[10px] text-warm focus:border-teal focus:outline-none"
-              >
-                {ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {r.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={() => remove(row)}
-                disabled={busy}
-                title={
-                  row.id === user.id ? "You cannot delete your own account here." : "Delete account"
-                }
-                className="mono-label border border-error/40 px-2 py-1.5 text-[10px] text-error transition-colors hover:bg-error/10 disabled:opacity-40"
-              >
-                DELETE
-              </button>
-            </div>
-          ))}
-        </div>
+        <AccountDirectory
+          rows={rows ?? []}
+          query={query}
+          currentUserId={user.id}
+          busy={busy}
+          onReRole={reRole}
+          onDelete={remove}
+        />
       )}
     </div>
   );
+}
+
+function AccountRow({ row, currentUserId, busy, onReRole, onDelete, keepRole }) {
+  return (
+    <div className="flex flex-wrap items-center gap-3 border border-surface-2 bg-surface p-4">
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-body-lg text-warm">{row.name}</span>
+        <span className="mono-label block text-[9px] text-warm/35">
+          {row.email}
+          {keepRole ? ` · ${row.role.toUpperCase()}` : ""}
+        </span>
+      </span>
+      <select
+        value={row.role}
+        onChange={(e) => onReRole(row, e.target.value)}
+        disabled={busy}
+        aria-label={`Role for ${row.name}`}
+        className="mono-label border border-warm/20 bg-canvas px-2 py-1.5 text-[10px] text-warm focus:border-teal focus:outline-none"
+      >
+        {ROLES.map((r) => (
+          <option key={r} value={r}>
+            {r.toUpperCase()}
+          </option>
+        ))}
+      </select>
+      <button
+        onClick={() => onDelete(row)}
+        disabled={busy}
+        title={
+          row.id === currentUserId ? "You cannot delete your own account here." : "Delete account"
+        }
+        className="mono-label border border-error/40 px-2 py-1.5 text-[10px] text-error transition-colors hover:bg-error/10 disabled:opacity-40"
+      >
+        DELETE
+      </button>
+    </div>
+  );
+}
+
+function AccountDirectory({ rows, query, currentUserId, busy, onReRole, onDelete }) {
+  const q = query.trim().toLowerCase();
+  const match = (row) =>
+    !q || row.name.toLowerCase().includes(q) || row.email.toLowerCase().includes(q);
+  const byName = (a, b) => a.name.localeCompare(b.name);
+
+  if (q) {
+    // searching: matches on top (name prefix beats mid-string), each with its
+    // role printed inline so the section context travels with the row
+    const matched = rows.filter(match).sort((a, b) => {
+      const aTop = a.name.toLowerCase().startsWith(q) ? 0 : 1;
+      const bTop = b.name.toLowerCase().startsWith(q) ? 0 : 1;
+      return aTop - bTop || byName(a, b);
+    });
+    return (
+      <div className="flex flex-col gap-2">
+        <p className="mono-label text-[10px] text-warm/40">
+          SEARCH · {matched.length} MATCH{matched.length === 1 ? "" : "ES"}
+        </p>
+        {matched.map((row) => (
+          <AccountRow
+            key={row.id}
+            row={row}
+            currentUserId={currentUserId}
+            busy={busy}
+            onReRole={onReRole}
+            onDelete={onDelete}
+            keepRole
+          />
+        ))}
+      </div>
+    );
+  }
+
+  return ROLE_SECTIONS.map((section) => {
+    const group = rows.filter((r) => r.role === section.role).sort(byName);
+    return (
+      <section key={section.role} className="mb-6">
+        <p className="mono-label mb-3 text-[10px] text-teal">
+          {section.label} · {group.length}
+        </p>
+        {group.length ? (
+          <div className="flex flex-col gap-2">
+            {group.map((row) => (
+              <AccountRow
+                key={row.id}
+                row={row}
+                currentUserId={currentUserId}
+                busy={busy}
+                onReRole={onReRole}
+                onDelete={onDelete}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="text-caption text-warm/30">None yet.</p>
+        )}
+      </section>
+    );
+  });
 }

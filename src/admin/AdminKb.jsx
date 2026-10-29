@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { IconTrash, IconUpload } from "@tabler/icons-react";
 import { useAuth } from "../context/AuthContext";
 import {
   deleteAdminKbDocument,
@@ -9,6 +10,54 @@ import {
 } from "./api";
 import { Spinner, EmptyState } from "../components/primitives";
 import { effectiveFormatter, formatBytes } from "../utils";
+
+// One controlled PDF picker: dashed dropzone look, selected-file chip, and a
+// dustbin that clears the choice. `existing` (a current file's size) renders
+// the "what is attached today" line so replacing is explicit.
+function FilePicker({ value, onChange, existing = null, label = "Policy PDF" }) {
+  return (
+    <div>
+      <input
+        type="file"
+        accept="application/pdf"
+        className="hidden"
+        id={`file-${label.replace(/\s+/g, "-").toLowerCase()}`}
+        onChange={(e) => onChange(e.target.files?.[0] || null)}
+      />
+      <label
+        htmlFor={`file-${label.replace(/\s+/g, "-").toLowerCase()}`}
+        className="flex cursor-pointer items-center gap-3 border border-dashed border-teal/40 bg-canvas px-4 py-3 transition-colors hover:border-teal"
+      >
+        <IconUpload size={18} aria-hidden className="shrink-0 text-teal" />
+        <span className="min-w-0 flex-1 truncate text-caption text-warm/60">
+          {value ? value.name : "Click to choose a PDF"}
+        </span>
+      </label>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {value ? (
+          <span className="mono-label flex items-center gap-2 border border-teal/40 bg-teal/10 px-2 py-1 text-[9px] text-teal-light">
+            {value.name} · {formatBytes(value.size)}
+            <button
+              type="button"
+              onClick={() => onChange(null)}
+              title="Remove the chosen file"
+              aria-label="Remove the chosen file"
+              className="text-error transition-colors hover:text-warm"
+            >
+              <IconTrash size={13} aria-hidden />
+            </button>
+          </span>
+        ) : existing ? (
+          <span className="mono-label border border-warm/15 px-2 py-1 text-[9px] text-warm/45">
+            attached today: {formatBytes(existing)} · choose a PDF above to replace it
+          </span>
+        ) : (
+          <span className="mono-label text-[8px] text-warm/25">PDF only · max 5 MB</span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // Policy-library administration (route /admin/kb): upload, edit and delete
 // knowledge-base documents. Deleting a policy also deletes its assistant
@@ -24,6 +73,8 @@ export default function AdminKb() {
   const [error, setError] = useState("");
   // editing state: slug of the doc being edited + its draft fields + optional new file
   const [edit, setEdit] = useState(null);
+  const [newFile, setNewFile] = useState(null);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     let alive = true;
@@ -38,15 +89,14 @@ export default function AdminKb() {
   const upload = async (e) => {
     e.preventDefault();
     const form = e.currentTarget;
-    const file = form.elements.file.files?.[0];
-    if (!file) {
-      setNotice("Choose a PDF file first.");
+    if (!newFile) {
+      setNotice("Choose a PDF file first — pick one in the dashed box.");
       return;
     }
     setBusy(true);
     setNotice("");
     try {
-      const created = await uploadAdminKbDocument(user.id, file, {
+      const created = await uploadAdminKbDocument(user.id, newFile, {
         title: form.elements.title.value,
         category: form.elements.category.value,
         audience: form.elements.audience.value,
@@ -60,6 +110,7 @@ export default function AdminKb() {
         `${created.ref} · ${created.title} uploaded — citations refresh once the key is configured.`,
       );
       form.reset();
+      setNewFile(null);
     } catch (err) {
       setNotice(err.message);
     } finally {
@@ -137,18 +188,31 @@ export default function AdminKb() {
       )}
       {error && <EmptyState icon="↘" title="Library unavailable" body={error} />}
 
+      {/* library search — filters THIS admin list (title/ref/category/keywords);
+          results are the same editor rows, not the employee-facing KB cards */}
+      <div className="mb-6">
+        <label htmlFor="kb-search" className="mono-label mb-2 block text-[10px] text-warm/45">
+          SEARCH THE LIBRARY
+        </label>
+        <input
+          id="kb-search"
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Filter by title, ref, category or keyword…"
+          aria-label="Search knowledge-base documents"
+          className="w-full border-2 border-teal/40 bg-surface px-4 py-3.5 text-body-lg text-warm placeholder:text-warm/35 focus:border-teal focus:outline-none"
+        />
+      </div>
+
       {/* upload form */}
       <form
         onSubmit={upload}
         className="mb-8 grid grid-cols-1 gap-2 border border-surface-2 bg-surface p-4 sm:grid-cols-2"
       >
-        <input
-          type="file"
-          name="file"
-          accept="application/pdf"
-          aria-label="Policy PDF"
-          className="border border-surface-2 bg-canvas px-3 py-2 text-caption text-warm file:hidden"
-        />
+        <div className="sm:col-span-2">
+          <FilePicker value={newFile} onChange={setNewFile} label="Policy PDF" />
+        </div>
         <input
           name="title"
           required
@@ -212,7 +276,8 @@ export default function AdminKb() {
         <Spinner label="Loading the library" />
       ) : (
         <div className="flex flex-col gap-2">
-          {(rows ?? []).map((doc) => (
+          <SearchResultsBand rows={rows ?? []} query={query} />
+          {filteredRows(rows, query).map((doc) => (
             <div key={doc.slug} className="border border-surface-2 bg-surface p-4">
               {edit?.slug === doc.slug ? (
                 <form onSubmit={saveEdit} className="flex flex-col gap-2">
@@ -267,17 +332,16 @@ export default function AdminKb() {
                     aria-label="Keywords"
                     className="border border-surface-2 bg-canvas px-3 py-2 text-caption text-warm focus:border-teal focus:outline-none"
                   />
-                  <div className="flex flex-wrap items-center gap-2">
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      onChange={(e) => setEdit({ ...edit, file: e.target.files?.[0] || null })}
-                      aria-label="Replace PDF (optional)"
-                      className="text-caption text-warm/60"
+                  <div>
+                    <FilePicker
+                      value={edit.file}
+                      onChange={(file) => setEdit({ ...edit, file })}
+                      existing={doc.fileSize}
+                      label="Replace PDF"
                     />
-                    <span className="mono-label text-[8px] text-warm/30">
+                    <p className="mono-label mt-1 text-[8px] text-warm/25">
                       replacing the file re-cuts its citation paragraphs
-                    </span>
+                    </p>
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -328,9 +392,11 @@ export default function AdminKb() {
                   <button
                     onClick={() => remove(doc)}
                     disabled={busy}
-                    className="mono-label border border-error/40 px-2 py-1.5 text-[10px] text-error transition-colors hover:bg-error/10 disabled:opacity-40"
+                    title={`Delete ${doc.title}`}
+                    aria-label={`Delete ${doc.title}`}
+                    className="border border-error/40 p-2 text-error transition-colors hover:bg-error/10 disabled:opacity-40"
                   >
-                    DELETE
+                    <IconTrash size={14} aria-hidden />
                   </button>
                 </div>
               )}
@@ -339,5 +405,31 @@ export default function AdminKb() {
         </div>
       )}
     </div>
+  );
+}
+
+function filteredRows(rows, query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return rows;
+  return rows.filter(
+    (doc) =>
+      (doc.title || "").toLowerCase().includes(q) ||
+      (doc.ref || "").toLowerCase().includes(q) ||
+      (doc.category || "").toLowerCase().includes(q) ||
+      (Array.isArray(doc.keywords) ? doc.keywords : (doc.keywords || "").split(","))
+        .map((k) => (k || "").toLowerCase().trim())
+        .some((k) => k.includes(q)),
+  );
+}
+
+function SearchResultsBand({ rows, query }) {
+  const q = query.trim();
+  if (!q) return null;
+  return (
+    <p className="mono-label -mt-1 mb-1 text-[10px] text-teal">
+      SEARCH · {filteredRows(rows, q).length} DOCUMENT
+      {filteredRows(rows, q).length === 1 ? "" : "S"} MATCH “{q}” (EDITOR VIEW — EDIT/DELETE ON
+      EACH)
+    </p>
   );
 }

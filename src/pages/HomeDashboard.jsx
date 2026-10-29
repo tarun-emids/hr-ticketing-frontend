@@ -128,15 +128,22 @@ export default function HomeDashboard() {
         <NavBox
           to="/inbox"
           icon={INBOX_ICON}
-          title="Inbox"
-          body="Every employee ticket in one place — search, filters, assignment and replies."
-          stat={active > 0 ? `${active} active · ${mine} on you` : "All quiet right now"}
+          title="Tickets"
+          body="Every employee ticket in one place — searchable, filterable, sortable."
+          stat={active > 0 ? `${active} open · ${mine} on you` : "All quiet right now"}
+        />
+        <NavBox
+          to="/assigned-to-me"
+          icon={TICKETS_ICON}
+          title="My tickets"
+          body="Only the tickets assigned to your name — your own backlog at a glance."
+          stat={mine > 0 ? `${mine} assigned to you` : "Nothing assigned yet"}
         />
         <NavBox
           to="/hr-dashboard"
           icon={CHART_ICON}
-          title="HR dashboard"
-          body="Counts by status, category load and first-response performance."
+          title="My performance"
+          body="Your score trends, response and solve-speed charts, workload and categories."
           stat={tickets.length ? `${tickets.length} tickets tracked` : "No tickets yet"}
         />
         <NavBox
@@ -153,17 +160,31 @@ export default function HomeDashboard() {
     boxes = (
       <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
         <NavBox
-          to="/hr-dashboard"
+          to="/admin"
           icon={CHART_ICON}
-          title="HR dashboard"
-          body="Oversight across all employee tickets — status counts, category load, response times."
+          title="Ticket analytics"
+          body="Volume & backlog trend, status split, aging, heatmap, resolution SLA per priority."
           stat={active > 0 ? `${active} active · ${tickets.length} tracked` : "No tickets yet"}
         />
         <NavBox
-          to="/kb"
+          to="/admin/worktable"
+          icon={INBOX_ICON}
+          title="Agents × tickets"
+          body="Score-ranked agents and the repeated-subject list that tells you what to write next."
+          stat="Leaderboard + drill-downs"
+        />
+        <NavBox
+          to="/admin/accounts"
+          icon={TICKETS_ICON}
+          title="Accounts"
+          body="Admins, HR agents and employees grouped and searchable — roles and offboarding."
+          stat="Access control"
+        />
+        <NavBox
+          to="/admin/kb"
           icon={KB_ICON}
-          title="Knowledge base"
-          body="Your library search spans both employee and HR documents."
+          title="Policy library"
+          body="Upload and version the PDFs the desk and the assistant answer from."
           stat="Employee + HR library"
         />
       </div>

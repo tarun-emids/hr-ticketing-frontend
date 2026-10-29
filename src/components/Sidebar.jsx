@@ -45,10 +45,19 @@ const ADMIN_NAV = [
 
 const AGENT_NAV = [
   HOME_ITEM,
-  { to: "/inbox", label: "Inbox", icon: "M9 12.75h6m-9 3h3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" },
+  {
+    to: "/inbox",
+    label: "Tickets",
+    icon: "M9 12.75h6m-9 3h3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
+  },
+  {
+    to: "/assigned-to-me",
+    label: "My tickets",
+    icon: "M8 3v18M16 3v18M3 8h18M3 16h18",
+  },
   {
     to: "/hr-dashboard",
-    label: "HR dashboard",
+    label: "My performance",
     icon: "M3 13.2V20h6v-6.8M14.5 4v16h-6V9.5M21 20h-6V8h6Z",
   },
 ];

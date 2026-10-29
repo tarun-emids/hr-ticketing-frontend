@@ -107,7 +107,7 @@ export default function AdminWorktable() {
       ) : tab === "agents" ? (
         <AgentsPane agents={agents} period={period} />
       ) : (
-        <TicketsPane overview={overview} />
+        <TicketsPane overview={overview} period={period} />
       )}
     </div>
   );
@@ -142,6 +142,7 @@ function AgentsPane({ agents, period }) {
             </span>
             <span className="mono-label block text-[9px] text-warm/35">{agent.email}</span>
           </span>
+          <MiniStat label="SCORE" value={agent.score == null ? "—" : agent.score} tone="teal" />
           <MiniStat label="COMPLETED" value={agent.completed} tone="ok" />
           <MiniStat label="PENDING" value={agent.pending} tone="warm" />
           <MiniStat
@@ -152,8 +153,8 @@ function AgentsPane({ agents, period }) {
         </Link>
       ))}
       <p className="mt-4 text-caption text-warm/30">
-        Ranked by completed tickets in {labelFor(period)} · click an agent for the full graph view
-        (response times, time-to-solve, per-bucket activity).
+        Ranked by score out of 100 (SLA compliance 40% · on-target response 30% · throughput 30%) in{" "}
+        {labelFor(period)} · click an agent for the full graph view.
       </p>
     </div>
   );
@@ -171,7 +172,46 @@ function MiniStat({ label, value, tone }) {
 
 // ---- TICKETS pane ---------------------------------------------------------
 
-function TicketsPane({ overview }) {
+// One repeated-subject cluster: the human "N people asked …" line, plus a
+// VIEW TICKETS button that opens the sample refs as direct ticket links
+// (/tickets/{TKT-ref} — the backend resolves refs for any staffed viewer).
+function RepeatedSubject({ rep, periodLabel }) {
+  const [openRefs, setOpenRefs] = useState(false);
+  return (
+    <li className="border-l-2 border-teal/40 bg-canvas/60 px-3 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-body text-warm/85">
+          <span className="font-medium text-teal-light">{rep.count} people</span> asked this in{" "}
+          {periodLabel}
+        </p>
+        <button
+          type="button"
+          onClick={() => setOpenRefs((o) => !o)}
+          aria-expanded={openRefs}
+          className="mono-label shrink-0 border border-warm/20 px-2 py-1 text-[9px] text-warm/60 transition-colors hover:border-teal hover:text-teal"
+        >
+          {openRefs ? "HIDE TICKETS" : `VIEW THE ${rep.count} TICKETS`}
+        </button>
+      </div>
+      <p className="mono-label mt-0.5 text-[9px] text-warm/50">{rep.title}</p>
+      {openRefs && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {rep.sampleRefs.map((ref) => (
+            <Link
+              key={ref}
+              to={`/tickets/${encodeURIComponent(ref)}`}
+              className="mono-label border border-teal/40 bg-teal/10 px-2 py-1 text-[9px] text-teal-light transition-colors hover:bg-teal/25"
+            >
+              {ref} ↘
+            </Link>
+          ))}
+        </div>
+      )}
+    </li>
+  );
+}
+
+function TicketsPane({ overview, period }) {
   const categories = overview.categories ?? [];
   if (!categories.length) {
     return (
@@ -195,11 +235,7 @@ function TicketsPane({ overview }) {
           {cat.repeatedSubjects?.length > 0 ? (
             <ul className="flex flex-col gap-2">
               {cat.repeatedSubjects.map((rep, i) => (
-                <li key={i} className="border-l-2 border-teal/40 bg-canvas/60 px-3 py-2">
-                  <span className="mono-label text-[9px] text-teal">{rep.count}× ASKED</span>
-                  <p className="text-body text-warm/85">{rep.title}</p>
-                  <p className="mono-label text-[8px] text-warm/30">{rep.sampleRefs.join(" · ")}</p>
-                </li>
+                <RepeatedSubject key={i} rep={rep} periodLabel={labelFor(period)} />
               ))}
               <p className="mt-1 text-caption text-warm/35">
                 Same question keeps appearing — consider a policy page or clearer KB entry.

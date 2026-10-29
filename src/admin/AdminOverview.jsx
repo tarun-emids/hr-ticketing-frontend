@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { adminOverview } from "./api";
 import { Spinner, EmptyState, StatCard } from "../components/primitives";
-import { CountBars, HistogramBars, RankedBars } from "./charts";
+import { CountBars, Heatmap, HistogramBars, RankedBars, TimeLines } from "./charts";
 import { formatHrs } from "../utils";
 
 const WINDOWS = [
@@ -130,7 +130,11 @@ export default function AdminOverview() {
                   FIG. 01 · FIRST RESPONSE TIME
                 </p>
                 <div className="border border-surface-2 bg-surface p-4">
-                  <HistogramBars data={data.responseDistribution} />
+                  <HistogramBars
+                    data={data.responseDistribution}
+                    xLabel="tickets"
+                    yLabel="answered within"
+                  />
                 </div>
               </section>
             )}
@@ -140,7 +144,11 @@ export default function AdminOverview() {
                   FIG. 02 · TOTAL TIME TO SOLVE
                 </p>
                 <div className="border border-surface-2 bg-surface p-4">
-                  <HistogramBars data={data.solveDistribution} />
+                  <HistogramBars
+                    data={data.solveDistribution}
+                    xLabel="tickets"
+                    yLabel="solved within"
+                  />
                 </div>
               </section>
             )}
@@ -161,14 +169,98 @@ export default function AdminOverview() {
                 xKey="status"
                 yKey="count"
                 height={180}
+                yLabel="tickets"
+                xLabel="current status"
               />
             </div>
           </section>
+          {/* ---- volume + backlog trend (created / resolved / open pile) ---- */}
+          {data.trend?.length > 0 && (
+            <section className="mb-8">
+              <p className="mono-label mb-3 text-[10px] text-warm/40">
+                FIG. 04 · VOLUME &amp; BACKLOG TREND ({WINDOWS.find((w) => w.key === window)?.label}{" "}
+                · creations, resolutions and the open pile at each day's end)
+              </p>
+              <div className="border border-surface-2 bg-surface p-4">
+                <TimeLines
+                  data={data.trend}
+                  series={[
+                    { key: "created", label: "Created", color: "#47a2b0" },
+                    { key: "resolved", label: "Resolved", color: "#abc7ca" },
+                    { key: "backlog", label: "Backlog", color: "#ffd97a" },
+                  ]}
+                  yLabel="tickets"
+                  xLabel={window === "24h" ? "hour of day" : "day (ends at)"}
+                />
+              </div>
+            </section>
+          )}
+
+          {/* ---- aging of the unresolved pile (how long the waiting waited) ---- */}
+          {data.aging?.length > 0 && (
+            <section className="mb-8">
+              <p className="mono-label mb-3 text-[10px] text-warm/40">
+                FIG. 05 · AGING OF UNRESOLVED (CURRENT AGE OF THE OPEN PILE · ALL TIME)
+              </p>
+              <div className="border border-surface-2 bg-surface p-4">
+                <CountBars
+                  data={data.aging}
+                  xKey="bucket"
+                  yKey="count"
+                  height={180}
+                  yLabel="currently open"
+                  xLabel="age since raised"
+                />
+              </div>
+            </section>
+          )}
+
+          {/* ---- peak activity heatmap (weekday × hour of creation) ---- */}
+          {data.heatmap?.total > 0 && (
+            <section className="mb-8">
+              <p className="mono-label mb-3 text-[10px] text-warm/40">
+                FIG. 06 · PEAK ACTIVITY · CREATIONS BY WEEKDAY × HOUR (ALL TIME)
+              </p>
+              <div className="border border-surface-2 bg-surface p-4 overflow-x-auto">
+                <Heatmap heatmap={data.heatmap} />
+              </div>
+            </section>
+          )}
+
+          {/* ---- resolution SLA compliance (per-priority targets) ---- */}
+          {data.sla?.resolvable > 0 && (
+            <section className="mb-8">
+              <p className="mono-label mb-3 text-[10px] text-warm/40">
+                FIG. 07 · RESOLUTION SLA COMPLIANCE · TARGETS URGENT 8H / HIGH 24H / MEDIUM 48H /
+                LOW 72H (ALL TIME)
+              </p>
+              <div className="border border-surface-2 bg-surface p-5">
+                <div className="mb-5 flex items-end gap-6">
+                  <p className="font-mono text-[34px] leading-none text-teal">
+                    {data.sla.complianceRate == null ? "—" : `${data.sla.complianceRate}%`}
+                  </p>
+                  <p className="text-caption text-warm/40">
+                    {data.sla.withinSla} within target · {data.sla.breached} breached of{" "}
+                    {data.sla.resolvable} resolvable
+                  </p>
+                </div>
+                <CountBars
+                  data={data.sla.byPriority}
+                  xKey="priority"
+                  yKey="complianceRate"
+                  height={160}
+                  suffix="%"
+                  yLabel="% within target"
+                  xLabel="ticket priority"
+                />
+              </div>
+            </section>
+          )}
 
           {/* ---- category load + repetitive subjects (the KB signal) ---- */}
           <section>
             <p className="mono-label mb-3 text-[10px] text-warm/40">
-              FIG. 04 · WHERE THE TICKETS COME FROM (KB-improvement input on the Agents × Tickets
+              FIG. 08 · WHERE THE TICKETS COME FROM (KB-improvement input on the Agents × Tickets
               screen)
             </p>
             <div className="border border-surface-2 bg-surface p-5">

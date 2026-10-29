@@ -1,25 +1,34 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { agentLeaderboard, listAdminAccounts } from "./api";
 import AgentMetricsView from "./AgentMetricsView";
 import { Icon, PATHS } from "../components/icons";
 
 // Admin drill-down — one agent's full performance (route /admin/agents/:id),
 // opened from the leaderboard. The metrics block is the same AgentMetricsView
-// the agents use on their personal dashboard; the admin just gets a name
-// header and the back link.
+// the agents use on their personal dashboard; the admin additionally gets the
+// team leaderboard so the score-comparison graph has its peers.
 export default function AdminAgentDrilldown() {
   const { user } = useAuth();
   const { agentId } = useParams();
   const [agent, setAgent] = useState(null);
+  const [peers, setPeers] = useState(null);
 
   useEffect(() => {
     let alive = true;
-    import("./api").then(({ listAdminAccounts }) =>
-      listAdminAccounts(user.id).then((rows) => {
+    listAdminAccounts(user.id)
+      .then((rows) => {
         if (alive) setAgent(rows.find((r) => r.id === agentId) || null);
-      }),
-    );
+      })
+      .catch(() => {});
+    agentLeaderboard(user.id)
+      .then((board) => {
+        if (alive) setPeers(board);
+      })
+      .catch(() => {
+        if (alive) setPeers(null); // the comparison graph simply stays hidden
+      });
     return () => {
       alive = false;
     };
@@ -44,7 +53,7 @@ export default function AdminAgentDrilldown() {
         {agent && <p className="mono-label mt-1 text-[9px] text-warm/35">{agent.email}</p>}
       </header>
 
-      <AgentMetricsView agentId={agentId} agentName={agent?.name} />
+      <AgentMetricsView agentId={agentId} agentName={agent?.name} peers={peers} />
     </div>
   );
 }

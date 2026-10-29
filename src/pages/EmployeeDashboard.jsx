@@ -21,7 +21,9 @@ function TicketRow({ t }) {
             <span className="text-caption text-warm/40">{timeAgo(t.updatedAt)}</span>
             {t.attachment && <IconPaperclip size={16} aria-hidden className="text-warm/30" />}
           </div>
-          <p className="truncate text-body-lg font-medium text-warm group-hover:text-teal-deep">{t.subject}</p>
+          <p className="truncate text-body-lg font-medium text-warm group-hover:text-teal-deep">
+            {t.subject}
+          </p>
           <p className="mono-label mt-1 text-[10px] text-warm/40">{t.category}</p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1.5">
@@ -100,32 +102,49 @@ export default function EmployeeDashboard() {
       </header>
 
       {searchParams.get("draftSaved") === "1" && (
-        <div className="mb-5 border border-ok/40 bg-ok/10 px-4 py-3 text-body-lg text-ok-deep" role="status">
+        <div
+          className="mb-5 border border-ok/40 bg-ok/10 px-4 py-3 text-body-lg text-ok-deep"
+          role="status"
+        >
           Draft saved. You can continue it whenever you’re ready.
         </div>
       )}
 
       {draftError && (
-        <div className="mb-5 border border-error/40 bg-error/10 px-4 py-3 text-caption text-error-deep" role="alert">
+        <div
+          className="mb-5 border border-error/40 bg-error/10 px-4 py-3 text-caption text-error-deep"
+          role="alert"
+        >
           {draftError}
-          <button type="button" onClick={refreshDrafts} className="ml-3 underline">Retry</button>
+          <button type="button" onClick={refreshDrafts} className="ml-3 underline">
+            Retry
+          </button>
         </div>
       )}
 
       {(draftsLoading || loading) && (
-        <div className="mb-6 border border-surface-2 bg-surface"><SkeletonList rows={2} /></div>
+        <div className="mb-6 border border-surface-2 bg-surface">
+          <SkeletonList rows={2} />
+        </div>
       )}
 
       {!draftsLoading && drafts.length > 0 && (
         <section className="mb-8">
-          <h2 className="mono-label mb-3 text-[10px] text-warm/45">Saved drafts · {drafts.length}</h2>
+          <h2 className="mono-label mb-3 text-[10px] text-warm/45">
+            Saved drafts · {drafts.length}
+          </h2>
           <div className="flex flex-col gap-2">
             {drafts.map((draft) => (
-              <div key={draft.id} className="flex items-center justify-between gap-4 border border-surface-2 bg-surface p-4">
+              <div
+                key={draft.id}
+                className="flex items-center justify-between gap-4 border border-surface-2 bg-surface p-4"
+              >
                 <Link to={`/drafts/${draft.id}/edit`} className="group min-w-0 flex-1">
                   <div className="mb-1 flex flex-wrap items-center gap-3">
                     <span className="mono-label text-[10px] text-teal-deep">Draft</span>
-                    <span className="text-caption text-warm/40">Saved {timeAgo(draft.updatedAt)}</span>
+                    <span className="text-caption text-warm/40">
+                      Saved {timeAgo(draft.updatedAt)}
+                    </span>
                     {draft.attachment && (
                       <span className="text-caption text-warm/35">Attachment included</span>
                     )}
@@ -133,7 +152,9 @@ export default function EmployeeDashboard() {
                   <p className="truncate text-body-lg font-medium text-warm group-hover:text-teal-deep">
                     {draft.subject || "Untitled draft"}
                   </p>
-                  <p className="mono-label mt-1 text-[10px] text-warm/40">{draft.category} · {draft.priority}</p>
+                  <p className="mono-label mt-1 text-[10px] text-warm/40">
+                    {draft.category} · {draft.priority}
+                  </p>
                 </Link>
                 <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
                   <Link
@@ -164,14 +185,44 @@ export default function EmployeeDashboard() {
           icon={<IconArrowDownRight size={32} />}
         />
       ) : mine.length === 0 ? null : (
-        <section>
-          <h2 className="mono-label mb-3 text-[10px] text-warm/45">Submitted tickets · {mine.length}</h2>
-          <div className="flex flex-col gap-2">
-            {mine.map((t) => (
-              <TicketRow key={t.id} t={t} />
-            ))}
-          </div>
-        </section>
+        <>
+          {(() => {
+            const open = mine.filter((t) => !["Resolved", "Closed"].includes(t.status));
+            const settled = mine.filter((t) => ["Resolved", "Closed"].includes(t.status));
+            return (
+              <>
+                <section className="mb-8">
+                  <h2 className="mono-label mb-3 text-[10px] text-teal">
+                    OPEN / IN PROGRESS · {open.length}
+                  </h2>
+                  {open.length ? (
+                    <div className="flex flex-col gap-2">
+                      {open.map((t) => (
+                        <TicketRow key={t.id} t={t} />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-caption text-warm/40">
+                      Nothing open — all your requests are settled.
+                    </p>
+                  )}
+                </section>
+                {settled.length > 0 && (
+                  <section>
+                    <h2 className="mono-label mb-3 text-[10px] text-warm/45">
+                      SETTLED · {settled.length} RESOLVED OR CLOSED
+                    </h2>
+                    <div className="flex flex-col gap-2">
+                      {settled.map((t) => (
+                        <TicketRow key={t.id} t={t} />
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </>
+            );
+          })()}
+        </>
       )}
     </div>
   );
