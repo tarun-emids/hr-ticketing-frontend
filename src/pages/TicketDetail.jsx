@@ -11,11 +11,23 @@ import {
 } from "@tabler/icons-react";
 import { CATEGORIES, PRIORITIES, STATUSES } from "../data/users";
 import { agentWorkload } from "../api/client";
-import { getTicket, subscribe, refreshTicket, updateStatus, assignTicket, autoAssignTicket, setPriority, setCategory, getAttachmentUrl } from "../data/store";
+import {
+  getTicket,
+  subscribe,
+  refreshTicket,
+  updateStatus,
+  assignTicket,
+  autoAssignTicket,
+  setPriority,
+  setCategory,
+  getAttachmentUrl,
+  getFeedback,
+  submitFeedback,
+} from "../data/store";
 import { useAuth } from "../context/AuthContext";
 import { StatusBadge, PriorityBadge } from "../components/Badge";
 import Thread from "../components/Thread";
-import { Spinner, EmptyState } from "../components/primitives";
+import { Spinner, EmptyState, Button } from "../components/primitives";
 import { formatDateTime, timeAgo } from "../utils";
 
 const SELECT =
@@ -36,7 +48,9 @@ function AgentControls({ ticket, actor, users }) {
   const [routing, setRouting] = useState(false);
 
   useEffect(() => {
-    agentWorkload().then(setWorkload).catch(() => setWorkload([]));
+    agentWorkload()
+      .then(setWorkload)
+      .catch(() => setWorkload([]));
   }, [ticket.assigneeId, ticket.id]);
 
   const openCountFor = (id) => workload.find((w) => w.id === id)?.openCount;
@@ -55,28 +69,51 @@ function AgentControls({ ticket, actor, users }) {
   return (
     <div className="mt-6 grid gap-5 border-t border-surface-2 pt-6 sm:grid-cols-2">
       <MetaItem label="Status">
-        <select value={ticket.status} onChange={(e) => updateStatus(ticket.id, e.target.value, actor.id)} className={SELECT}>
-          {STATUSES.map((s) => <option key={s}>{s}</option>)}
+        <select
+          value={ticket.status}
+          onChange={(e) => updateStatus(ticket.id, e.target.value, actor.id)}
+          className={SELECT}
+        >
+          {STATUSES.map((s) => (
+            <option key={s}>{s}</option>
+          ))}
         </select>
       </MetaItem>
       <MetaItem label="Assignee">
-        <select value={ticket.assigneeId ?? ""} onChange={(e) => assignTicket(ticket.id, e.target.value || null)} className={SELECT}>
+        <select
+          value={ticket.assigneeId ?? ""}
+          onChange={(e) => assignTicket(ticket.id, e.target.value || null)}
+          className={SELECT}
+        >
           <option value="">Unassigned</option>
           {agents.map((a) => (
             <option key={a.id} value={a.id}>
-              {a.name}{typeof openCountFor(a.id) === "number" ? ` · ${openCountFor(a.id)} open` : ""}
+              {a.name}
+              {typeof openCountFor(a.id) === "number" ? ` · ${openCountFor(a.id)} open` : ""}
             </option>
           ))}
         </select>
       </MetaItem>
       <MetaItem label="Priority">
-        <select value={ticket.priority} onChange={(e) => setPriority(ticket.id, e.target.value)} className={SELECT}>
-          {PRIORITIES.map((p) => <option key={p}>{p}</option>)}
+        <select
+          value={ticket.priority}
+          onChange={(e) => setPriority(ticket.id, e.target.value)}
+          className={SELECT}
+        >
+          {PRIORITIES.map((p) => (
+            <option key={p}>{p}</option>
+          ))}
         </select>
       </MetaItem>
       <MetaItem label="Re-categorise">
-        <select value={ticket.category} onChange={(e) => setCategory(ticket.id, e.target.value)} className={SELECT}>
-          {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+        <select
+          value={ticket.category}
+          onChange={(e) => setCategory(ticket.id, e.target.value)}
+          className={SELECT}
+        >
+          {CATEGORIES.map((c) => (
+            <option key={c}>{c}</option>
+          ))}
         </select>
       </MetaItem>
       <div className="sm:col-span-2">
@@ -111,12 +148,17 @@ function AttachmentChip({ ticket }) {
 
   useEffect(() => {
     if (!isImage) return undefined;
+
     let active = true;
     setBusy(true);
     setError("");
-    fetchUrl()
-      .then((attachmentUrl) => {
-        if (active) setUrl(attachmentUrl);
+
+    getAttachmentUrl(ticket.id)
+      .then((res) => {
+        if (!res?.url) {
+          throw new Error("The attachment URL was not returned.");
+        }
+        if (active) setUrl(res.url);
       })
       .catch((e) => {
         if (active) setError(e.message ?? String(e));
@@ -124,6 +166,7 @@ function AttachmentChip({ ticket }) {
       .finally(() => {
         if (active) setBusy(false);
       });
+
     return () => {
       active = false;
     };
@@ -197,7 +240,12 @@ function AttachmentChip({ ticket }) {
               {error ? (
                 <>
                   Could not load image: {error}{" "}
-                  <button type="button" onClick={retryImageLoad} disabled={busy} className="text-teal-deep underline disabled:opacity-40">
+                  <button
+                    type="button"
+                    onClick={retryImageLoad}
+                    disabled={busy}
+                    className="text-teal-deep underline disabled:opacity-40"
+                  >
                     Retry
                   </button>
                 </>
@@ -234,7 +282,9 @@ function AttachmentChip({ ticket }) {
                 alt={ticket.attachment.name}
                 className="max-h-[calc(100vh-7rem)] max-w-full object-contain"
               />
-              <p className="max-w-full truncate text-caption text-warm/60">{ticket.attachment.name}</p>
+              <p className="max-w-full truncate text-caption text-warm/60">
+                {ticket.attachment.name}
+              </p>
             </div>
           </div>
         )}
@@ -245,10 +295,17 @@ function AttachmentChip({ ticket }) {
   return (
     <div className="mt-5 flex flex-wrap items-center gap-2 border border-surface-2 bg-canvas px-3 py-3 text-body text-warm/80">
       <IconPaperclip size={16} aria-hidden className="text-teal-deep/80" />
-      <button type="button" onClick={open} disabled={busy} className="underline decoration-teal/50 underline-offset-4 transition-colors hover:text-teal-deep disabled:opacity-40">
+      <button
+        type="button"
+        onClick={open}
+        disabled={busy}
+        className="underline decoration-teal/50 underline-offset-4 transition-colors hover:text-teal-deep disabled:opacity-40"
+      >
         {ticket.attachment.name}
       </button>
-      <span className="mono-label text-[10px] text-warm/35">{(ticket.attachment.size / 1024).toFixed(0)} KB</span>
+      <span className="mono-label text-[10px] text-warm/35">
+        {(ticket.attachment.size / 1024).toFixed(0)} KB
+      </span>
       {busy ? (
         <span className="mono-label text-[10px] text-warm/25">opening…</span>
       ) : (
@@ -256,6 +313,132 @@ function AttachmentChip({ ticket }) {
           open <IconArrowUpRight size={12} aria-hidden />
         </span>
       )}
+    </div>
+  );
+}
+
+function FeedbackPanel({ ticket, actor, users, isOwner }) {
+  const [feedback, setFeedback] = useState(null);
+  const [loadState, setLoadState] = useState("loading");
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    setLoadState("loading");
+    getFeedback(ticket.id, actor.id)
+      .then((data) => {
+        if (!active) return;
+        setFeedback(data);
+        setRating(data.rating);
+        setComment(data.comment);
+        setLoadState("ready");
+      })
+      .catch((e) => {
+        if (!active) return;
+        // "Ticket TKT-... has no feedback." is the friends-empty path, not a bug.
+        setLoadState(e.message.includes("no feedback") ? "missing" : "error");
+      });
+    return () => {
+      active = false;
+    };
+  }, [ticket.id, actor.id]);
+
+  const save = async () => {
+    setSaving(true);
+    setSaveError("");
+    try {
+      const saved = await submitFeedback(ticket.id, {
+        userId: actor.id,
+        rating,
+        comment,
+      });
+      setFeedback(saved);
+    } catch (e) {
+      setSaveError(e.message ?? String(e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const ratedBy = feedback ? users.find((u) => u.id === feedback.employeeId) : null;
+  const editable = isOwner && ticket.status === "Closed";
+
+  return (
+    <div className="mt-5 border-t border-surface-2 pt-5">
+      <p className="mono-label mb-3 text-[10px] text-warm/40">TICKET-CLOSURE FEEDBACK</p>
+
+      {loadState === "loading" && <p className="text-caption text-warm/45">Fetching feedback...</p>}
+      {loadState === "error" && (
+        <p className="text-caption text-error-deep" role="alert">
+          Could not load feedback.
+        </p>
+      )}
+
+      {feedback && loadState !== "error" && (
+        <div className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-body text-warm/85">
+          <span className="tabular-nums">{feedback.rating} / 5</span>
+          <span className="text-caption text-warm/60">
+            by {ratedBy?.name ?? "employee"}
+            {feedback.comment ? ` — "${feedback.comment}"` : " — no comment"}
+          </span>
+        </div>
+      )}
+
+      {editable && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <MetaItem label="Rating">
+            <select
+              value={rating}
+              onChange={(e) => setRating(Number(e.target.value))}
+              className={SELECT}
+            >
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n}>{n}</option>
+              ))}
+            </select>
+          </MetaItem>
+          <MetaItem label="Comment (Optional)">
+            <textarea
+              rows={3}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="What went well, what didn't?"
+              className={SELECT}
+            />
+          </MetaItem>
+          <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
+            <Button onClick={save} disabled={saving}>
+              {saving ? "Saving..." : feedback ? "Update feedback" : "Submit feedback"}
+            </Button>
+            {feedback && !saving && !saveError && (
+              <span className="text-caption text-ok-deep">Feedback Saved.</span>
+            )}
+            {saveError && (
+              <span className="text-caption text-error-deep" role="alert">
+                {saveError}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!editable &&
+        loadState !== "loading" &&
+        loadState !== "error" &&
+        (isOwner ? (
+          <p className="text-caption text-warm/45">
+            {feedback
+              ? "You can update your rating while the ticket is Closed."
+              : "Feedback opens once this ticket is Closed."}
+          </p>
+        ) : (
+          !feedback && (
+            <p className="text-caption text-warm/45">The employee hasn't rated this ticket yet.</p>
+          )
+        ))}
     </div>
   );
 }
@@ -303,7 +486,11 @@ export default function TicketDetail() {
   if (!user) {
     return (
       <div className="mx-auto max-w-4xl pt-8">
-        <EmptyState title="Session expired" body="Your saved user no longer exists in the backend — please sign in again." icon={<IconAlertTriangle size={32} />} />
+        <EmptyState
+          title="Session expired"
+          body="Your saved user no longer exists in the backend — please sign in again."
+          icon={<IconAlertTriangle size={32} />}
+        />
       </div>
     );
   }
@@ -327,7 +514,11 @@ export default function TicketDetail() {
   if (!isAgent && !isMine) {
     return (
       <div className="mx-auto max-w-4xl pt-8">
-        <EmptyState title="No access to this ticket" body="You can only view your own tickets." icon={<IconLock size={32} />} />
+        <EmptyState
+          title="No access to this ticket"
+          body="You can only view your own tickets."
+          icon={<IconLock size={32} />}
+        />
       </div>
     );
   }
@@ -348,7 +539,8 @@ export default function TicketDetail() {
 
       {banner && (
         <div className="mt-4 flex items-center gap-2 border border-ok/40 bg-ok/10 px-4 py-3 text-body-lg text-ok-deep">
-          <IconCircleCheck size={16} aria-hidden className="shrink-0" /> Ticket {ticket.id} submitted — HR has been notified.
+          <IconCircleCheck size={16} aria-hidden className="shrink-0" /> Ticket {ticket.id}{" "}
+          submitted — HR has been notified.
         </div>
       )}
 
@@ -377,7 +569,11 @@ export default function TicketDetail() {
             {assignee ? assignee.name : <span className="text-warm/25 italic">Unassigned</span>}
           </MetaItem>
           <MetaItem label="Resolved">
-            {ticket.resolvedAt ? formatDateTime(ticket.resolvedAt) : <span className="text-warm/25">—</span>}
+            {ticket.resolvedAt ? (
+              formatDateTime(ticket.resolvedAt)
+            ) : (
+              <span className="text-warm/25">—</span>
+            )}
           </MetaItem>
           <MetaItem label="Closed by">
             {closedBy ? closedBy.name : <span className="text-warm/25">—</span>}
@@ -387,9 +583,15 @@ export default function TicketDetail() {
         {ticket.attachment?.path && <AttachmentChip ticket={ticket} />}
 
         {isAgent && <AgentControls ticket={ticket} actor={user} users={users} />}
+
+        {(isAgent || isMine) && (
+          <FeedbackPanel ticket={ticket} actor={user} users={users} isOwner={isMine} />
+        )}
       </section>
 
-      <p className="mono-label mb-4 text-[10px] text-warm/40">CONVERSATION / FIG. {ticket.id.replace("-", ".")}</p>
+      <p className="mono-label mb-4 text-[10px] text-warm/40">
+        CONVERSATION / FIG. {ticket.id.replace("-", ".")}
+      </p>
       <Thread ticket={ticket} users={users} viewer={user} />
     </div>
   );

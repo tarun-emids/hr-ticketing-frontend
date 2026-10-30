@@ -67,7 +67,7 @@ export const uploadAttachment = (ticketId, file) =>
   updateCache(api.uploadAttachment(ticketId, file));
 
 // role is derived from authorId server-side; kept in the signature for compatibility
-export const addReply = (ticketId, { authorId, role, text }) =>
+export const addReply = (ticketId, { authorId, text }) =>
   updateCache(api.addReply(ticketId, { authorId, text }));
 
 export const updateStatus = (ticketId, status, actorId) =>
@@ -80,9 +80,7 @@ export const assignTicket = (ticketId, assigneeId) =>
 // (routedTo); cache only the ticket itself so entries keep the
 // canonical shape.
 export const autoAssignTicket = (ticketId) =>
-  updateCache(
-    api.autoAssignTicket(ticketId).then(({ routedTo, ...ticket }) => ticket)
-  );
+  updateCache(api.autoAssignTicket(ticketId).then(({ ...ticket }) => ticket));
 
 export const setPriority = (ticketId, priority) =>
   updateCache(api.setPriority(ticketId, { priority }));
@@ -109,3 +107,9 @@ export const deleteDraftAttachment = (draftId, employeeId) =>
   api.deleteDraftAttachment(draftId, employeeId);
 export const getDraftAttachmentUrl = (draftId, employeeId) =>
   api.getDraftAttachmentUrl(draftId, employeeId);
+
+// ---- ticket-closure feedback --------------------------------------------------
+// NOT part of the ticket cache: feedback has its own shape and lifecycle,
+// so it skips updateCache like the drafts endpoints do.
+export const getFeedback = (ticketId, userId) => api.getFeedback(ticketId, userId);
+export const submitFeedback = (ticketId, body) => api.submitFeedback(ticketId, body);

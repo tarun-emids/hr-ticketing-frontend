@@ -22,12 +22,7 @@
 //   VITE_LOGS=false disables the remote event sink (backend keeps its own
 //   logs either way); the console correlation line always stays.
 import { logEvent, newCorrelationId } from "./logger";
-import {
-  endRequestSpan,
-  injectTraceHeaders,
-  startRequestSpan,
-  traceContextFields,
-} from "./trace";
+import { endRequestSpan, injectTraceHeaders, startRequestSpan, traceContextFields } from "./trace";
 
 const BASE = (import.meta.env.VITE_API_URL || "http://localhost:8000/api").replace(/\/+$/, "");
 
@@ -195,12 +190,13 @@ export const setCategory = (id, body) =>
   });
 
 // ---- ticket drafts ----------------------------------------------------------
-const withEmployee = (path, employeeId) =>
-  `${path}?employeeId=${encodeURIComponent(employeeId)}`;
+const withEmployee = (path, employeeId) => `${path}?employeeId=${encodeURIComponent(employeeId)}`;
 export const listDrafts = (employeeId) =>
   request(withEmployee("/drafts", employeeId), { operation: "drafts.list" }); // employeeId rides the query — never logged
 export const getDraft = (id, employeeId) =>
-  request(withEmployee(`/drafts/${encodeURIComponent(id)}`, employeeId), { operation: "drafts.get" });
+  request(withEmployee(`/drafts/${encodeURIComponent(id)}`, employeeId), {
+    operation: "drafts.get",
+  });
 export const createDraft = (body) =>
   request("/drafts", { method: "POST", body, operation: "drafts.create" });
 export const updateDraft = (id, employeeId, body) =>
@@ -240,8 +236,7 @@ export const getDraftAttachmentUrl = (id, employeeId) =>
   });
 
 // ---- assignment -------------------------------------------------------------
-export const agentWorkload = () =>
-  request("/agents/workload", { operation: "agents.workload" }); // [{id,name,email,openCount,totalCount}]
+export const agentWorkload = () => request("/agents/workload", { operation: "agents.workload" }); // [{id,name,email,openCount,totalCount}]
 export const autoAssignTicket = (id) =>
   request(`/tickets/${encodeURIComponent(id)}/auto-assign`, {
     method: "POST",
@@ -308,3 +303,15 @@ export const getAttachmentUrl = (id) =>
   request(`/tickets/${encodeURIComponent(id)}/attachment`, {
     operation: "attachment.url",
   }); // { name, size, url, expiresInSeconds }
+
+// ---- ticket-closure feedback --------------------------------------------------
+export const getFeedback = (id, userId) =>
+  request(`/tickets/${encodeURIComponent(id)}/feedback?userId=${encodeURIComponent(userId)}`, {
+    operation: "feedback.get",
+  }); // { ticketId, employeeId, rating, comment, createdAt, updatedAt }
+export const submitFeedback = (id, body) =>
+  request(`/tickets/${encodeURIComponent(id)}/feedback`, {
+    method: "POST",
+    body,
+    operation: "feedback.submit",
+  });
