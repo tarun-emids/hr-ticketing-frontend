@@ -24,20 +24,25 @@ export default [
   {
     files: ["src/**/*.{js,jsx}"],
     languageOptions: {
-      ecmaVersion: 2022,
+      ecmaVersion: "latest",
       sourceType: "module",
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
+      // flat-config blocks override espree's defaults — JSX must be re-enabled here
+      parserOptions: { ecmaFeatures: { jsx: true } },
       globals: { ...globals.browser },
     },
     plugins: { "react-hooks": reactHooks, "react-refresh": reactRefresh },
     rules: {
       ...js.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
-      "no-unused-vars": ["error", { varsIgnorePattern: "^[A-Za-z_$]" }],
+      "no-unused-vars": [
+        "error",
+        {
+          varsIgnorePattern: "^[A-Z_]",
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          reportUsedIgnorePattern: false,
+        },
+      ],
       "react-refresh/only-export-components": "off",
     },
   },

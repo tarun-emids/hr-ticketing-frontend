@@ -9,8 +9,14 @@ import NewTicket from "./pages/NewTicket";
 import TicketDetail from "./pages/TicketDetail";
 import Notifications from "./pages/Notifications";
 import HRInbox from "./pages/HRInbox";
+import AgentMyTickets from "./pages/AgentMyTickets";
 import HRDashboard from "./pages/HRDashboard";
 import HomeDashboard from "./pages/HomeDashboard";
+import AdminOverview from "./admin/AdminOverview";
+import AdminWorktable from "./admin/AdminWorktable";
+import AdminAgentDrilldown from "./admin/AdminAgentDrilldown";
+import AdminAccounts from "./admin/AdminAccounts";
+import AdminKb from "./admin/AdminKb";
 import KbSearch from "./pages/KbSearch";
 import KbViewer from "./pages/KbViewer";
 import "./index.css";
@@ -20,7 +26,12 @@ function RequireAuth({ role, children }) {
   const location = useLocation();
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   if (role && user.role !== role) {
-    return <Navigate to={user.role === "agent" ? "/inbox" : "/my-tickets"} replace />;
+    return (
+      <Navigate
+        to={user.role === "agent" ? "/inbox" : user.role === "admin" ? "/admin" : "/my-tickets"}
+        replace
+      />
+    );
   }
   return children;
 }
@@ -41,13 +52,97 @@ function App() {
             <Route path="/dashboard" element={<HomeDashboard />} />
             <Route path="/kb" element={<KbSearch />} />
             <Route path="/kb/:slug" element={<KbViewer />} />
-            <Route path="/my-tickets" element={<RequireAuth role="employee"><EmployeeDashboard /></RequireAuth>} />
-            <Route path="/new-ticket" element={<RequireAuth role="employee"><NewTicket /></RequireAuth>} />
-            <Route path="/drafts/:id/edit" element={<RequireAuth role="employee"><NewTicket /></RequireAuth>} />
+            <Route
+              path="/my-tickets"
+              element={
+                <RequireAuth role="employee">
+                  <EmployeeDashboard />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/new-ticket"
+              element={
+                <RequireAuth role="employee">
+                  <NewTicket />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/drafts/:id/edit"
+              element={
+                <RequireAuth role="employee">
+                  <NewTicket />
+                </RequireAuth>
+              }
+            />
             <Route path="/tickets/:id" element={<TicketDetail />} />
             <Route path="/notifications" element={<Notifications />} />
-            <Route path="/inbox" element={<RequireAuth role="agent"><HRInbox /></RequireAuth>} />
-            <Route path="/hr-dashboard" element={<RequireAuth role="agent"><HRDashboard /></RequireAuth>} />
+            <Route
+              path="/inbox"
+              element={
+                <RequireAuth role="agent">
+                  <HRInbox />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/assigned-to-me"
+              element={
+                <RequireAuth role="agent">
+                  <AgentMyTickets />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/hr-dashboard"
+              element={
+                <RequireAuth role="agent">
+                  <HRDashboard />
+                </RequireAuth>
+              }
+            />
+            {/* ---- admin console (3rd persona) ---- */}
+            <Route
+              path="/admin"
+              element={
+                <RequireAuth role="admin">
+                  <AdminOverview />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/admin/worktable"
+              element={
+                <RequireAuth role="admin">
+                  <AdminWorktable />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/admin/agents/:agentId"
+              element={
+                <RequireAuth role="admin">
+                  <AdminAgentDrilldown />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/admin/accounts"
+              element={
+                <RequireAuth role="admin">
+                  <AdminAccounts />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/admin/kb"
+              element={
+                <RequireAuth role="admin">
+                  <AdminKb />
+                </RequireAuth>
+              }
+            />
           </Route>
           <Route path="/" element={<RootRedirect />} />
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -68,5 +163,5 @@ function RootRedirect() {
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>
+  </React.StrictMode>,
 );
