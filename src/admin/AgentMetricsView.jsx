@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import { agentMetrics } from "./api";
 import { Spinner, EmptyState } from "../components/primitives";
 import { CountBars, DualCountLines, HistogramBars, RankedBars, TimeLines } from "./charts";
@@ -22,7 +23,7 @@ const PERIODS = [
 // tickets assigned and created inside the window; completed = resolved inside
 // the window; response/solve = first-reply / resolution durations.
 export default function AgentMetricsView({ agentId, agentName, selfMode = false, peers = null }) {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const actorId = user?.id;
   const [period, setPeriod] = useState("7d");
   const [metrics, setMetrics] = useState(null);

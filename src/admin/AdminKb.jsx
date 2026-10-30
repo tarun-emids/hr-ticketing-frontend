@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { IconTrash, IconUpload } from "@tabler/icons-react";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import {
   deleteAdminKbDocument,
   listAdminKbDocuments,
@@ -66,7 +67,7 @@ function FilePicker({ value, onChange, existing = null, label = "Policy PDF" }) 
 // the embeddings key is configured. Employees never see this surface; the
 // pool gates (employee / HR-only) are edited per document here.
 export default function AdminKb() {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const [rows, setRows] = useState(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");

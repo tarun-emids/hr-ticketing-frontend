@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import { listKbPopular, searchKb } from "../api/client";
 import { Spinner, EmptyState } from "../components/primitives";
 import { effectiveFormatter } from "../utils";
@@ -14,7 +15,7 @@ const goBack = (navigate) => () => {
 };
 
 export default function KbSearch() {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const q = (searchParams.get("q") ?? "").trim();
@@ -52,7 +53,9 @@ export default function KbSearch() {
     setSearchParams(next ? { q: next } : {}, { replace: true });
   };
 
-  const heading = q ? `${results?.length ?? "—"} result${results?.length === 1 ? "" : "s"} for “${q}”` : "Latest in your library";
+  const heading = q
+    ? `${results?.length ?? "—"} result${results?.length === 1 ? "" : "s"} for “${q}”`
+    : "Latest in your library";
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -67,7 +70,9 @@ export default function KbSearch() {
       </button>
 
       <header className="mb-8">
-        <span className="mono-label mb-3 block text-[10px] text-teal">↘ 0 2 / K N O W L E D G E</span>
+        <span className="mono-label mb-3 block text-[10px] text-teal">
+          ↘ 0 2 / K N O W L E D G E
+        </span>
         <div className="rule-teal mb-5" />
         <h1 className="text-h3 text-warm">Knowledge base</h1>
         <p className="mt-1.5 text-caption text-warm/45">
@@ -93,7 +98,10 @@ export default function KbSearch() {
       </form>
 
       {error && (
-        <div className="mb-5 border border-error/40 bg-error/10 px-4 py-3 text-caption text-error" role="alert">
+        <div
+          className="mb-5 border border-error/40 bg-error/10 px-4 py-3 text-caption text-error"
+          role="alert"
+        >
           {error}
         </div>
       )}

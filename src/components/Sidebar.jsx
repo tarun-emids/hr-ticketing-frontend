@@ -7,7 +7,8 @@ import {
   IconPlus,
   IconX,
 } from "@tabler/icons-react";
-import { useAuth } from "../context/AuthContext";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { logout, selectIsAgent, selectUser } from "../state/authSlice";
 import Logo from "./Logo";
 
 // Shared landing page: role-aware nav boxes + knowledge-base search.
@@ -103,7 +104,9 @@ function NavItems({ items, onNavigate, collapsed }) {
 }
 
 export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNavigate, onHide }) {
-  const { user, isAgent, logout } = useAuth();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+  const isAgent = useAppSelector(selectIsAgent);
   const isAdmin = user?.role === "admin";
 
   return (
@@ -189,7 +192,7 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
             </p>
           </div>
           <button
-            onClick={logout}
+            onClick={() => dispatch(logout())}
             title="Sign out"
             aria-label="Sign out"
             className={`border border-warm/15 p-1.5 text-warm/50 hover:border-teal hover:text-teal ${collapsed ? "lg:self-center" : ""}`}

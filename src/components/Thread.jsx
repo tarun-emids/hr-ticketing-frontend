@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { IconArrowDownRight } from "@tabler/icons-react";
-import { addReply } from "../data/store";
+import { useAppDispatch } from "../state/hooks";
+import { addReplyTicket } from "../state/ticketsSlice";
 import { formatDateTime } from "../utils";
 import { Avatar } from "./primitives";
 
@@ -9,7 +10,9 @@ function Turn({ turn, author, isAgentAuthor }) {
     <li className={`flex gap-3 ${isAgentAuthor ? "" : "flex-row-reverse"}`}>
       <Avatar name={author?.name} tone={isAgentAuthor ? "dark" : "surface"} />
       <div className={`max-w-[85%] sm:max-w-[75%] ${isAgentAuthor ? "items-start" : "items-end"}`}>
-        <div className={`mb-1 flex flex-wrap items-baseline gap-x-2 ${isAgentAuthor ? "" : "justify-end"}`}>
+        <div
+          className={`mb-1 flex flex-wrap items-baseline gap-x-2 ${isAgentAuthor ? "" : "justify-end"}`}
+        >
           <span className="text-body font-medium text-warm">{author?.name}</span>
           <span className="mono-label text-[10px] text-warm/35">
             {isAgentAuthor ? "HR" : "Employee"} · {formatDateTime(turn.at)}
@@ -30,15 +33,22 @@ function Turn({ turn, author, isAgentAuthor }) {
 }
 
 const SUGGESTED = {
-  Payroll: "Thanks for flagging this. I've checked the payroll run and can confirm the correction has been queued — it will appear with the next payout, backdated to the original date.",
-  Leave: "Thanks for reaching out about your leave. I've reviewed the policy and posted the updated balance to your profile; let me know if the numbers still look off after a refresh.",
-  Benefits: "Thanks for waiting. The provider has confirmed your enrolment change is now active on their side. If you still see an issue, send a screenshot here and I'll escalate the same day.",
-  Onboarding: "Thanks for the heads-up. Facilities has been nudged and the missing items are scheduled for delivery before the start date. I'll keep an eye on progress and confirm here.",
-  Policy: "Good question — under the current policy the rule is: [explain rule]. I've also asked the policy owner to clarify this wording on the intranet page so it's easier next time.",
-  Other: "Thanks for getting in touch. I've taken note of your request and checked the options on our side — the best next step is: [describe next step].",
+  Payroll:
+    "Thanks for flagging this. I've checked the payroll run and can confirm the correction has been queued — it will appear with the next payout, backdated to the original date.",
+  Leave:
+    "Thanks for reaching out about your leave. I've reviewed the policy and posted the updated balance to your profile; let me know if the numbers still look off after a refresh.",
+  Benefits:
+    "Thanks for waiting. The provider has confirmed your enrolment change is now active on their side. If you still see an issue, send a screenshot here and I'll escalate the same day.",
+  Onboarding:
+    "Thanks for the heads-up. Facilities has been nudged and the missing items are scheduled for delivery before the start date. I'll keep an eye on progress and confirm here.",
+  Policy:
+    "Good question — under the current policy the rule is: [explain rule]. I've also asked the policy owner to clarify this wording on the intranet page so it's easier next time.",
+  Other:
+    "Thanks for getting in touch. I've taken note of your request and checked the options on our side — the best next step is: [describe next step].",
 };
 
 export default function Thread({ ticket, users, viewer }) {
+  const dispatch = useAppDispatch();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const isEmployee = viewer.role === "employee";
@@ -52,11 +62,9 @@ export default function Thread({ ticket, users, viewer }) {
     if (body.length < 2) return;
     setSending(true);
     setTimeout(() => {
-      addReply(ticket.id, {
-        authorId: viewer.id,
-        role: viewer.role === "agent" ? "agent" : "employee",
-        text: body,
-      });
+      dispatch(addReplyTicket({ ticketId: ticket.id, authorId: viewer.id, text: body })).catch(
+        () => {},
+      );
       setText("");
       setSending(false);
     }, 350);

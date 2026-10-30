@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import {
   changeAccountRole,
   createAdminAccount,
@@ -23,7 +24,7 @@ const ROLE_SECTIONS = [
 // are printed verbatim: open-ticket demotions, history-preserving deletes,
 // last-admin protection.
 export default function AdminAccounts() {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const [rows, setRows] = useState(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");

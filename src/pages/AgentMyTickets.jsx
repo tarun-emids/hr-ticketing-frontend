@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { IconArrowDownRight } from "@tabler/icons-react";
-import { useAuth } from "../context/AuthContext";
-import { useTickets } from "../hooks";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { fetchTickets, selectAllTickets, selectTicketsLoading } from "../state/ticketsSlice";
+import { selectUser, selectUsers } from "../state/authSlice";
 import TicketTable from "../components/TicketTable";
 import { SkeletonList, EmptyState } from "../components/primitives";
 
@@ -8,9 +10,17 @@ import { SkeletonList, EmptyState } from "../components/primitives";
 // tickets whose assignee is this agent. The all-tickets view stays on
 // /inbox; a filter by name or the status column narrows further there.
 export default function AgentMyTickets() {
-  const { users, user } = useAuth();
-  const { tickets, loading } = useTickets();
+  const dispatch = useAppDispatch();
+  const users = useAppSelector(selectUsers);
+  const user = useAppSelector(selectUser);
+  const tickets = useAppSelector(selectAllTickets);
+  const loading = useAppSelector(selectTicketsLoading);
   const mine = tickets.filter((t) => t.assigneeId === user.id);
+
+  useEffect(() => {
+    dispatch(fetchTickets());
+  }, [dispatch]);
+
   const openMine = mine.filter((t) => !["Resolved", "Closed"].includes(t.status));
 
   return (

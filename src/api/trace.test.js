@@ -28,7 +28,7 @@ beforeEach(() => {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
-    })
+    }),
   );
 });
 
@@ -89,7 +89,7 @@ describe("frontend trace context (client.js + trace.js)", () => {
     expect(events.length).toBeGreaterThan(0);
     for (const e of events) {
       expect(e.traceId).toBe(traceId); // original operation's trace pair,
-      expect(e.spanId).toBe(spanId);   // not the ingest hop's own context
+      expect(e.spanId).toBe(spanId); // not the ingest hop's own context
       expect(e.correlationId).toBe(httpCall.init.headers["X-Request-ID"]);
       expect(e.logId).toMatch(UUID_RE);
     }
@@ -104,10 +104,10 @@ describe("frontend trace context (client.js + trace.js)", () => {
     const correlationIds = new Set(events.map((e) => e.correlationId));
     expect(correlationIds.size).toBe(1);
     for (const e of events) {
-      expect(e.operation).toBe("tickets.list");   // matches backend hrdesk.flow tag
-      expect(e.endpoint).toBe("/tickets");          // query strings stripped
+      expect(e.operation).toBe("tickets.list"); // matches backend hrdesk.flow tag
+      expect(e.endpoint).toBe("/tickets"); // query strings stripped
       expect(e.method).toBe("GET");
-      expect(e.source).toBeUndefined();             // server stamps `source`
+      expect(e.source).toBeUndefined(); // server stamps `source`
       // every event's log id is unique
       expect(events.filter((x) => x.logId === e.logId)).toHaveLength(1);
     }
@@ -116,10 +116,7 @@ describe("frontend trace context (client.js + trace.js)", () => {
   it("labels each lifecycle event with the call's business operation", async () => {
     await updateStatus("TKT-101", { status: "Resolved", actorId: "u2" });
     const events = ingestCalls().map((c) => JSON.parse(c.init.body).events[0]);
-    expect(events.map((e) => e.event)).toEqual([
-      "http_request_start",
-      "http_request_succeeded",
-    ]);
+    expect(events.map((e) => e.event)).toEqual(["http_request_start", "http_request_succeeded"]);
     for (const e of events) {
       expect(e.operation).toBe("tickets.status"); // same tag the backend flow events use
       expect(e.endpoint).toBe("/tickets/TKT-101/status");
@@ -132,10 +129,8 @@ describe("frontend trace context (client.js + trace.js)", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() =>
-        Promise.resolve(
-          new Response(JSON.stringify({ detail: "not allowed" }), { status: 403 })
-        )
-      )
+        Promise.resolve(new Response(JSON.stringify({ detail: "not allowed" }), { status: 403 })),
+      ),
     );
     await expect(listTickets()).rejects.toThrow("not allowed");
     expect(warnSpy).toHaveBeenCalledTimes(1);
@@ -179,9 +174,9 @@ describe("frontend trace context (client.js + trace.js)", () => {
           new Response(JSON.stringify({ ok: true }), {
             status: 200,
             headers: { "Content-Type": "application/json", "x-request-id": "req-echo-123" },
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
     await listTickets();
     expect(debugSpy).toHaveBeenCalledTimes(1);

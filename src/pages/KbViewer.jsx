@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import { getKbDoc, getKbDocUrl } from "../api/client";
 import { Spinner, EmptyState } from "../components/primitives";
 import { Icon, PATHS } from "../components/icons";
@@ -8,7 +9,7 @@ import { effectiveFormatter, formatBytes } from "../utils";
 
 export default function KbViewer() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const { slug } = useParams();
   const [doc, setDoc] = useState(null); // null until loaded; false = 403/404
   const [docError, setDocError] = useState("");

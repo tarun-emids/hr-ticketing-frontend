@@ -10,12 +10,7 @@
 // to produce correct, real trace context and ids — zero network egress.
 // VITE_TRACE=false disables all of it: no span, no traceparent header,
 // no ids (request correlation via X-Request-ID keeps working).
-import {
-  ROOT_CONTEXT,
-  SpanStatusCode,
-  defaultTextMapSetter,
-  trace,
-} from "@opentelemetry/api";
+import { ROOT_CONTEXT, SpanStatusCode, defaultTextMapSetter, trace } from "@opentelemetry/api";
 import { W3CTraceContextPropagator } from "@opentelemetry/core";
 import { WebTracerProvider } from "@opentelemetry/sdk-trace-web";
 

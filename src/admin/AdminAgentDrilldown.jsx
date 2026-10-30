@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import { agentLeaderboard, listAdminAccounts } from "./api";
 import AgentMetricsView from "./AgentMetricsView";
 import { Icon, PATHS } from "../components/icons";
@@ -10,7 +11,7 @@ import { Icon, PATHS } from "../components/icons";
 // the agents use on their personal dashboard; the admin additionally gets the
 // team leaderboard so the score-comparison graph has its peers.
 export default function AdminAgentDrilldown() {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const { agentId } = useParams();
   const [agent, setAgent] = useState(null);
   const [peers, setPeers] = useState(null);

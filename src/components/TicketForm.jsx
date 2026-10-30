@@ -4,15 +4,18 @@ import { IconArrowDownRight, IconPaperclip, IconUpload } from "@tabler/icons-rea
 import { CATEGORIES, PRIORITIES } from "../data/users";
 import {
   createDraft,
-  createTicket,
   deleteDraftAttachment,
   getDraft,
-  submitDraft,
   updateDraft,
-  uploadAttachment,
   uploadDraftAttachment,
-} from "../data/store";
-import { useAuth } from "../context/AuthContext";
+} from "../api/client";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import {
+  createTicket as createTicketThunk,
+  submitDraftTicket,
+  uploadAttachment as uploadAttachmentThunk,
+} from "../state/ticketsSlice";
+import { selectUser } from "../state/authSlice";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB — same cap the backend enforces
 
@@ -32,8 +35,9 @@ function FieldError({ msg }) {
 
 export default function TicketForm() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const { id: draftId } = useParams();
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
 
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [subject, setSubject] = useState("");
@@ -87,10 +91,12 @@ export default function TicketForm() {
   const validate = () => {
     const e = {};
     if (subject.trim().length < 5) e.subject = "Subject needs at least 5 characters.";
-    if (description.trim().length < 20) e.description = "Add a little more detail so HR can help faster (min 20 characters).";
+    if (description.trim().length < 20)
+      e.description = "Add a little more detail so HR can help faster (min 20 characters).";
     if (!category) e.category = "Choose a category.";
     if (!priority) e.priority = "Choose a priority.";
-    if (file && file.size > MAX_FILE_BYTES) e.attachment = `File is larger than 5 MB (${(file.size / 1024 / 1024).toFixed(1)} MB).`;
+    if (file && file.size > MAX_FILE_BYTES)
+      e.attachment = `File is larger than 5 MB (${(file.size / 1024 / 1024).toFixed(1)} MB).`;
     return e;
   };
 
@@ -109,19 +115,23 @@ export default function TicketForm() {
           priority,
         });
         if (file) await uploadDraftAttachment(activeDraftId, user.id, file);
-        const saved = await submitDraft(activeDraftId, { employeeId: user.id });
+        const saved = await dispatch(
+          submitDraftTicket({ draftId: activeDraftId, payload: { employeeId: user.id } }),
+        ).unwrap();
         navigate(`/tickets/${saved.id}?created=1`);
         return;
       }
-      const saved = await createTicket({
-        employeeId: user.id,
-        category,
-        subject: subject.trim(),
-        description: description.trim(),
-        priority,
-      });
+      const saved = await dispatch(
+        createTicketThunk({
+          employeeId: user.id,
+          category,
+          subject: subject.trim(),
+          description: description.trim(),
+          priority,
+        }),
+      ).unwrap();
       if (file) {
-        await uploadAttachment(saved.id, file);
+        await dispatch(uploadAttachmentThunk({ ticketId: saved.id, file })).unwrap();
       }
       navigate(`/tickets/${saved.id}?created=1`);
     } catch (err) {
@@ -133,7 +143,9 @@ export default function TicketForm() {
 
   const onSaveDraft = async () => {
     if (file && file.size > MAX_FILE_BYTES) {
-      setErrors({ attachment: `File is larger than 5 MB (${(file.size / 1024 / 1024).toFixed(1)} MB).` });
+      setErrors({
+        attachment: `File is larger than 5 MB (${(file.size / 1024 / 1024).toFixed(1)} MB).`,
+      });
       return;
     }
     setSavingDraft(true);
@@ -164,7 +176,10 @@ export default function TicketForm() {
       await deleteDraftAttachment(activeDraftId, user.id);
       setSavedAttachment(null);
     } catch (err) {
-      setErrors((current) => ({ ...current, attachment: err.message || "Could not remove attachment." }));
+      setErrors((current) => ({
+        ...current,
+        attachment: err.message || "Could not remove attachment.",
+      }));
     }
   };
 
@@ -175,139 +190,182 @@ export default function TicketForm() {
   };
 
   return (
-    <form onSubmit={onSubmit} noValidate className="soft-bl border border-surface-2 bg-surface p-6 sm:p-8">
+    <form
+      onSubmit={onSubmit}
+      noValidate
+      className="soft-bl border border-surface-2 bg-surface p-6 sm:p-8"
+    >
       {loadingDraft ? (
-        <p className="text-body text-warm/55" role="status">Loading draft…</p>
+        <p className="text-body text-warm/55" role="status">
+          Loading draft…
+        </p>
       ) : draftLoadError ? (
         <div className="border border-error/40 bg-error/10 px-4 py-3">
           <FieldError msg={draftLoadError} />
         </div>
       ) : (
-      <>
-      <div className="grid gap-6 sm:grid-cols-2">
-        <div>
-          <label htmlFor="tf-category" className={LABEL}>Category</label>
-          <select id="tf-category" value={category} onChange={(e) => setCategory(e.target.value)} className={FIELD}>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-          <FieldError msg={errors.category} />
-        </div>
-
-        <div>
-          <label htmlFor="tf-priority" className={LABEL}>Priority</label>
-          <select id="tf-priority" value={priority} onChange={(e) => setPriority(e.target.value)} className={FIELD}>
-            {PRIORITIES.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
-          <FieldError msg={errors.priority} />
-        </div>
-
-        <div className="sm:col-span-2">
-          <label htmlFor="tf-subject" className={LABEL}>Subject</label>
-          <input
-            id="tf-subject"
-            type="text"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            placeholder="e.g. May payslip is missing the shift allowance"
-            className={FIELD}
-          />
-          <FieldError msg={errors.subject} />
-        </div>
-
-        <div className="sm:col-span-2">
-          <label htmlFor="tf-description" className={LABEL}>Description</label>
-          <textarea
-            id="tf-description"
-            rows={5}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe what happened, when, and anything HR should know."
-            className={`${FIELD} resize-y`}
-          />
-          <FieldError msg={errors.description} />
-          <p className="mt-1.5 mono-label text-[10px] text-warm/30">{description.trim().length} CHARS</p>
-        </div>
-
-        <div className="sm:col-span-2">
-          <label htmlFor="tf-file" className={LABEL}>Attachment · Optional</label>
-          {file ? (
-            <div className="flex items-center gap-3 border border-teal/40 bg-teal/5 px-3 py-3">
-              <IconPaperclip size={16} aria-hidden className="shrink-0 text-teal-deep" />
-              <span className="min-w-0 flex-1 truncate text-body-lg text-warm">{file.name}</span>
-              <span className="mono-label shrink-0 text-[10px] text-warm/40">{(file.size / 1024).toFixed(0)} KB</span>
-              <button
-                type="button"
-                onClick={() => setFile(null)}
-                className="mono-label shrink-0 text-[10px] text-error-deep hover:underline"
-              >
-                Remove
-              </button>
-            </div>
-          ) : savedAttachment ? (
-            <div className="flex items-center gap-3 border border-teal/40 bg-teal/5 px-3 py-3">
-              <span className="min-w-0 flex-1 truncate text-body-lg text-warm">{savedAttachment.name}</span>
-              <span className="mono-label shrink-0 text-[10px] text-warm/40">{(savedAttachment.size / 1024).toFixed(0)} KB</span>
-              <label htmlFor="tf-file" className="mono-label shrink-0 cursor-pointer text-[10px] text-teal-deep hover:underline">
-                Replace
+        <>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div>
+              <label htmlFor="tf-category" className={LABEL}>
+                Category
               </label>
-              <button
-                type="button"
-                onClick={onRemoveSavedAttachment}
-                className="mono-label shrink-0 text-[10px] text-error-deep hover:underline"
+              <select
+                id="tf-category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className={FIELD}
               >
-                Remove
-              </button>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+              <FieldError msg={errors.category} />
             </div>
-          ) : (
-            <label
-              htmlFor="tf-file"
-              className="flex cursor-pointer items-center gap-3 border border-dashed border-warm/30 bg-canvas px-3 py-5 text-body text-warm/50 transition-colors hover:border-teal/50 hover:text-warm"
+
+            <div>
+              <label htmlFor="tf-priority" className={LABEL}>
+                Priority
+              </label>
+              <select
+                id="tf-priority"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className={FIELD}
+              >
+                {PRIORITIES.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+              <FieldError msg={errors.priority} />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label htmlFor="tf-subject" className={LABEL}>
+                Subject
+              </label>
+              <input
+                id="tf-subject"
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="e.g. May payslip is missing the shift allowance"
+                className={FIELD}
+              />
+              <FieldError msg={errors.subject} />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label htmlFor="tf-description" className={LABEL}>
+                Description
+              </label>
+              <textarea
+                id="tf-description"
+                rows={5}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe what happened, when, and anything HR should know."
+                className={`${FIELD} resize-y`}
+              />
+              <FieldError msg={errors.description} />
+              <p className="mt-1.5 mono-label text-[10px] text-warm/30">
+                {description.trim().length} CHARS
+              </p>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label htmlFor="tf-file" className={LABEL}>
+                Attachment · Optional
+              </label>
+              {file ? (
+                <div className="flex items-center gap-3 border border-teal/40 bg-teal/5 px-3 py-3">
+                  <IconPaperclip size={16} aria-hidden className="shrink-0 text-teal-deep" />
+                  <span className="min-w-0 flex-1 truncate text-body-lg text-warm">
+                    {file.name}
+                  </span>
+                  <span className="mono-label shrink-0 text-[10px] text-warm/40">
+                    {(file.size / 1024).toFixed(0)} KB
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setFile(null)}
+                    className="mono-label shrink-0 text-[10px] text-error-deep hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : savedAttachment ? (
+                <div className="flex items-center gap-3 border border-teal/40 bg-teal/5 px-3 py-3">
+                  <span className="min-w-0 flex-1 truncate text-body-lg text-warm">
+                    {savedAttachment.name}
+                  </span>
+                  <span className="mono-label shrink-0 text-[10px] text-warm/40">
+                    {(savedAttachment.size / 1024).toFixed(0)} KB
+                  </span>
+                  <label
+                    htmlFor="tf-file"
+                    className="mono-label shrink-0 cursor-pointer text-[10px] text-teal-deep hover:underline"
+                  >
+                    Replace
+                  </label>
+                  <button
+                    type="button"
+                    onClick={onRemoveSavedAttachment}
+                    className="mono-label shrink-0 text-[10px] text-error-deep hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <label
+                  htmlFor="tf-file"
+                  className="flex cursor-pointer items-center gap-3 border border-dashed border-warm/30 bg-canvas px-3 py-5 text-body text-warm/50 transition-colors hover:border-teal/50 hover:text-warm"
+                >
+                  <IconUpload size={16} aria-hidden className="text-teal-deep/80" />
+                  Click to attach a screenshot or document
+                </label>
+              )}
+              <input id="tf-file" type="file" className="hidden" onChange={onPickFile} />
+              <FieldError msg={errors.attachment} />
+            </div>
+          </div>
+
+          <div className="mt-8 flex items-center justify-end gap-4 border-t border-surface-2 pt-6">
+            <button
+              type="button"
+              onClick={() => navigate("/my-tickets")}
+              className="mono-label px-2 py-2 text-[10px] text-warm/50 hover:text-warm"
             >
-              <IconUpload size={16} aria-hidden className="text-teal-deep/80" />
-              Click to attach a screenshot or document
-            </label>
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={onSaveDraft}
+              disabled={submitting || savingDraft}
+              className="mono-label border border-warm/35 px-4 py-3 text-[10px] text-warm/65 transition-colors hover:border-teal hover:text-teal-deep disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {savingDraft ? "Saving…" : "Save draft"}
+            </button>
+            <button
+              type="submit"
+              disabled={submitting || savingDraft}
+              className="mono-label inline-flex items-center gap-2 border border-teal bg-teal px-5 py-3 text-[10px] text-warm transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {submitting ? "Submitting…" : "Submit ticket"}
+              <IconArrowDownRight size={16} aria-hidden />
+            </button>
+          </div>
+
+          {errors._form && (
+            <div className="mt-4 border border-error/40 bg-error/10 px-4 py-3">
+              <FieldError msg={errors._form} />
+            </div>
           )}
-          <input id="tf-file" type="file" className="hidden" onChange={onPickFile} />
-          <FieldError msg={errors.attachment} />
-        </div>
-      </div>
-
-      <div className="mt-8 flex items-center justify-end gap-4 border-t border-surface-2 pt-6">
-        <button
-          type="button"
-          onClick={() => navigate("/my-tickets")}
-          className="mono-label px-2 py-2 text-[10px] text-warm/50 hover:text-warm"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          onClick={onSaveDraft}
-          disabled={submitting || savingDraft}
-          className="mono-label border border-warm/35 px-4 py-3 text-[10px] text-warm/65 transition-colors hover:border-teal hover:text-teal-deep disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {savingDraft ? "Saving…" : "Save draft"}
-        </button>
-        <button
-          type="submit"
-          disabled={submitting || savingDraft}
-          className="mono-label inline-flex items-center gap-2 border border-teal bg-teal px-5 py-3 text-[10px] text-warm transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {submitting ? "Submitting…" : "Submit ticket"}
-          <IconArrowDownRight size={16} aria-hidden />
-        </button>
-      </div>
-
-      {errors._form && (
-        <div className="mt-4 border border-error/40 bg-error/10 px-4 py-3">
-          <FieldError msg={errors._form} />
-        </div>
-      )}
-      </>
+        </>
       )}
     </form>
   );

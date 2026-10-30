@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import { Icon, PATHS } from "../components/icons";
 import { Spinner } from "../components/primitives";
 import { askAssistant } from "./api";
@@ -14,7 +15,7 @@ import { askAssistant } from "./api";
 // [REF · ¶n] markers stay in the text, and the citation chips underneath
 // link straight to the PDF viewer at that policy's page.
 export default function AssistantWindow({ onClose }) {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const [messages, setMessages] = useState([]); // {role: 'user'|'assistant'|'error', text, citations?}
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);

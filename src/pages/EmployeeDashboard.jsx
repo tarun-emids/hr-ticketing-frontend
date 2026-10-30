@@ -1,12 +1,13 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import { IconArrowDownRight, IconPaperclip, IconPlus } from "@tabler/icons-react";
-import { useAuth } from "../context/AuthContext";
-import { useTickets } from "../hooks";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { fetchTickets, selectAllTickets, selectTicketsLoading } from "../state/ticketsSlice";
+import { selectUser } from "../state/authSlice";
 import { StatusBadge, PriorityBadge } from "../components/Badge";
 import { SkeletonList, EmptyState } from "../components/primitives";
 import { timeAgo } from "../utils";
-import { deleteDraft, listDrafts } from "../data/store";
+import { deleteDraft, listDrafts } from "../api/client";
 
 function TicketRow({ t }) {
   return (
@@ -36,13 +37,19 @@ function TicketRow({ t }) {
 }
 
 export default function EmployeeDashboard() {
-  const { user } = useAuth();
-  const { tickets, loading } = useTickets();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+  const tickets = useAppSelector(selectAllTickets);
+  const loading = useAppSelector(selectTicketsLoading);
   const [drafts, setDrafts] = useState([]);
   const [draftsLoading, setDraftsLoading] = useState(true);
   const [draftError, setDraftError] = useState("");
   const [deletingDraft, setDeletingDraft] = useState("");
   const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    dispatch(fetchTickets());
+  }, [dispatch]);
 
   const refreshDrafts = useCallback(() => {
     setDraftsLoading(true);

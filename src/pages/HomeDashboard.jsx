@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useTickets } from "../hooks";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { fetchTickets, selectAllTickets, selectTicketsLoading } from "../state/ticketsSlice";
+import { selectIsAgent, selectUser } from "../state/authSlice";
 import { searchKb } from "../api/client";
 import heroImg from "../assets/kb-hero.png";
 import { Spinner } from "../components/primitives";
@@ -45,11 +46,18 @@ function NavBox({ to, icon, title, body, stat, className = "" }) {
 }
 
 export default function HomeDashboard() {
-  const { user, isAgent } = useAuth();
-  // Admin is a rare role: the auth context exposes user/isAgent, so derive it here.
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+  const isAgent = useAppSelector(selectIsAgent);
+  // Admin is a rare role: the auth slice exposes user/isAgent, so derive it here.
   const isAdmin = user?.role === "admin";
   const navigate = useNavigate();
-  const { tickets, loading: ticketsLoading } = useTickets();
+  const tickets = useAppSelector(selectAllTickets);
+  const ticketsLoading = useAppSelector(selectTicketsLoading);
+
+  useEffect(() => {
+    dispatch(fetchTickets());
+  }, [dispatch]);
 
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState(null); // null = idle, [] = no match

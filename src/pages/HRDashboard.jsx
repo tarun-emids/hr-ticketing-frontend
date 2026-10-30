@@ -1,5 +1,6 @@
 import { IconArrowDownRight, IconUser } from "@tabler/icons-react";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import AgentMetricsView from "../admin/AgentMetricsView";
 
 // HR dashboard — the AGENT'S OWN performance (route /hr-dashboard).
@@ -8,7 +9,7 @@ import AgentMetricsView from "../admin/AgentMetricsView";
 // sees in the drill-down, fetched for themselves — the backend's
 // self-or-admin rule blocks agents from reading anybody else's numbers).
 export default function HRDashboard() {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   return (
     <div className="mx-auto max-w-4xl">
       <header className="mb-8">

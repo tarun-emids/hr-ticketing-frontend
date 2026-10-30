@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IconArrowDownRight } from "@tabler/icons-react";
-import { useAuth } from "../context/AuthContext";
+import { useAppDispatch } from "../state/hooks";
+import { login as loginThunk } from "../state/authSlice";
 import Logo from "../components/Logo";
 
 const FIELD =
@@ -19,7 +20,7 @@ function FieldError({ msg }) {
 }
 
 export default function Login() {
-  const { login } = useAuth();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -40,7 +41,7 @@ export default function Login() {
 
     setSubmitting(true);
     try {
-      const appUser = await login(email.trim(), password);
+      await dispatch(loginThunk({ email: email.trim(), password })).unwrap();
       // Every persona lands on the shared home dashboard (role-aware nav
       // boxes + knowledge-base search) — the role's own workspace stays one
       // click away in the sidebar.

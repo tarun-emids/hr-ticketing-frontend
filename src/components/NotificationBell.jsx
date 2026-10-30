@@ -1,21 +1,41 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useNotifications } from "../hooks";
-import { markAllNotificationsRead, markNotificationRead } from "../data/notifications";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
+import {
+  fetchNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  selectNotifications,
+  selectUnreadCount,
+} from "../state/notificationsSlice";
 import NotificationRow from "./NotificationRow";
 import { IconArrowDownRight, IconBell } from "@tabler/icons-react";
 
 const BADGE_CAP = 9;
+const POLL_MS = 20000;
 
 export default function NotificationBell() {
-  const { user } = useAuth();
-  const { items, unread } = useNotifications(user?.id, 20000);
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+  const items = useAppSelector(selectNotifications);
+  const unread = useAppSelector(selectUnreadCount);
+  const userId = user?.id;
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const bellRef = useRef(null);
   const itemRefs = useRef([]);
+
+  // One initial pull + a 20s refresh, as before — the badge stays
+  // authoritative via the slice's mark-read-then-refetch behaviour.
+  useEffect(() => {
+    if (!userId) return undefined;
+    const refresh = () => dispatch(fetchNotifications({ userId, limit: 50 })).catch(() => {});
+    refresh();
+    const interval = setInterval(refresh, POLL_MS);
+    return () => clearInterval(interval);
+  }, [userId, dispatch]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -44,7 +64,7 @@ export default function NotificationBell() {
     if (n.ticketRef) {
       navigate(`/tickets/${n.ticketRef}`);
       closeAndRefocus();
-      if (!n.read) markNotificationRead(n.id, user.id).catch(() => {});
+      if (!n.read) dispatch(markNotificationRead({ id: n.id, userId: user.id })).catch(() => {});
     }
   };
 
@@ -108,13 +128,19 @@ export default function NotificationBell() {
           {items.length === 0 ? (
             <p className="px-4 py-6 text-body text-warm/40">Nothing yet — quiet is fine.</p>
           ) : (
-            <ul role="menu" aria-label="Recent notifications" className="max-h-[26rem] overflow-y-auto">
+            <ul
+              role="menu"
+              aria-label="Recent notifications"
+              className="max-h-[26rem] overflow-y-auto"
+            >
               {items.map((n, i) => (
                 <li key={n.id} role="none">
                   <NotificationRow
                     notification={n}
                     role="menuitem"
-                    itemRef={(el) => { itemRefs.current[i] = el; }}
+                    itemRef={(el) => {
+                      itemRefs.current[i] = el;
+                    }}
                     tabIndex={i === 0 ? 0 : -1}
                     onKeyDown={(e) => onItemKey(e, i, n)}
                     onOpen={openItem}
@@ -126,13 +152,19 @@ export default function NotificationBell() {
 
           <div className="flex items-center justify-between border-t border-surface-2 px-4 py-3">
             <button
-              onClick={() => { if (user?.id) markAllNotificationsRead(user.id).catch(() => {}); }}
+              onClick={() => {
+                if (user?.id)
+                  dispatch(markAllNotificationsRead({ userId: user.id })).catch(() => {});
+              }}
               className="mono-label text-[10px] text-warm/45 transition-colors hover:text-teal-deep focus:outline-none focus-visible:text-teal-deep"
             >
               Mark all read
             </button>
             <button
-              onClick={() => { navigate("/notifications"); closeAndRefocus(); }}
+              onClick={() => {
+                navigate("/notifications");
+                closeAndRefocus();
+              }}
               className="mono-label inline-flex items-center gap-1.5 text-[10px] text-teal-deep transition-colors hover:text-teal-deep focus:outline-none focus-visible:text-teal-deep"
             >
               View all

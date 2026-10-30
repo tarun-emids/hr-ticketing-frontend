@@ -1,58 +1,55 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IconArrowDownRight, IconCircleCheck } from "@tabler/icons-react";
-import { useAuth } from "../context/AuthContext";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import {
-  getUnreadCount,
-  listNotifications,
+  fetchNotifications,
   markAllNotificationsRead,
   markNotificationRead,
-  refreshNotifications,
-  subscribe,
-} from "../data/notifications";
+  selectNotifications,
+  selectUnreadCount,
+} from "../state/notificationsSlice";
 import NotificationRow from "../components/NotificationRow";
 import { EmptyState, Spinner } from "../components/primitives";
 
 const PAGE = 50;
 
 export default function Notifications() {
-  const { user } = useAuth();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+  const rows = useAppSelector(selectNotifications);
+  const unread = useAppSelector(selectUnreadCount);
   const navigate = useNavigate();
-  const [rows, setRows] = useState(() => listNotifications());
-  const [unread, setUnread] = useState(() => getUnreadCount());
   const [limit, setLimit] = useState(PAGE);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const alive = useRef(true);
 
   useEffect(() => {
-    alive.current = true;
-    const unsub = subscribe(() => {
-      setRows(listNotifications());
-      setUnread(getUnreadCount());
-    });
-    refreshNotifications(user?.id, PAGE)
+    let alive = true;
+    dispatch(fetchNotifications({ userId: user?.id, limit: PAGE }))
       .catch(() => {})
-      .finally(() => { if (alive.current) setLoading(false); });
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
     return () => {
-      alive.current = false;
-      unsub();
+      alive = false;
     };
-  }, [user?.id]);
+  }, [user?.id, dispatch]);
 
   const loadMore = () => {
     const next = limit + PAGE;
     setLimit(next);
     setLoadingMore(true);
-    refreshNotifications(user?.id, next)
+    dispatch(fetchNotifications({ userId: user?.id, limit: next }))
       .catch(() => {})
-      .finally(() => { if (alive.current) setLoadingMore(false); });
+      .finally(() => setLoadingMore(false));
   };
 
   const openItem = (n) => {
     if (n.ticketRef) {
       navigate(`/tickets/${n.ticketRef}`);
-      if (!n.read) markNotificationRead(n.id, user.id).catch(() => {});
+      if (!n.read) dispatch(markNotificationRead({ id: n.id, userId: user.id })).catch(() => {});
     }
   };
 
@@ -68,15 +65,22 @@ export default function Notifications() {
           </span>
           <h1 className="text-h3 text-warm">
             All notifications
-            {unread > 0 && <span className="mono-label ml-3 align-middle text-[10px] text-teal-deep">{unread} unread</span>}
+            {unread > 0 && (
+              <span className="mono-label ml-3 align-middle text-[10px] text-teal-deep">
+                {unread} unread
+              </span>
+            )}
           </h1>
           <p className="mt-2 text-caption text-warm/50">
-            Your own ticket updates. Notification text stays generic on purpose — open the ticket for detail.
+            Your own ticket updates. Notification text stays generic on purpose — open the ticket
+            for detail.
           </p>
         </div>
         {unread > 0 && (
           <button
-            onClick={() => { if (user?.id) markAllNotificationsRead(user.id).catch(() => {}); }}
+            onClick={() => {
+              if (user?.id) dispatch(markAllNotificationsRead({ userId: user.id })).catch(() => {});
+            }}
             className="mono-label border border-warm/30 px-3 py-1.5 text-[10px] text-warm/60 transition-colors hover:border-teal hover:text-teal-deep"
           >
             Mark all read

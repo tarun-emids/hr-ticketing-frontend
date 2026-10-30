@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import { adminOverview } from "./api";
 import { Spinner, EmptyState, StatCard } from "../components/primitives";
 import { CountBars, Heatmap, HistogramBars, RankedBars, TimeLines } from "./charts";
@@ -16,7 +17,7 @@ const WINDOWS = [
 // Window switches re-query the backend (rows created inside the window).
 // The AGENTS/TICKETS workspace drill lives on its own screen (/admin/worktable).
 export default function AdminOverview() {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const actorId = user?.id;
   const [window, setWindow] = useState("all");
   const [data, setData] = useState(null);

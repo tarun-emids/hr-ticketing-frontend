@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import { agentLeaderboard, adminOverview } from "./api";
 import { Spinner, EmptyState } from "../components/primitives";
 
@@ -21,7 +22,7 @@ const TABS = [
 //   TICKETS pane   category loads + the repetitive subjects inside each —
 //                  the "what to write into the knowledge base next" list.
 export default function AdminWorktable() {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const actorId = user?.id;
   const [tab, setTab] = useState("agents");
   const [period, setPeriod] = useState("30d");

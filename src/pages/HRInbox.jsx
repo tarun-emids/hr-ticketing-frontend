@@ -1,12 +1,20 @@
+import { useEffect } from "react";
 import { IconArrowDownRight } from "@tabler/icons-react";
-import { useAuth } from "../context/AuthContext";
-import { useTickets } from "../hooks";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { fetchTickets, selectAllTickets, selectTicketsLoading } from "../state/ticketsSlice";
+import { selectUsers } from "../state/authSlice";
 import TicketTable from "../components/TicketTable";
 import { SkeletonList, EmptyState } from "../components/primitives";
 
 export default function HRInbox() {
-  const { users } = useAuth();
-  const { tickets, loading } = useTickets();
+  const dispatch = useAppDispatch();
+  const users = useAppSelector(selectUsers);
+  const tickets = useAppSelector(selectAllTickets);
+  const loading = useAppSelector(selectTicketsLoading);
+
+  useEffect(() => {
+    dispatch(fetchTickets());
+  }, [dispatch]);
 
   if (loading) {
     return (

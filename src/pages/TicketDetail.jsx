@@ -10,9 +10,18 @@ import {
   IconPaperclip,
 } from "@tabler/icons-react";
 import { CATEGORIES, PRIORITIES, STATUSES } from "../data/users";
-import { agentWorkload } from "../api/client";
-import { getTicket, subscribe, refreshTicket, updateStatus, assignTicket, autoAssignTicket, setPriority, setCategory, getAttachmentUrl } from "../data/store";
-import { useAuth } from "../context/AuthContext";
+import { agentWorkload, getAttachmentUrl } from "../api/client";
+import {
+  assignTicketTicket,
+  autoAssignTicketTicket,
+  fetchTicket,
+  selectTicketById,
+  setCategoryTicket,
+  setPriorityTicket,
+  updateStatusTicket,
+} from "../state/ticketsSlice";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { selectUser, selectUsers } from "../state/authSlice";
 import { StatusBadge, PriorityBadge } from "../components/Badge";
 import Thread from "../components/Thread";
 import { Spinner, EmptyState } from "../components/primitives";
@@ -31,12 +40,15 @@ function MetaItem({ label, children }) {
 }
 
 function AgentControls({ ticket, actor, users }) {
+  const dispatch = useAppDispatch();
   const agents = users.filter((u) => u.role === "agent");
   const [workload, setWorkload] = useState([]);
   const [routing, setRouting] = useState(false);
 
   useEffect(() => {
-    agentWorkload().then(setWorkload).catch(() => setWorkload([]));
+    agentWorkload()
+      .then(setWorkload)
+      .catch(() => setWorkload([]));
   }, [ticket.assigneeId, ticket.id]);
 
   const openCountFor = (id) => workload.find((w) => w.id === id)?.openCount;
@@ -44,7 +56,7 @@ function AgentControls({ ticket, actor, users }) {
   const routeNow = async () => {
     setRouting(true);
     try {
-      await autoAssignTicket(ticket.id);
+      await dispatch(autoAssignTicketTicket(ticket.id)).unwrap();
     } catch (e) {
       window.alert(`Auto-assign failed: ${e.message}`);
     } finally {
@@ -55,28 +67,67 @@ function AgentControls({ ticket, actor, users }) {
   return (
     <div className="mt-6 grid gap-5 border-t border-surface-2 pt-6 sm:grid-cols-2">
       <MetaItem label="Status">
-        <select value={ticket.status} onChange={(e) => updateStatus(ticket.id, e.target.value, actor.id)} className={SELECT}>
-          {STATUSES.map((s) => <option key={s}>{s}</option>)}
+        <select
+          value={ticket.status}
+          onChange={(e) =>
+            dispatch(
+              updateStatusTicket({
+                ticketId: ticket.id,
+                status: e.target.value,
+                actorId: actor.id,
+              }),
+            )
+          }
+          className={SELECT}
+        >
+          {STATUSES.map((s) => (
+            <option key={s}>{s}</option>
+          ))}
         </select>
       </MetaItem>
       <MetaItem label="Assignee">
-        <select value={ticket.assigneeId ?? ""} onChange={(e) => assignTicket(ticket.id, e.target.value || null)} className={SELECT}>
+        <select
+          value={ticket.assigneeId ?? ""}
+          onChange={(e) =>
+            dispatch(
+              assignTicketTicket({ ticketId: ticket.id, assigneeId: e.target.value || null }),
+            )
+          }
+          className={SELECT}
+        >
           <option value="">Unassigned</option>
           {agents.map((a) => (
             <option key={a.id} value={a.id}>
-              {a.name}{typeof openCountFor(a.id) === "number" ? ` · ${openCountFor(a.id)} open` : ""}
+              {a.name}
+              {typeof openCountFor(a.id) === "number" ? ` · ${openCountFor(a.id)} open` : ""}
             </option>
           ))}
         </select>
       </MetaItem>
       <MetaItem label="Priority">
-        <select value={ticket.priority} onChange={(e) => setPriority(ticket.id, e.target.value)} className={SELECT}>
-          {PRIORITIES.map((p) => <option key={p}>{p}</option>)}
+        <select
+          value={ticket.priority}
+          onChange={(e) =>
+            dispatch(setPriorityTicket({ ticketId: ticket.id, priority: e.target.value }))
+          }
+          className={SELECT}
+        >
+          {PRIORITIES.map((p) => (
+            <option key={p}>{p}</option>
+          ))}
         </select>
       </MetaItem>
       <MetaItem label="Re-categorise">
-        <select value={ticket.category} onChange={(e) => setCategory(ticket.id, e.target.value)} className={SELECT}>
-          {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+        <select
+          value={ticket.category}
+          onChange={(e) =>
+            dispatch(setCategoryTicket({ ticketId: ticket.id, category: e.target.value }))
+          }
+          className={SELECT}
+        >
+          {CATEGORIES.map((c) => (
+            <option key={c}>{c}</option>
+          ))}
         </select>
       </MetaItem>
       <div className="sm:col-span-2">
@@ -197,7 +248,12 @@ function AttachmentChip({ ticket }) {
               {error ? (
                 <>
                   Could not load image: {error}{" "}
-                  <button type="button" onClick={retryImageLoad} disabled={busy} className="text-teal-deep underline disabled:opacity-40">
+                  <button
+                    type="button"
+                    onClick={retryImageLoad}
+                    disabled={busy}
+                    className="text-teal-deep underline disabled:opacity-40"
+                  >
                     Retry
                   </button>
                 </>
@@ -234,7 +290,9 @@ function AttachmentChip({ ticket }) {
                 alt={ticket.attachment.name}
                 className="max-h-[calc(100vh-7rem)] max-w-full object-contain"
               />
-              <p className="max-w-full truncate text-caption text-warm/60">{ticket.attachment.name}</p>
+              <p className="max-w-full truncate text-caption text-warm/60">
+                {ticket.attachment.name}
+              </p>
             </div>
           </div>
         )}
@@ -245,10 +303,17 @@ function AttachmentChip({ ticket }) {
   return (
     <div className="mt-5 flex flex-wrap items-center gap-2 border border-surface-2 bg-canvas px-3 py-3 text-body text-warm/80">
       <IconPaperclip size={16} aria-hidden className="text-teal-deep/80" />
-      <button type="button" onClick={open} disabled={busy} className="underline decoration-teal/50 underline-offset-4 transition-colors hover:text-teal-deep disabled:opacity-40">
+      <button
+        type="button"
+        onClick={open}
+        disabled={busy}
+        className="underline decoration-teal/50 underline-offset-4 transition-colors hover:text-teal-deep disabled:opacity-40"
+      >
         {ticket.attachment.name}
       </button>
-      <span className="mono-label text-[10px] text-warm/35">{(ticket.attachment.size / 1024).toFixed(0)} KB</span>
+      <span className="mono-label text-[10px] text-warm/35">
+        {(ticket.attachment.size / 1024).toFixed(0)} KB
+      </span>
       {busy ? (
         <span className="mono-label text-[10px] text-warm/25">opening…</span>
       ) : (
@@ -262,27 +327,26 @@ function AttachmentChip({ ticket }) {
 
 export default function TicketDetail() {
   const { id } = useParams();
-  const { user, users } = useAuth();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+  const users = useAppSelector(selectUsers);
+  const ticket = useAppSelector((state) => selectTicketById(state, id));
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const justCreated = searchParams.get("created") === "1";
-  const [, force] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [banner, setBanner] = useState(justCreated);
 
   useEffect(() => {
-    const unsub = subscribe(() => force((n) => n + 1));
-    return () => unsub();
-  }, []);
-
-  useEffect(() => {
     let alive = true;
     setLoading(true);
     setError(null);
-    refreshTicket(id)
+    // Fulfilled upserts the ticket into the store — the selector re-renders us.
+    dispatch(fetchTicket(id))
+      .unwrap()
       .catch((e) => {
-        if (alive) setError(e.message ?? String(e));
+        if (alive) setError(e?.message ?? String(e));
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -290,7 +354,7 @@ export default function TicketDetail() {
     return () => {
       alive = false;
     };
-  }, [id]);
+  }, [id, dispatch]);
 
   useEffect(() => {
     if (!banner) return undefined;
@@ -303,12 +367,14 @@ export default function TicketDetail() {
   if (!user) {
     return (
       <div className="mx-auto max-w-4xl pt-8">
-        <EmptyState title="Session expired" body="Your saved user no longer exists in the backend — please sign in again." icon={<IconAlertTriangle size={32} />} />
+        <EmptyState
+          title="Session expired"
+          body="Your saved user no longer exists in the backend — please sign in again."
+          icon={<IconAlertTriangle size={32} />}
+        />
       </div>
     );
   }
-
-  const ticket = getTicket(id);
 
   if (!ticket) {
     return (
@@ -327,7 +393,11 @@ export default function TicketDetail() {
   if (!isAgent && !isMine) {
     return (
       <div className="mx-auto max-w-4xl pt-8">
-        <EmptyState title="No access to this ticket" body="You can only view your own tickets." icon={<IconLock size={32} />} />
+        <EmptyState
+          title="No access to this ticket"
+          body="You can only view your own tickets."
+          icon={<IconLock size={32} />}
+        />
       </div>
     );
   }
@@ -348,7 +418,8 @@ export default function TicketDetail() {
 
       {banner && (
         <div className="mt-4 flex items-center gap-2 border border-ok/40 bg-ok/10 px-4 py-3 text-body-lg text-ok-deep">
-          <IconCircleCheck size={16} aria-hidden className="shrink-0" /> Ticket {ticket.id} submitted — HR has been notified.
+          <IconCircleCheck size={16} aria-hidden className="shrink-0" /> Ticket {ticket.id}{" "}
+          submitted — HR has been notified.
         </div>
       )}
 
@@ -377,7 +448,11 @@ export default function TicketDetail() {
             {assignee ? assignee.name : <span className="text-warm/25 italic">Unassigned</span>}
           </MetaItem>
           <MetaItem label="Resolved">
-            {ticket.resolvedAt ? formatDateTime(ticket.resolvedAt) : <span className="text-warm/25">—</span>}
+            {ticket.resolvedAt ? (
+              formatDateTime(ticket.resolvedAt)
+            ) : (
+              <span className="text-warm/25">—</span>
+            )}
           </MetaItem>
           <MetaItem label="Closed by">
             {closedBy ? closedBy.name : <span className="text-warm/25">—</span>}
@@ -389,7 +464,9 @@ export default function TicketDetail() {
         {isAgent && <AgentControls ticket={ticket} actor={user} users={users} />}
       </section>
 
-      <p className="mono-label mb-4 text-[10px] text-warm/40">CONVERSATION / FIG. {ticket.id.replace("-", ".")}</p>
+      <p className="mono-label mb-4 text-[10px] text-warm/40">
+        CONVERSATION / FIG. {ticket.id.replace("-", ".")}
+      </p>
       <Thread ticket={ticket} users={users} viewer={user} />
     </div>
   );
