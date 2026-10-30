@@ -32,7 +32,8 @@ export default function Login() {
 
     const e = {};
     if (!email.trim()) e.email = "Enter your work email.";
-    else if (!/^\S+@\S+\.\S+$/.test(email.trim())) e.email = "That doesn't look like a valid email address.";
+    else if (!/^\S+@\S+\.\S+$/.test(email.trim()))
+      e.email = "That doesn't look like a valid email address.";
     if (!password) e.password = "Enter your password.";
     setErrors(e);
     if (Object.keys(e).length > 0) return;
@@ -40,7 +41,10 @@ export default function Login() {
     setSubmitting(true);
     try {
       const appUser = await login(email.trim(), password);
-      navigate(appUser.role === "agent" ? "/inbox" : "/my-tickets");
+      // Every persona lands on the shared home dashboard (role-aware nav
+      // boxes + knowledge-base search) — the role's own workspace stays one
+      // click away in the sidebar.
+      navigate("/dashboard");
     } catch (err) {
       setErrors({ _form: err.message || "Could not sign in — is the API running?" });
     } finally {
@@ -50,10 +54,7 @@ export default function Login() {
 
   return (
     <div className="relative flex min-h-screen bg-canvas">
-      <div
-        aria-hidden
-        className="teal-gradient pointer-events-none absolute inset-x-0 top-0 h-1"
-      />
+      <div aria-hidden className="teal-gradient pointer-events-none absolute inset-x-0 top-0 h-1" />
       {/* Brand plate */}
       <section className="relative hidden flex-1 flex-col overflow-hidden p-12 lg:flex">
         {/* Frame mid-bar: x 7-28 of the 60×48 modular grid, parked in the
@@ -64,7 +65,7 @@ export default function Login() {
           style={{ left: "11.67%", top: "70%", width: "35%", height: "14.58%" }}
         >
           <span className="mono-label absolute bottom-0 right-0 px-4 pb-3 text-[10px] text-warm">
-            0 1 / H R  D E S K
+            0 1 / H R D E S K
           </span>
         </div>
         <Logo size="lg" />
@@ -79,8 +80,8 @@ export default function Login() {
             Outcomes you can <span className="text-teal-deep">track.</span>
           </h1>
           <p className="mt-6 text-body-lg text-warm">
-            Raise requests, follow the thread, know exactly where each ticket stands —
-            without chasing anyone down.
+            Raise requests, follow the thread, know exactly where each ticket stands — without
+            chasing anyone down.
           </p>
         </div>
 
@@ -91,7 +92,11 @@ export default function Login() {
 
       {/* Sign-in card */}
       <section className="flex w-full items-center justify-center px-6 lg:w-[38rem]">
-        <form onSubmit={onSubmit} noValidate className="soft-bl w-full max-w-md border border-surface-2 bg-surface p-8">
+        <form
+          onSubmit={onSubmit}
+          noValidate
+          className="soft-bl w-full max-w-md border border-surface-2 bg-surface p-8"
+        >
           <div className="mb-8 flex items-center gap-3 lg:hidden">
             <Logo size="nav" />
           </div>
@@ -102,7 +107,9 @@ export default function Login() {
           </span>
           <div className="rule-teal mb-6" />
 
-          <label htmlFor="login-email" className={LABEL}>Work email</label>
+          <label htmlFor="login-email" className={LABEL}>
+            Work email
+          </label>
           <input
             id="login-email"
             type="email"
@@ -113,12 +120,13 @@ export default function Login() {
               setEmail(e.target.value);
               setErrors((prev) => ({ ...prev, email: undefined, _form: undefined }));
             }}
-            placeholder="e.g. priya@acme.com"
             className={`${FIELD} mb-5`}
           />
           <FieldError msg={errors.email} />
 
-          <label htmlFor="login-password" className={LABEL}>Password</label>
+          <label htmlFor="login-password" className={LABEL}>
+            Password
+          </label>
           <input
             id="login-password"
             type="password"
@@ -148,8 +156,8 @@ export default function Login() {
           )}
 
           <p className="mt-5 text-center text-caption text-warm/35">
-            Accounts are provisioned by your organisation — there is no sign-up.
-            Contact HR/IT for access.
+            Accounts are provisioned by your organisation — there is no sign-up. Contact HR/IT for
+            access.
           </p>
         </form>
       </section>

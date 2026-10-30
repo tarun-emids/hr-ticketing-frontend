@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { IconMenu2 } from "@tabler/icons-react";
 import Sidebar from "./Sidebar";
 import NotificationBell from "./NotificationBell";
+import AssistantBubble from "../rag/AssistantBubble";
 
 export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -17,9 +18,7 @@ export default function Layout() {
         onNavigate={close}
         onHide={close}
       />
-      {mobileOpen && (
-        <div className="fixed inset-0 z-30 bg-canvas/70 lg:hidden" onClick={close} />
-      )}
+      {mobileOpen && <div className="fixed inset-0 z-30 bg-canvas/70 lg:hidden" onClick={close} />}
       <main className={sidebarCollapsed ? "lg:pl-16" : "lg:pl-64"}>
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-12 lg:py-8">
           <div className="mb-4 flex items-center justify-between">
@@ -36,6 +35,8 @@ export default function Layout() {
           <Outlet />
         </div>
       </main>
+      {/* HR assistant (RAG): reachable from every signed-in screen */}
+      <AssistantBubble />
     </div>
   );
 }

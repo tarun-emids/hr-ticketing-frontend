@@ -9,10 +9,14 @@ import { Icon, PATHS } from "../components/icons";
 
 const SEARCH_ICON = PATHS.search;
 const ARROW = PATHS.arrow;
-const TICKETS_ICON = "M9 12h6m-9 3.3h4.5M8.7 21h6.6a2.7 2.7 0 0 0 2.7-2.7V5.7A2.7 2.7 0 0 0 15.3 3H8.7A2.7 2.7 0 0 0 6 5.7v12.6A2.7 2.7 0 0 0 8.7 21Z";
+const TICKETS_ICON =
+  "M9 12h6m-9 3.3h4.5M8.7 21h6.6a2.7 2.7 0 0 0 2.7-2.7V5.7A2.7 2.7 0 0 0 15.3 3H8.7A2.7 2.7 0 0 0 6 5.7v12.6A2.7 2.7 0 0 0 8.7 21Z";
 const NEW_ICON = "M12 4.5v15m7.5-7.5h-15";
-const INBOX_ICON = "M3 13.1h5l1.8 2.7h4.4l1.8-2.7h5M4.9 6.2h5.2M4.9 6.2A2 2 0 0 0 3 8.2v9.6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.2a2 2 0 0 0-1.9-2H4.9Z";
+const INBOX_ICON =
+  "M3 13.1h5l1.8 2.7h4.4l1.8-2.7h5M4.9 6.2h5.2M4.9 6.2A2 2 0 0 0 3 8.2v9.6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.2a2 2 0 0 0-1.9-2H4.9Z";
 const CHART_ICON = "M3 13.2V20h6v-6.8M14.5 4v16h-6V9.5M21 20h-6V8h6Z";
+const KB_ICON =
+  "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zm20 0h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z";
 
 const QUICK_TERMS = ["Leave", "Payroll", "Payslip", "Benefits", "Insurance", "POSH", "Hybrid"];
 
@@ -120,20 +124,34 @@ export default function HomeDashboard() {
       (t) => t.assigneeId === user.id && !["Resolved", "Closed"].includes(t.status),
     ).length;
     boxes = (
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
         <NavBox
           to="/inbox"
           icon={INBOX_ICON}
-          title="Inbox"
-          body="Every employee ticket in one place — search, filters, assignment and replies."
-          stat={active > 0 ? `${active} active · ${mine} on you` : "All quiet right now"}
+          title="Tickets"
+          body="Every employee ticket in one place — searchable, filterable, sortable."
+          stat={active > 0 ? `${active} open · ${mine} on you` : "All quiet right now"}
+        />
+        <NavBox
+          to="/assigned-to-me"
+          icon={TICKETS_ICON}
+          title="My tickets"
+          body="Only the tickets assigned to your name — your own backlog at a glance."
+          stat={mine > 0 ? `${mine} assigned to you` : "Nothing assigned yet"}
         />
         <NavBox
           to="/hr-dashboard"
           icon={CHART_ICON}
-          title="HR dashboard"
-          body="Counts by status, category load and first-response performance."
+          title="My performance"
+          body="Your score trends, response and solve-speed charts, workload and categories."
           stat={tickets.length ? `${tickets.length} tickets tracked` : "No tickets yet"}
+        />
+        <NavBox
+          to="/kb"
+          icon={KB_ICON}
+          title="Knowledge base"
+          body="Every policy document your role can read — searchable, viewable in page, downloadable."
+          stat="Employee + HR library"
         />
       </div>
     );
@@ -142,12 +160,32 @@ export default function HomeDashboard() {
     boxes = (
       <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
         <NavBox
-          to="/hr-dashboard"
+          to="/admin"
           icon={CHART_ICON}
-          className="md:col-span-2"
-          title="HR dashboard"
-          body="Oversight across all employee tickets — status counts, category load, response times. Your library search spans both employee and HR documents."
+          title="Ticket analytics"
+          body="Volume & backlog trend, status split, aging, heatmap, resolution SLA per priority."
           stat={active > 0 ? `${active} active · ${tickets.length} tracked` : "No tickets yet"}
+        />
+        <NavBox
+          to="/admin/worktable"
+          icon={INBOX_ICON}
+          title="Agents × tickets"
+          body="Score-ranked agents and the repeated-subject list that tells you what to write next."
+          stat="Leaderboard + drill-downs"
+        />
+        <NavBox
+          to="/admin/accounts"
+          icon={TICKETS_ICON}
+          title="Accounts"
+          body="Admins, HR agents and employees grouped and searchable — roles and offboarding."
+          stat="Access control"
+        />
+        <NavBox
+          to="/admin/kb"
+          icon={KB_ICON}
+          title="Policy library"
+          body="Upload and version the PDFs the desk and the assistant answer from."
+          stat="Employee + HR library"
         />
       </div>
     );
@@ -155,7 +193,7 @@ export default function HomeDashboard() {
     const mine = tickets.filter((t) => t.employeeId === user.id);
     const mineActive = mine.filter((t) => !["Resolved", "Closed"].includes(t.status)).length;
     boxes = (
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
         <NavBox
           to="/my-tickets"
           icon={TICKETS_ICON}
@@ -176,6 +214,13 @@ export default function HomeDashboard() {
           body="Raise a payroll, leave, benefits or policy question — attach files if needed."
           stat="HR replies on the thread"
         />
+        <NavBox
+          to="/kb"
+          icon={KB_ICON}
+          title="Knowledge base"
+          body="Browse every policy document you are allowed to read — in one catalogue."
+          stat="Your role's library"
+        />
       </div>
     );
   }
@@ -185,7 +230,9 @@ export default function HomeDashboard() {
       return <p className="px-5 py-4 text-caption text-warm/40">Searching the library…</p>;
     }
     if (suggestState === "error") {
-      return <p className="px-5 py-4 text-caption text-error/80">Search is unavailable right now.</p>;
+      return (
+        <p className="px-5 py-4 text-caption text-error/80">Search is unavailable right now.</p>
+      );
     }
     if (!suggestions?.length) {
       return (
@@ -231,9 +278,7 @@ export default function HomeDashboard() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="mono-label text-[10px] text-teal-light">↘ 0 0 / HR DESK</p>
-              <h1 className="mt-3 text-h2 text-warm">
-                Hello, {firstName ? firstName : "there"}.
-              </h1>
+              <h1 className="mt-3 text-h2 text-warm">Hello, {firstName ? firstName : "there"}.</h1>
               <p className="mt-2 text-body-lg text-warm/65">
                 {isAdmin
                   ? "Search the full policy library — employee and HR documents."
@@ -242,9 +287,7 @@ export default function HomeDashboard() {
                     : "Search the policy library, or jump into your workspace."}
               </p>
             </div>
-            <p className="mono-label text-[10px] text-warm/35">
-              EMIDS / KNOWLEDGE BASE
-            </p>
+            <p className="mono-label text-[10px] text-warm/35">EMIDS / KNOWLEDGE BASE</p>
           </div>
 
           {/* Search bar */}
