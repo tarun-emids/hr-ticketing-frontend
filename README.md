@@ -23,66 +23,57 @@ uvicorn app.main:app --reload --port 8000
 
 Then open http://localhost:5173 (API docs at http://localhost:8000/docs).
 
-## Login (Supabase Auth)
+## Login and password recovery
 
-Sign-in at `/login` is real: email + password verified server-side by the
-backend against **Supabase Auth** (GoTrue). The response is joined with the
-matching `public.users` row, which supplies the app-level identity and role
-(`employee` | `agent`). Users see only their role's workspace; HR-only routes
-(`/inbox`, `/hr-dashboard`) are role-gated.
+Sign-in at `/login` is verified by the backend against the organisation-managed
+account database. Accounts are provisioned by administrators; there is no
+signup. Signed-in users can change their password from **Change password** in
+the sidebar. A successful change signs them out so they can sign in again with
+the new password.
 
-Accounts are provisioned — no signup, no self-registration:
+Users who forget their password can request an email reset code from the sign-in
+page, then enter the code and a new password there. Reset codes are delivered
+through the backend's configured Mailpit SMTP service. The UI follows the
+backend's password requirements: at least 8 characters and no more than 72
+UTF-8 bytes.
 
-1. After adding people to `public.users` (see `backend/schema.sql`), create
-   their Supabase Auth credentials once:
-
-   ```bash
-   cd backend
-   python scripts/provision_auth_users.py
-   ```
-
-   It asks for an initial password (or take `--password` / the
-   `HR_DESK_TEMP_PASSWORD` env var), creates a confirmed auth user per row,
-   and skips accounts that already exist. It never prints the password.
-2. Passwords can be changed later from the Supabase Dashboard
-   (Authentication → Users) or by deleting the auth user and re-running the
-   script — HR Desk stores no passwords itself.
-3. If a user's auth email is ever removed from `public.users`, the next app
-   start silently drops their session.
+The backend returns a short-lived bearer access token after sign-in. The
+frontend keeps it with the signed-in session and sends it on protected API
+requests, including notification refreshes and frontend log ingestion.
 
 ## Demo flow
 
-1. **Employee** (e.g. Priya Sharma) — see *My tickets*, open one, reply in the thread,
-   submit a *New ticket* (validation: subject ≥ 5 chars, description ≥ 20 chars,
+1. **Employee** (e.g. Priya Sharma) — see _My tickets_, open one, reply in the thread,
+   submit a _New ticket_ (validation: subject ≥ 5 chars, description ≥ 20 chars,
    optional attachment ≤ 5 MB).
-2. Sign out, sign in as **HR agent** (e.g. Alicia Gomez) — browse *Inbox* (search,
+2. Sign out, sign in as **HR agent** (e.g. Alicia Gomez) — browse _Inbox_ (search,
    filters, column sorting), open a ticket, try the **Suggested reply** button,
-   change status / assignee / priority / category, then set status to *Closed*
+   change status / assignee / priority / category, then set status to _Closed_
    (the ticket records **who closed it**).
-3. Check *HR dashboard* — counts by status, open tickets by category, average
+3. Check _HR dashboard_ — counts by status, open tickets by category, average
    first-response time.
 
 State is API-backed; a small in-memory cache keeps views consistent
 (`src/data/store.js`). Reassigning an unanswered ticket automatically creates
-the first agent reply; employee replies flip status to *Waiting on Employee*.
+the first agent reply; employee replies flip status to _Waiting on Employee_.
 
 ## Emids brand system v1.0
 
 The UI is themed directly from `Emids_Brand System_v1.0.pdf`. Tokens and rules live
 in `src/index.css` (Tailwind v4 `@theme` + `@utility`):
 
-| Rule | How it's applied |
-| --- | --- |
+| Rule                                      | How it's applied                                                                                                              |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Color architecture — teal family on black | canvas `#0E0E0E`, surface `#141414`, surface-2 `#262626`, warm white `#F2F2F0`; teal light/deep `#ABC7CA`/`#47A2B0`/`#2A7682` |
-| Signals confirm, never lead | links `#00B9F9` (data), success `#45BDA0`, errors `#E04F4F`; accents mauve `#B89DCB`, yellow `#F2C94C` |
-| One typeface, 8 steps | Inter Variable (local via `@fontsource`) at 96/46/36/20/16/12/11/9; captions 11, micro labels 10 |
-| Mono is essential | JetBrains Mono for eyebrows, table headers, badges, timestamps, metric numbers — caps, tracked 0.18em, ≤10–11px |
-| The B-corner | 8px radius bottom-left only (`soft-bl` utility) on cards, plates and frames; buttons/inputs/table cells stay sharp |
-| Elevation is colour, not shadow | box-shadow disabled globally; depth via surface steps + 1px `#262626` hairlines |
-| 8pt baseline, 4pt snap | spacing in multiples of 4 only; 14px gutters |
-| Icons | 24px grid, 1.5px stroke, rounded caps, outline only |
-| Teal gradient | L→R three stops, only as login hero wash / top bar — never in buttons, charts or below small text |
-| Real brand mark | logo + favicon extracted from the guidelines PDF into `src/assets/` |
+| Signals confirm, never lead               | links `#00B9F9` (data), success `#45BDA0`, errors `#E04F4F`; accents mauve `#B89DCB`, yellow `#F2C94C`                        |
+| One typeface, 8 steps                     | Inter Variable (local via `@fontsource`) at 96/46/36/20/16/12/11/9; captions 11, micro labels 10                              |
+| Mono is essential                         | JetBrains Mono for eyebrows, table headers, badges, timestamps, metric numbers — caps, tracked 0.18em, ≤10–11px               |
+| The B-corner                              | 8px radius bottom-left only (`soft-bl` utility) on cards, plates and frames; buttons/inputs/table cells stay sharp            |
+| Elevation is colour, not shadow           | box-shadow disabled globally; depth via surface steps + 1px `#262626` hairlines                                               |
+| 8pt baseline, 4pt snap                    | spacing in multiples of 4 only; 14px gutters                                                                                  |
+| Icons                                     | 24px grid, 1.5px stroke, rounded caps, outline only                                                                           |
+| Teal gradient                             | L→R three stops, only as login hero wash / top bar — never in buttons, charts or below small text                             |
+| Real brand mark                           | logo + favicon extracted from the guidelines PDF into `src/assets/`                                                           |
 
 ## Swapping mock data for an API
 
@@ -122,11 +113,11 @@ with the operation's `correlationId` (+ trace pair). Designed behavior:
 Toggles (vite env — there is no frontend `.env.example`; document any override
 in your own `.env.local`):
 
-| Variable | Effect |
-| --- | --- |
-| `VITE_TRACE` (default on) | `false` → no OTel span, no `traceparent`, no trace ids on events |
-| `VITE_LOGS` (default on) | `false` → no distant log sink at all (X-Request-ID correlation still flows) |
-| `VITE_API_URL` | backend base URL (default `http://localhost:8000/api`) |
+| Variable                  | Effect                                                                      |
+| ------------------------- | --------------------------------------------------------------------------- |
+| `VITE_TRACE` (default on) | `false` → no OTel span, no `traceparent`, no trace ids on events            |
+| `VITE_LOGS` (default on)  | `false` → no distant log sink at all (X-Request-ID correlation still flows) |
+| `VITE_API_URL`            | backend base URL (default `http://localhost:8000/api`)                      |
 
 ## In-app notifications
 
@@ -153,7 +144,7 @@ src/
                 logger.js (lifecycle events → backend log),
                 trace.js (real OTel trace context: span + traceparent per operation)
   assets/       emids-logo.png, emids-mark.png (from the brand guidelines)
-  context/      AuthContext (mock session, persisted in localStorage)
+  context/      AuthContext (signed-in session, persisted in localStorage)
   hooks.js      useTickets(...) and useNotifications(userId, pollMs=20s)
 ```
 

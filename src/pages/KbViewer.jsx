@@ -41,24 +41,43 @@ export default function KbViewer() {
 
   const loadUrl = useCallback(() => {
     setUrlError("");
-    setFileUrl(null);
+    setFileUrl((currentUrl) => {
+      if (currentUrl) URL.revokeObjectURL(currentUrl);
+      return null;
+    });
     getKbDocUrl(slug, user.id)
-      .then((r) => setFileUrl(r.url))
+      .then((r) => {
+        setFileUrl((currentUrl) => {
+          if (currentUrl) URL.revokeObjectURL(currentUrl);
+          return r.url;
+        });
+      })
       .catch((e) => setUrlError(e.message || "Could not prepare the document viewer."));
   }, [slug, user.id]);
 
-  // Navigates to the download-flavoured signed URL; Content-Disposition:
-  // attachment makes the browser save the file (naming it after the policy).
   const startDownload = useCallback(() => {
     setDownloadError("");
     setDownloading(true);
     getKbDocUrl(slug, user.id, true)
       .then((r) => {
-        window.location.assign(r.url);
+        const link = document.createElement("a");
+        link.href = r.url;
+        link.download = `${doc.title}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(r.url), 1000);
       })
       .catch((e) => setDownloadError(e.message || "The download could not be started."))
       .finally(() => setDownloading(false));
-  }, [slug, user.id]);
+  }, [doc?.title, slug, user.id]);
+
+  useEffect(
+    () => () => {
+      if (fileUrl) URL.revokeObjectURL(fileUrl);
+    },
+    [fileUrl],
+  );
 
   useEffect(() => {
     if (doc) loadUrl();
@@ -153,7 +172,7 @@ export default function KbViewer() {
               type="button"
               onClick={loadUrl}
               className="mono-label inline-flex items-center gap-2 border border-transparent px-3 text-[10px] text-warm/45 hover:text-warm"
-              title="Signed links expire — refresh if the viewer went blank"
+              title="Reload the document if the viewer went blank"
             >
               <Icon d={PATHS.refresh} className="h-3.5 w-3.5" />
               Refresh link
@@ -192,7 +211,8 @@ export default function KbViewer() {
           </div>
 
           <p className="mt-3 text-caption text-warm/30">
-            Link is signed and short-lived — regenerate it any time with “Refresh link”.
+            The document is fetched securely from your account. Reload it any time with “Refresh
+            link”.
           </p>
         </>
       )}

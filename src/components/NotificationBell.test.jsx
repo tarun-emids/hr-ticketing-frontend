@@ -9,16 +9,29 @@ vi.mock("../hooks", () => ({
   useNotifications: () => ({
     items: [
       {
-        id: "n1", recipientId: "agent-1", ticketRef: "TKT-104", ticketId: "u1",
-        type: "ticket_assigned", channel: "in_app", actorName: "Alicia Gomez",
+        id: "n1",
+        recipientId: "agent-1",
+        ticketRef: "TKT-104",
+        ticketId: "u1",
+        type: "ticket_assigned",
+        channel: "in_app",
+        actorName: "Alicia Gomez",
         message: "Alicia Gomez assigned TKT-104 to you",
-        read: false, readAt: null, createdAt: new Date(Date.now() - 60_000).toISOString(),
+        read: false,
+        readAt: null,
+        createdAt: new Date(Date.now() - 60_000).toISOString(),
       },
       {
-        id: "n2", recipientId: "agent-1", ticketRef: "TKT-101", ticketId: "u2",
-        type: "ticket_reply", channel: "in_app", actorName: "Priya Sharma",
+        id: "n2",
+        recipientId: "agent-1",
+        ticketRef: "TKT-101",
+        ticketId: "u2",
+        type: "ticket_reply",
+        channel: "in_app",
+        actorName: "Priya Sharma",
         message: "Priya Sharma replied on TKT-101",
-        read: true, readAt: "2026-10-06T09:20:00Z",
+        read: true,
+        readAt: "2026-10-06T09:20:00Z",
         createdAt: new Date(Date.now() - 7_200_000).toISOString(),
       },
     ],
@@ -47,14 +60,22 @@ function renderBell() {
 // AuthProvider pulls users from GET /api/users; stub fetch and seed a saved
 // agent session so the bell has an acting user (mock-auth world).
 beforeEach(() => {
-  vi.stubGlobal("fetch", vi.fn(() => Promise.reject(new Error("offline test"))));
-  localStorage.setItem("hrdesk.user", JSON.stringify({ id: "agent-1", name: "Alicia Gomez", role: "agent", via: "password" }));
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => Promise.reject(new Error("offline test"))),
+  );
+  localStorage.setItem(
+    "hrdesk.user",
+    JSON.stringify({ id: "agent-1", name: "Alicia Gomez", role: "agent", via: "password" }),
+  );
+  localStorage.setItem("hrdesk.accessToken", "test-access-token");
 });
 
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   localStorage.removeItem("hrdesk.user");
+  localStorage.removeItem("hrdesk.accessToken");
   markNotificationRead.mockClear();
   markAllNotificationsRead.mockClear();
 });

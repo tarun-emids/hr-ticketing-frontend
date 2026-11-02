@@ -19,6 +19,7 @@ import AdminAccounts from "./admin/AdminAccounts";
 import AdminKb from "./admin/AdminKb";
 import KbSearch from "./pages/KbSearch";
 import KbViewer from "./pages/KbViewer";
+import ChangePassword from "./pages/ChangePassword";
 import "./index.css";
 
 function RequireAuth({ role, children }) {
@@ -50,6 +51,7 @@ function App() {
             }
           >
             <Route path="/dashboard" element={<HomeDashboard />} />
+            <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/kb" element={<KbSearch />} />
             <Route path="/kb/:slug" element={<KbViewer />} />
             <Route
