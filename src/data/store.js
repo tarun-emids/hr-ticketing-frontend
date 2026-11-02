@@ -1,10 +1,12 @@
-// API-backed ticket store (replaces the in-memory mock).
+// API-backed ticket store — single-ticket read + write cache.
 //
-// Same contract as before:
-//   - listTickets()/getTicket(id) stay SYNCHRONOUS reads of a local cache,
-//     so existing components keep working unchanged.
-//   - refreshTickets()/refreshTicket(id) pull fresh data from the API and
-//     notify subscribers; hooks.js calls these on mount.
+// Contract:
+//   - getTicket(id) is a SYNCHRONOUS read of the local single-ticket cache,
+//     so TicketDetail keeps working unchanged; refreshTicket(id) pulls fresh
+//     data from the API and notifies subscribers.
+//   - Ticket LISTS no longer live in this store: the legacy full-pull
+//     accessors were deleted along with the API's legacy array contract —
+//     paginated list reads live in useTicketsPage (src/hooks.js).
 //   - every write goes to the API, merges the authoritative returned ticket
 //     into the cache (status bumps, auto pickup reply, closedBy… server-side),
 //     then notifies.
@@ -32,10 +34,6 @@ export function subscribe(fn) {
   return () => listeners.delete(fn);
 }
 
-export function listTickets() {
-  return sortDesc(tickets);
-}
-
 export function getTicket(id) {
   return tickets.find((t) => t.id === id) ?? null;
 }
@@ -48,23 +46,15 @@ async function updateCache(promise) {
 }
 
 // ---- cache refreshers -------------------------------------------------------
-export function refreshTickets() {
-  return api.listTickets().then((fresh) => {
-    tickets = sortDesc(fresh);
-    notify();
-    return tickets;
-  });
-}
-
-export function refreshTicket(id) {
-  return updateCache(api.getTicket(id));
+export function refreshTicket(id, viewerId) {
+  return updateCache(api.getTicket(id, viewerId));
 }
 
 // ---- writes -----------------------------------------------------------------
 export const createTicket = (payload) => updateCache(api.createTicket(payload));
 
-export const uploadAttachment = (ticketId, file) =>
-  updateCache(api.uploadAttachment(ticketId, file));
+export const uploadAttachment = (ticketId, file, viewerId) =>
+  updateCache(api.uploadAttachment(ticketId, file, viewerId));
 
 // role is derived from authorId server-side; kept in the signature for compatibility
 export const addReply = (ticketId, { authorId, text }) =>
@@ -73,24 +63,24 @@ export const addReply = (ticketId, { authorId, text }) =>
 export const updateStatus = (ticketId, status, actorId) =>
   updateCache(api.updateStatus(ticketId, { status, actorId }));
 
-export const assignTicket = (ticketId, assigneeId) =>
-  updateCache(api.assignTicket(ticketId, { assigneeId }));
+export const assignTicket = (ticketId, assigneeId, viewerId) =>
+  updateCache(api.assignTicket(ticketId, { assigneeId }, viewerId));
 
 // Auto-assign returns the updated ticket plus routing metadata
 // (routedTo); cache only the ticket itself so entries keep the
 // canonical shape.
-export const autoAssignTicket = (ticketId) =>
-  updateCache(api.autoAssignTicket(ticketId).then(({ ...ticket }) => ticket));
+export const autoAssignTicket = (ticketId, viewerId) =>
+  updateCache(api.autoAssignTicket(ticketId, viewerId).then(({ ...ticket }) => ticket));
 
-export const setPriority = (ticketId, priority) =>
-  updateCache(api.setPriority(ticketId, { priority }));
+export const setPriority = (ticketId, priority, viewerId) =>
+  updateCache(api.setPriority(ticketId, { priority }, viewerId));
 
-export const setCategory = (ticketId, category) =>
-  updateCache(api.setCategory(ticketId, { category }));
+export const setCategory = (ticketId, category, viewerId) =>
+  updateCache(api.setCategory(ticketId, { category }, viewerId));
 
 // ---- attachments ------------------------------------------------------------
-export function getAttachmentUrl(ticketId) {
-  return api.getAttachmentUrl(ticketId);
+export function getAttachmentUrl(ticketId, viewerId) {
+  return api.getAttachmentUrl(ticketId, viewerId);
 }
 
 // ---- ticket drafts ----------------------------------------------------------

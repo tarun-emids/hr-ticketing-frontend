@@ -1,25 +1,9 @@
 import { IconArrowDownRight } from "@tabler/icons-react";
 import { useAuth } from "../context/AuthContext";
-import { useTickets } from "../hooks";
 import TicketTable from "../components/TicketTable";
-import { SkeletonList, EmptyState } from "../components/primitives";
 
 export default function HRInbox() {
-  const { users } = useAuth();
-  const { tickets, loading } = useTickets();
-
-  if (loading) {
-    return (
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-8">
-          <h1 className="text-h3 text-warm">Tickets</h1>
-        </header>
-        <div className="border border-surface-2 bg-surface">
-          <SkeletonList rows={6} />
-        </div>
-      </div>
-    );
-  }
+  const { users, user } = useAuth();
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -35,15 +19,7 @@ export default function HRInbox() {
         </p>
       </header>
 
-      {tickets.length === 0 ? (
-        <EmptyState
-          title="No tickets yet"
-          body="When employees raise tickets they will appear here. This usually means nobody has used the service yet — try submitting a demo ticket."
-          icon={<IconArrowDownRight size={32} />}
-        />
-      ) : (
-        <TicketTable tickets={tickets} users={users} />
-      )}
+      <TicketTable viewerId={user?.id} users={users} />
     </div>
   );
 }

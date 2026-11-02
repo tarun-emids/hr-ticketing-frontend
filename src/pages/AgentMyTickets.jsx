@@ -1,17 +1,32 @@
+import { useEffect, useState } from "react";
 import { IconArrowDownRight } from "@tabler/icons-react";
 import { useAuth } from "../context/AuthContext";
-import { useTickets } from "../hooks";
+import { agentWorkload } from "../api/client";
 import TicketTable from "../components/TicketTable";
-import { SkeletonList, EmptyState } from "../components/primitives";
 
-// MY TICKETS — the HR agent's own backlog (route /assigned-to-me): only the
-// tickets whose assignee is this agent. The all-tickets view stays on
-// /inbox; a filter by name or the status column narrows further there.
+// MY TICKETS — the HR agent's own backlog (route /assigned-to-me): a pinned
+// assignee filter on the server. Stats come from the workload API (per-agent
+// open/total), matching the numbers the assignment screen shows.
 export default function AgentMyTickets() {
   const { users, user } = useAuth();
-  const { tickets, loading } = useTickets();
-  const mine = tickets.filter((t) => t.assigneeId === user.id);
-  const openMine = mine.filter((t) => !["Resolved", "Closed"].includes(t.status));
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    if (!user?.id) return undefined;
+    let alive = true;
+    agentWorkload(user.id)
+      .then((rows) => {
+        if (alive) {
+          setStats(rows.find((w) => w.id === user.id) ?? { openCount: 0, totalCount: 0 });
+        }
+      })
+      .catch(() => {
+        if (alive) setStats({ openCount: 0, totalCount: 0 });
+      });
+    return () => {
+      alive = false;
+    };
+  }, [user?.id]);
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -23,25 +38,15 @@ export default function AgentMyTickets() {
         <div className="rule-teal mb-5" />
         <h1 className="text-h3 text-warm">My tickets</h1>
         <p className="mt-1.5 text-caption text-warm/45">
-          {mine.length === 0
-            ? "Nothing assigned to you yet — newly assigned tickets land here."
-            : `${mine.length} assigned to you · ${openMine.length} still open`}
+          {!stats
+            ? "Loading your backlog…"
+            : stats.totalCount === 0
+              ? "Nothing assigned to you yet — newly assigned tickets land here."
+              : `${stats.totalCount} assigned to you · ${stats.openCount} still open`}
         </p>
       </header>
 
-      {loading ? (
-        <div className="border border-surface-2 bg-surface">
-          <SkeletonList rows={6} />
-        </div>
-      ) : mine.length === 0 ? (
-        <EmptyState
-          icon="↘"
-          title="Nothing is assigned to you yet"
-          body="Take a ticket from the Tickets screen — or tickets flow to you when someone is assigned."
-        />
-      ) : (
-        <TicketTable tickets={mine} users={users} />
-      )}
+      <TicketTable viewerId={user?.id} users={users} fixedAssignee={user?.id} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useTickets } from "../hooks";
+import { useTicketsPage } from "../hooks";
 import { searchKb } from "../api/client";
 import heroImg from "../assets/kb-hero.png";
 import { Spinner } from "../components/primitives";
@@ -49,7 +49,9 @@ export default function HomeDashboard() {
   // Admin is a rare role: the auth context exposes user/isAgent, so derive it here.
   const isAdmin = user?.role === "admin";
   const navigate = useNavigate();
-  const { tickets, loading: ticketsLoading } = useTickets();
+  const view = useTicketsPage(user?.id, { page: 1, pageSize: 100 });
+  const tickets = view.items;
+  const ticketsLoading = view.loading;
 
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState(null); // null = idle, [] = no match

@@ -48,17 +48,17 @@ function AgentControls({ ticket, actor, users }) {
   const [routing, setRouting] = useState(false);
 
   useEffect(() => {
-    agentWorkload()
+    agentWorkload(actor.id)
       .then(setWorkload)
       .catch(() => setWorkload([]));
-  }, [ticket.assigneeId, ticket.id]);
+  }, [ticket.assigneeId, ticket.id, actor?.id]);
 
   const openCountFor = (id) => workload.find((w) => w.id === id)?.openCount;
 
   const routeNow = async () => {
     setRouting(true);
     try {
-      await autoAssignTicket(ticket.id);
+      await autoAssignTicket(ticket.id, actor.id);
     } catch (e) {
       window.alert(`Auto-assign failed: ${e.message}`);
     } finally {
@@ -82,7 +82,7 @@ function AgentControls({ ticket, actor, users }) {
       <MetaItem label="Assignee">
         <select
           value={ticket.assigneeId ?? ""}
-          onChange={(e) => assignTicket(ticket.id, e.target.value || null)}
+          onChange={(e) => assignTicket(ticket.id, e.target.value || null, actor.id)}
           className={SELECT}
         >
           <option value="">Unassigned</option>
@@ -97,7 +97,7 @@ function AgentControls({ ticket, actor, users }) {
       <MetaItem label="Priority">
         <select
           value={ticket.priority}
-          onChange={(e) => setPriority(ticket.id, e.target.value)}
+          onChange={(e) => setPriority(ticket.id, e.target.value, actor.id)}
           className={SELECT}
         >
           {PRIORITIES.map((p) => (
@@ -108,7 +108,7 @@ function AgentControls({ ticket, actor, users }) {
       <MetaItem label="Re-categorise">
         <select
           value={ticket.category}
-          onChange={(e) => setCategory(ticket.id, e.target.value)}
+          onChange={(e) => setCategory(ticket.id, e.target.value, actor.id)}
           className={SELECT}
         >
           {CATEGORIES.map((c) => (
@@ -133,7 +133,7 @@ function AgentControls({ ticket, actor, users }) {
   );
 }
 
-function AttachmentChip({ ticket }) {
+function AttachmentChip({ ticket, actorId }) {
   const [busy, setBusy] = useState(false);
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
@@ -141,7 +141,7 @@ function AttachmentChip({ ticket }) {
   const isImage = /\.(apng|avif|bmp|gif|jpe?g|png|svg|webp)$/i.test(ticket.attachment.name);
 
   const fetchUrl = async () => {
-    const res = await getAttachmentUrl(ticket.id);
+    const res = await getAttachmentUrl(ticket.id, actorId);
     if (!res?.url) throw new Error("The attachment URL was not returned.");
     return res.url;
   };
@@ -153,7 +153,7 @@ function AttachmentChip({ ticket }) {
     setBusy(true);
     setError("");
 
-    getAttachmentUrl(ticket.id)
+    getAttachmentUrl(ticket.id, actorId)
       .then((res) => {
         if (!res?.url) {
           throw new Error("The attachment URL was not returned.");
@@ -170,7 +170,7 @@ function AttachmentChip({ ticket }) {
     return () => {
       active = false;
     };
-  }, [ticket.id, isImage]);
+  }, [ticket.id, isImage, actorId]);
 
   useEffect(() => {
     if (!previewOpen) return undefined;
@@ -460,10 +460,17 @@ export default function TicketDetail() {
   }, []);
 
   useEffect(() => {
+    if (!user?.id) {
+      // No identity (not signed in / expired session): stop loading so the
+      // existing "Session expired" EmptyState can render, and wait for a
+      // future identity via the dependency array instead of failing a fetch.
+      setLoading(false);
+      return undefined;
+    }
     let alive = true;
     setLoading(true);
     setError(null);
-    refreshTicket(id)
+    refreshTicket(id, user.id)
       .catch((e) => {
         if (alive) setError(e.message ?? String(e));
       })
@@ -473,7 +480,7 @@ export default function TicketDetail() {
     return () => {
       alive = false;
     };
-  }, [id]);
+  }, [id, user?.id]);
 
   useEffect(() => {
     if (!banner) return undefined;
@@ -580,7 +587,7 @@ export default function TicketDetail() {
           </MetaItem>
         </div>
 
-        {ticket.attachment?.path && <AttachmentChip ticket={ticket} />}
+        {ticket.attachment?.path && <AttachmentChip ticket={ticket} actorId={user.id} />}
 
         {isAgent && <AgentControls ticket={ticket} actor={user} users={users} />}
 

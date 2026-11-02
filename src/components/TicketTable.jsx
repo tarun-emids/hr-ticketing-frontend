@@ -1,9 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTicketsPage } from "../hooks";
 import { IconArrowDown, IconArrowUp, IconArrowsSort, IconSearch } from "@tabler/icons-react";
 import { StatusBadge, PriorityBadge } from "./Badge";
-import { PRIO_ORDER } from "./sorting";
 import { timeAgo } from "../utils";
+
+const PAGE_SIZE_OPTIONS = [25, 50];
 
 const CATEGORY_OPTIONS = ["Payroll", "Leave", "Benefits", "Onboarding", "Policy", "Other"];
 const STATUS_OPTIONS = ["Open", "In Progress", "Waiting on Employee", "Resolved", "Closed"];
@@ -30,7 +32,9 @@ function FilterSelect({ label, value, options, onChange }) {
       >
         <option value="">All</option>
         {options.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
         ))}
       </select>
     </label>
@@ -48,65 +52,74 @@ function SortButton({ label, mode, sortMode, setSortMode }) {
       title={`Sort by ${label}`}
     >
       {label}
-      <span aria-hidden className={active ? "opacity-100" : "opacity-0 group-hover/head:opacity-40"}>
-        {sortMode === `-${mode}` ? <IconArrowDown size={12} /> : active ? <IconArrowUp size={12} /> : <IconArrowsSort size={12} />}
+      <span
+        aria-hidden
+        className={active ? "opacity-100" : "opacity-0 group-hover/head:opacity-40"}
+      >
+        {sortMode === `-${mode}` ? (
+          <IconArrowDown size={12} />
+        ) : active ? (
+          <IconArrowUp size={12} />
+        ) : (
+          <IconArrowsSort size={12} />
+        )}
       </span>
     </button>
   );
 }
 
-export default function TicketTable({ tickets, users }) {
+export default function TicketTable({ viewerId, users, fixedAssignee }) {
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [status, setStatus] = useState("");
   const [category, setCategory] = useState("");
   const [priority, setPriority] = useState("");
   const [assignee, setAssignee] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [sortMode, setSortMode] = useState("updated");
+
+  // Server round-trips per keystroke are cheap to regret: 300ms debounce.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query.trim()), 300);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  const view = useTicketsPage(viewerId, {
+    page,
+    pageSize,
+    sort: sortMode.replace(/^-/, ""),
+    order: sortMode.startsWith("-") ? "desc" : "asc",
+    status: status || undefined,
+    category: category || undefined,
+    priority: priority || undefined,
+    assigneeId: fixedAssignee || assignee || undefined,
+    q: debouncedQuery || undefined,
+  });
+  const tickets = view.items;
 
   const nameOf = (id) => users.find((u) => u.id === id)?.name ?? "—";
   const firstNameOf = (id) => nameOf(id).split(" ")[0];
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const [field, dir = "asc"] = sortMode.startsWith("-")
-      ? [sortMode.slice(1), "desc"]
-      : [sortMode, "asc"];
+  const filtered = tickets;
 
-    const sorters = {
-      updated: (t) => Date.parse(t.updatedAt),
-      created: (t) => Date.parse(t.createdAt),
-      priority: (t) => PRIO_ORDER[t.priority] ?? 0,
-      subject: (t) => t.subject.toLowerCase(),
-      employee: (t) => nameOf(t.employeeId).toLowerCase(),
-      status: (t) => STATUS_OPTIONS.indexOf(t.status),
-    };
-    const key = sorters[field] ?? sorters.updated;
+  const filtersActive = Boolean(status || category || priority || assignee || debouncedQuery);
 
-    return tickets
-      .filter(
-        (t) =>
-          (!status || t.status === status) &&
-          (!category || t.category === category) &&
-          (!priority || t.priority === priority) &&
-          (!assignee || t.assigneeId === assignee) &&
-          (!q ||
-            t.subject.toLowerCase().includes(q) ||
-            t.description.toLowerCase().includes(q) ||
-            t.id.toLowerCase().includes(q) ||
-            nameOf(t.employeeId).toLowerCase().includes(q))
-      )
-      .sort((a, b) => {
-        const av = key(a);
-        const bv = key(b);
-        const cmp = typeof av === "number" ? av - bv : String(av).localeCompare(String(bv));
-        return dir === "desc" ? -cmp : cmp;
-      });
-  }, [tickets, query, status, category, priority, assignee, sortMode, users]);
+  // A filter change invalidates the current page: the queries partition
+  // differently, so page=N no longer means the same rows.
+  useEffect(() => {
+    setPage(1);
+  }, [status, category, priority, assignee, debouncedQuery, pageSize, sortMode]);
 
-  const filtersActive = Boolean(status || category || priority || assignee || query);
+  const totalPages = Math.max(1, Math.ceil(view.total / view.pageSize));
 
   return (
     <section>
+      {view.error && (
+        <div className="border border-surface-2 bg-canvas p-3 text-caption text-warm/60">
+          Couldn't load tickets: {view.error}
+        </div>
+      )}
       <div className="flex flex-col gap-4 border border-b-0 border-surface-2 bg-surface-2 p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="relative flex-1">
@@ -123,25 +136,50 @@ export default function TicketTable({ tickets, users }) {
             />
           </div>
           <p className="mono-label shrink-0 text-[10px] text-warm/40">
-            {filtered.length} / {tickets.length} tickets
+            {view.loading
+              ? "loading…"
+              : `${view.total} ticket${view.total === 1 ? "" : "s"} · page ${view.page} of ${totalPages}`}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <FilterSelect label="STATUS" value={status} onChange={setStatus}
-            options={STATUS_OPTIONS.map((s) => ({ value: s, label: s }))} />
-          <FilterSelect label="CATEGORY" value={category} onChange={setCategory}
-            options={CATEGORY_OPTIONS.map((s) => ({ value: s, label: s }))} />
-          <FilterSelect label="PRIORITY" value={priority} onChange={setPriority}
-            options={PRIORITY_OPTIONS.map((s) => ({ value: s, label: s }))} />
           <FilterSelect
-            label="ASSIGNEE"
-            value={assignee}
-            onChange={setAssignee}
-            options={users.filter((u) => u.role === "agent").map((a) => ({ value: a.id, label: a.name }))}
+            label="STATUS"
+            value={status}
+            onChange={setStatus}
+            options={STATUS_OPTIONS.map((s) => ({ value: s, label: s }))}
           />
+          <FilterSelect
+            label="CATEGORY"
+            value={category}
+            onChange={setCategory}
+            options={CATEGORY_OPTIONS.map((s) => ({ value: s, label: s }))}
+          />
+          <FilterSelect
+            label="PRIORITY"
+            value={priority}
+            onChange={setPriority}
+            options={PRIORITY_OPTIONS.map((s) => ({ value: s, label: s }))}
+          />
+          {!fixedAssignee && (
+            <FilterSelect
+              label="ASSIGNEE"
+              value={assignee}
+              onChange={setAssignee}
+              options={users
+                .filter((u) => u.role === "agent")
+                .map((a) => ({ value: a.id, label: a.name }))}
+            />
+          )}
           {filtersActive && (
             <button
-              onClick={() => { setStatus(""); setCategory(""); setPriority(""); setAssignee(""); setQuery(""); }}
+              onClick={() => {
+                setStatus("");
+                setCategory("");
+                setPriority("");
+                setAssignee("");
+                setQuery("");
+                setPage(1);
+              }}
               className="mono-label text-[10px] text-teal-deep hover:underline"
             >
               Reset filters
@@ -155,13 +193,48 @@ export default function TicketTable({ tickets, users }) {
         <table className="w-full text-left">
           <thead>
             <tr className="group/head border-b border-surface-2 bg-surface-2/60">
-              <th className="px-5 py-3"><SortButton label="Ticket" mode="subject" sortMode={sortMode} setSortMode={setSortMode} /></th>
-              <th className="px-3 py-3"><SortButton label="Employee" mode="employee" sortMode={sortMode} setSortMode={setSortMode} /></th>
+              <th className="px-5 py-3">
+                <SortButton
+                  label="Ticket"
+                  mode="subject"
+                  sortMode={sortMode}
+                  setSortMode={setSortMode}
+                />
+              </th>
+              <th className="px-3 py-3">
+                <SortButton
+                  label="Employee"
+                  mode="employee"
+                  sortMode={sortMode}
+                  setSortMode={setSortMode}
+                />
+              </th>
               <th className="px-3 py-3 mono-label text-[10px] text-warm/40">Category</th>
-              <th className="px-3 py-3"><SortButton label="Priority" mode="priority" sortMode={sortMode} setSortMode={setSortMode} /></th>
-              <th className="px-3 py-3"><SortButton label="Status" mode="status" sortMode={sortMode} setSortMode={setSortMode} /></th>
+              <th className="px-3 py-3">
+                <SortButton
+                  label="Priority"
+                  mode="priority"
+                  sortMode={sortMode}
+                  setSortMode={setSortMode}
+                />
+              </th>
+              <th className="px-3 py-3">
+                <SortButton
+                  label="Status"
+                  mode="status"
+                  sortMode={sortMode}
+                  setSortMode={setSortMode}
+                />
+              </th>
               <th className="px-3 py-3 mono-label text-[10px] text-warm/40">Assignee</th>
-              <th className="py-3 pl-3 pr-5 text-right"><SortButton label="Updated" mode="updated" sortMode={sortMode} setSortMode={setSortMode} /></th>
+              <th className="py-3 pl-3 pr-5 text-right">
+                <SortButton
+                  label="Updated"
+                  mode="updated"
+                  sortMode={sortMode}
+                  setSortMode={setSortMode}
+                />
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-surface-2">
@@ -169,19 +242,28 @@ export default function TicketTable({ tickets, users }) {
               <tr key={t.id} className="group transition-colors hover:bg-surface-2/60">
                 <td className="px-5 py-3.5">
                   <Link to={`/tickets/${t.id}`}>
-                    <span className="text-body-lg font-medium text-warm group-hover:text-teal-deep">{t.subject}</span>
+                    <span className="text-body-lg font-medium text-warm group-hover:text-teal-deep">
+                      {t.subject}
+                    </span>
                     <span className="mono-label block pt-0.5 text-[10px] text-warm/35">{t.id}</span>
                   </Link>
                 </td>
                 <td className="px-3 text-body text-warm/70">{nameOf(t.employeeId)}</td>
                 <td className="px-3">
                   <span className="inline-flex items-center gap-1.5 text-body text-warm/70">
-                    <span className={`h-2 w-2 ${CAT_DOTS[t.category] ?? "bg-warm/30"}`} title={t.category} />
+                    <span
+                      className={`h-2 w-2 ${CAT_DOTS[t.category] ?? "bg-warm/30"}`}
+                      title={t.category}
+                    />
                     {t.category}
                   </span>
                 </td>
-                <td className="px-3"><PriorityBadge priority={t.priority} /></td>
-                <td className="px-3"><StatusBadge status={t.status} /></td>
+                <td className="px-3">
+                  <PriorityBadge priority={t.priority} />
+                </td>
+                <td className="px-3">
+                  <StatusBadge status={t.status} />
+                </td>
                 <td className="px-3">
                   {t.assigneeId ? (
                     <span className="text-body text-warm/70">{firstNameOf(t.assigneeId)}</span>
@@ -189,12 +271,17 @@ export default function TicketTable({ tickets, users }) {
                     <span className="text-body italic text-warm/25">Unassigned</span>
                   )}
                 </td>
-                <td className="py-3.5 pl-3 pr-5 text-right text-caption text-warm/45">{timeAgo(t.updatedAt)}</td>
+                <td className="py-3.5 pl-3 pr-5 text-right text-caption text-warm/45">
+                  {timeAgo(t.updatedAt)}
+                </td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-5 py-16 text-center mono-label text-[10px] text-warm/40">
+                <td
+                  colSpan={7}
+                  className="px-5 py-16 text-center mono-label text-[10px] text-warm/40"
+                >
                   No tickets match the current filters.
                 </td>
               </tr>
@@ -225,9 +312,43 @@ export default function TicketTable({ tickets, users }) {
           </li>
         ))}
         {filtered.length === 0 && (
-          <li className="px-4 py-16 text-center mono-label text-[10px] text-warm/40">No tickets match the current filters.</li>
+          <li className="px-4 py-16 text-center mono-label text-[10px] text-warm/40">
+            No tickets match the current filters.
+          </li>
         )}
       </ul>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border border-t-0 border-surface-2 bg-surface-2 p-3">
+        <div className="flex items-center gap-2">
+          {PAGE_SIZE_OPTIONS.map((size) => (
+            <button
+              key={size}
+              onClick={() => setPageSize(size)}
+              className={`mono-label text-[10px] px-2 py-1 border ${
+                pageSize === size ? "border-teal text-teal-deep" : "border-surface-2 text-warm/40"
+              }`}
+            >
+              {size} / page
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            disabled={view.page <= 1 || view.loading}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className="mono-label text-[10px] px-3 py-1.5 border border-surface-2 disabled:opacity-40"
+          >
+            ‹ Prev
+          </button>
+          <button
+            disabled={!view.hasNext || view.loading}
+            onClick={() => setPage((p) => p + 1)}
+            className="mono-label text-[10px] px-3 py-1.5 border border-surface-2 disabled:opacity-40"
+          >
+            Next ›
+          </button>
+        </div>
+      </div>
     </section>
   );
 }
