@@ -3,6 +3,7 @@ import {
   IconChartBar,
   IconClipboardList,
   IconInbox,
+  IconLock,
   IconLogout,
   IconPlus,
   IconX,
@@ -174,6 +175,20 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
       </div>
 
       <div className={`border-t border-surface-2 p-4 ${collapsed ? "lg:px-2" : ""}`}>
+        <NavLink
+          to="/change-password"
+          onClick={onNavigate}
+          title={collapsed ? "Change password" : undefined}
+          aria-label="Change password"
+          className={({ isActive }) =>
+            `mb-4 flex items-center gap-3 border-b border-warm/10 pb-3 text-[10px] mono-label ${
+              collapsed ? "lg:justify-center" : ""
+            } ${isActive ? "text-teal" : "text-warm/50 hover:text-warm"}`
+          }
+        >
+          <IconLock size={16} aria-hidden />
+          <span className={collapsed ? "lg:hidden" : ""}>Change password</span>
+        </NavLink>
         <div className={`flex items-center gap-3 ${collapsed ? "lg:flex-col lg:gap-2" : ""}`}>
           <span className="soft-bl flex h-9 w-9 shrink-0 items-center justify-center bg-surface-2 font-mono text-[10px] text-teal-light">
             {user?.name
