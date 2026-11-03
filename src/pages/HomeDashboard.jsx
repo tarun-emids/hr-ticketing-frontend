@@ -310,12 +310,12 @@ export default function HomeDashboard() {
                   onFocus={() => setOpen(true)}
                   placeholder="Search the knowledge base — try “leave carry forward” or “payslip”…"
                   aria-label="Search the knowledge base"
-                  className="w-full rounded-xl border border-surface-2 bg-surface py-3 pl-11 pr-4 text-body-lg text-warm placeholder:text-warm/35 focus:border-teal focus:outline-none"
+                  className="w-full rounded-l-xl rounded-r-none border border-surface-2 bg-surface py-3 pl-11 pr-4 text-body-lg text-warm placeholder:text-warm/35 focus:border-teal focus:outline-none"
                 />
               </div>
               <button
                 type="submit"
-                className="rounded-none rounded-r-xl bg-teal px-5 text-body font-medium text-canvas transition-colors hover:opacity-90"
+                className="rounded-l-none rounded-r-xl bg-teal px-5 py-3 text-body font-medium text-canvas transition-colors hover:opacity-90"
               >
                 Search
               </button>

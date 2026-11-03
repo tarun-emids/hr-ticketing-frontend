@@ -136,14 +136,14 @@ function AgentsPane({ agents, period }) {
             {String(rank + 1).padStart(2, "0")}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-body-lg font-medium text-warm group-hover:text-teal-light">
+            <span className="block truncate text-body-lg font-medium text-warm group-hover:text-teal-deep">
               {agent.name}
             </span>
             <span className="mono-label block text-[9px] text-warm/35">{agent.email}</span>
           </span>
-          <MiniStat label="SCORE" value={agent.score == null ? "—" : agent.score} tone="teal" />
-          <MiniStat label="COMPLETED" value={agent.completed} tone="ok" />
-          <MiniStat label="PENDING" value={agent.pending} tone="warm" />
+          <MiniStat label="Score" value={agent.score == null ? "—" : agent.score} tone="teal" />
+          <MiniStat label="Completed" value={agent.completed} tone="ok" />
+          <MiniStat label="Pending" value={agent.pending} tone="warm" />
           <MiniStat
             label="AVG SOLVE"
             value={agent.avgSolveHrs == null ? "—" : `${agent.avgSolveHrs}h`}
@@ -160,11 +160,11 @@ function AgentsPane({ agents, period }) {
 }
 
 function MiniStat({ label, value, tone }) {
-  const color = tone === "ok" ? "text-ok" : tone === "teal" ? "text-teal-light" : "text-warm";
+  const color = tone === "ok" ? "text-ok-deep" : tone === "teal" ? "text-teal-deep" : "text-warm";
   return (
     <span className="hidden w-24 flex-col items-end sm:flex">
-      <span className="mono-label text-[8px] text-warm/35">{label}</span>
-      <span className={`font-mono text-[15px] ${color}`}>{value}</span>
+      <span className="text-[10px] font-medium text-warm/50">{label}</span>
+      <span className={`text-body font-semibold tabular-nums ${color}`}>{value}</span>
     </span>
   );
 }
@@ -180,7 +180,7 @@ function RepeatedSubject({ rep, periodLabel }) {
     <li className="border-l-2 border-teal/40 bg-canvas/60 px-3 py-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-body text-warm/85">
-          <span className="font-medium text-teal-light">{rep.count} people</span> asked this in{" "}
+          <span className="font-medium text-teal-deep">{rep.count} people</span> asked this in{" "}
           {periodLabel}
         </p>
         <button
@@ -199,7 +199,7 @@ function RepeatedSubject({ rep, periodLabel }) {
             <Link
               key={ref}
               to={`/tickets/${encodeURIComponent(ref)}`}
-              className="mono-label border border-teal/40 bg-teal/10 px-2 py-1 text-[9px] text-teal-light transition-colors hover:bg-teal/25"
+              className="mono-label border border-teal/40 bg-teal/10 px-2 py-1 text-[9px] text-teal-deep transition-colors hover:bg-teal/25"
             >
               {ref} ↘
             </Link>

@@ -36,7 +36,7 @@ function FilePicker({ value, onChange, existing = null, label = "Policy PDF" }) 
       </label>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {value ? (
-          <span className="mono-label flex items-center gap-2 border border-teal/40 bg-teal/10 px-2 py-1 text-[9px] text-teal-light">
+          <span className="mono-label flex items-center gap-2 border border-teal/40 bg-teal/10 px-2 py-1 text-[9px] text-teal-deep">
             {value.name} · {formatBytes(value.size)}
             <button
               type="button"
@@ -178,7 +178,7 @@ export default function AdminKb() {
       {notice && (
         <p
           role="status"
-          className="mb-4 border border-teal/40 bg-teal/10 px-4 py-2.5 text-caption text-teal-light"
+          className="mb-4 border border-teal/40 bg-teal/10 px-4 py-2.5 text-caption text-teal-deep"
         >
           {notice}
         </p>
@@ -362,7 +362,7 @@ export default function AdminKb() {
                   <span className="mono-label text-[10px] text-teal">{doc.ref}</span>
                   <Link
                     to={`/kb/${doc.slug}`}
-                    className="min-w-0 flex-1 truncate text-body-lg text-warm hover:text-teal-light"
+                    className="min-w-0 flex-1 truncate text-body-lg text-warm hover:text-teal-deep"
                   >
                     {doc.title}
                   </Link>

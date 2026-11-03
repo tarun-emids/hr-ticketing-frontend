@@ -69,26 +69,26 @@ export default function AdminOverview() {
         <>
           {/* ---- KPI band: the requested open / assigned / closed counts ---- */}
           <div className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <StatCard label="OPEN" value={data.open} sub="Unpicked, fresh" tone="error" />
+            <StatCard label="Open" value={data.open} sub="Unpicked, fresh" tone="error" />
             <StatCard
-              label="IN PROGRESS"
+              label="In progress"
               value={data.inProgress + data.waitingOnEmployee}
               sub={`${data.inProgress} agent-side · ${data.waitingOnEmployee} waiting on employee`}
               tone="teal"
             />
             <StatCard
-              label="RESOLVED"
+              label="Resolved"
               value={data.resolved}
               sub="To be re-opened or closed"
               tone="ok"
             />
-            <StatCard label="CLOSED" value={data.closed} sub="Signed off" tone="ok" />
+            <StatCard label="Closed" value={data.closed} sub="Signed off" tone="ok" />
           </div>
 
           {/* ---- time metrics ---- */}
           <div className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <StatCard
-              label="AVG FIRST RESPONSE"
+              label="Avg first response"
               value={
                 data.avgFirstResponseHrs == null
                   ? "—"
@@ -98,7 +98,7 @@ export default function AdminOverview() {
               tone="teal"
             />
             <StatCard
-              label="MEDIAN F. RESPONSE"
+              label="Median first reply"
               value={
                 data.medianFirstResponseHrs == null
                   ? "—"
@@ -114,7 +114,7 @@ export default function AdminOverview() {
               tone="teal"
             />
             <StatCard
-              label="MEDIAN TIME TO SOLVE"
+              label="Median solve"
               value={data.medianSolveHrs == null ? "—" : formatHrs(data.medianSolveHrs * 3_600_000)}
               sub="Half resolved within"
               tone="teal"

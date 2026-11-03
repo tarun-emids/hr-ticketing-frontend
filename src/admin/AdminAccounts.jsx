@@ -104,7 +104,7 @@ export default function AdminAccounts() {
       {notice && (
         <p
           role="status"
-          className="mb-4 border border-teal/40 bg-teal/10 px-4 py-2.5 text-caption text-teal-light"
+          className="mb-4 border border-teal/40 bg-teal/10 px-4 py-2.5 text-caption text-teal-deep"
         >
           {notice}
         </p>

@@ -79,15 +79,15 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
           {/* the five counters */}
           <div className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <Stat
-              label="ACCEPTED"
+              label="Accepted"
               value={metrics.accepted}
               sub="Assigned · created in window"
               tone="teal"
             />
-            <Stat label="COMPLETED" value={metrics.completed} sub="Resolved in window" tone="ok" />
-            <Stat label="PENDING" value={metrics.pending} sub="Still open" tone="warm" />
+            <Stat label="Completed" value={metrics.completed} sub="Resolved in window" tone="ok" />
+            <Stat label="Pending" value={metrics.pending} sub="Still open" tone="warm" />
             <Stat
-              label="AVG SOLVE"
+              label="Avg solve"
               value={metrics.avgSolveHrs == null ? "—" : formatHrs(metrics.avgSolveHrs * 3_600_000)}
               sub={
                 metrics.fastestSolveHrs == null
@@ -97,7 +97,7 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
               tone="teal"
             />
             <Stat
-              label="AVG FIRST REPLY"
+              label="Avg first reply"
               value={
                 metrics.avgFirstResponseHrs == null
                   ? "—"
@@ -111,7 +111,7 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
               tone="teal"
             />
             <Stat
-              label="MEDIAN REPLY"
+              label="Median reply"
               value={
                 metrics.medianFirstResponseHrs == null
                   ? "—"
@@ -121,7 +121,7 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
               tone="teal"
             />
             <Stat
-              label="MEDIAN SOLVE"
+              label="Median solve"
               value={
                 metrics.medianSolveHrs == null ? "—" : formatHrs(metrics.medianSolveHrs * 3_600_000)
               }
@@ -129,13 +129,13 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
               tone="teal"
             />
             <Stat
-              label="SLA COMPLIANCE"
+              label="SLA compliance"
               value={metrics.slaComplianceRate == null ? "—" : `${metrics.slaComplianceRate}%`}
               sub={`${metrics.slaWithinTarget ?? 0} / ${metrics.slaWindowCompletions ?? 0} completions in target`}
               tone="ok"
             />
             <Stat
-              label="PERF. SCORE"
+              label="Perf. score"
               value={metrics.score == null ? "—" : `${metrics.score}/100`}
               sub="SLA · response · throughput"
               tone="teal"
@@ -269,17 +269,17 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
 function Stat({ label, value, sub, tone = "warm" }) {
   const toneClass =
     tone === "ok"
-      ? "text-ok"
+      ? "text-ok-deep"
       : tone === "error"
-        ? "text-error"
+        ? "text-error-deep"
         : tone === "teal"
-          ? "text-teal-light"
+          ? "text-teal-deep"
           : "text-warm";
   return (
-    <div className="soft-bl border border-surface-2 bg-surface p-4">
-      <p className="mono-label text-[9px] text-warm/40">{label}</p>
-      <p className={`mt-1.5 font-mono text-[20px] leading-none ${toneClass}`}>{value}</p>
-      <p className="mt-1.5 text-[10px] text-warm/35">{sub}</p>
+    <div className="rounded-xl border border-surface-2 bg-surface p-4 shadow-xs">
+      <p className="text-caption font-medium text-warm/50">{label}</p>
+      <p className={`mt-1.5 text-h2 font-semibold tabular-nums ${toneClass}`}>{value}</p>
+      <p className="mt-1 text-caption text-warm/45">{sub}</p>
     </div>
   );
 }

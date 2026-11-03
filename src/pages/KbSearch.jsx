@@ -83,11 +83,11 @@ export default function KbSearch() {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Search policies by title, topic or keyword…"
           aria-label="Search the knowledge base"
-          className="flex-1 border border-surface-2 bg-surface px-4 py-2.5 text-body-lg text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="flex-1 rounded-l-xl border border-surface-2 bg-surface px-4 py-2.5 text-body-lg text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
         />
         <button
           type="submit"
-          className="border border-l-0 bg-teal px-4 py-2.5 text-body font-medium text-canvas transition-colors hover:opacity-90"
+          className="rounded-r-xl bg-teal px-4 py-2.5 text-body font-medium text-canvas transition-colors hover:opacity-90"
         >
           Search
         </button>
@@ -136,7 +136,7 @@ export default function KbSearch() {
                       <span className="mono-label text-[9px] text-warm/30">{doc.version}</span>
                     )}
                   </div>
-                  <p className="text-body-lg font-medium text-warm group-hover:text-teal-light">
+                  <p className="text-body-lg font-medium text-warm group-hover:text-teal-deep">
                     {doc.title}
                   </p>
                   <p className="mt-1 text-caption leading-relaxed text-warm/45 line-clamp-2">
