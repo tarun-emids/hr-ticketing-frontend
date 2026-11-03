@@ -1,27 +1,36 @@
 # HR Desk — internal HR ticketing
 
-React + Vite + Tailwind CSS + React Router frontend over a FastAPI +
-Supabase (Postgres/Storage) backend in `backend/` — see
-[backend/README.md](backend/README.md) for setup, endpoint map and the
-notifications domain.
+React + Vite + Tailwind CSS + React Router frontend.
 
 ## Run it
 
-Frontend:
+Start the backend and its PostgreSQL database first, from the backend directory:
 
 ```bash
-npm install
-npm run dev
+cd ../hr-ticketing-backend
+make up
 ```
 
-Backend (needs `backend/.env`, see `backend/.env.example`):
+Then start the frontend from this directory:
 
 ```bash
-cd backend
-uvicorn app.main:app --reload --port 8000
+cd ../hr-ticketing-frontend
+make up
 ```
 
-Then open http://localhost:5173 (API docs at http://localhost:8000/docs).
+The frontend `make up` command prints the app and Mailpit links when it
+finishes. Open http://localhost:5173 for the app, http://localhost:8025 for
+Mailpit, and http://localhost:8000/docs for API docs. Mailpit is started by
+the backend stack, so start the backend first. Each
+directory has its own `make down` command: run it in `hr-ticketing-frontend/`
+to stop only the frontend, or in `hr-ticketing-backend/` to stop the API and
+database. The database data is kept in a Docker volume when stopped.
+
+PostgreSQL initializes from the backend's `schema.sql` on first startup. The
+database credentials and signing key in the backend `compose.yaml` are for
+local development only; do not use them in production. To enable the HR
+assistant, set `RAG_GEMINI_API_KEY` in `hr-ticketing-backend/.env` before
+starting the backend.
 
 ## Login and password recovery
 
