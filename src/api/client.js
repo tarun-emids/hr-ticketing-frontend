@@ -22,6 +22,7 @@
 //   VITE_LOGS=false disables the remote event sink (backend keeps its own
 //   logs either way); the console correlation line always stays.
 import { logEvent, newCorrelationId } from "./logger";
+import { getAccessToken, setAccessToken } from "./session";
 import { endRequestSpan, injectTraceHeaders, startRequestSpan, traceContextFields } from "./trace";
 
 const BASE = (import.meta.env.VITE_API_URL || "http://localhost:8000/api").replace(/\/+$/, "");
@@ -49,7 +50,7 @@ function logRequest(method, path, status, durationMs, traceId, requestId) {
 
 // Exported for feature modules (src/rag) so every call keeps the shared
 // logging/tracing pipeline; domain endpoints keep their own thin wrappers.
-export async function request(path, { method = "GET", body, form, operation } = {}) {
+export async function request(path, { method = "GET", body, form, operation, responseType } = {}) {
   const correlationId = newCorrelationId();
   const startedAt = performance.now();
   const endpoint = path.split("?")[0]; // path only — query strings are never logged
@@ -73,6 +74,8 @@ export async function request(path, { method = "GET", body, form, operation } = 
     ...(form ? {} : { "Content-Type": "application/json" }),
     "X-Request-ID": correlationId, // validated server-side; reused as request_id in every backend line
   };
+  const accessToken = getAccessToken();
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
   injectTraceHeaders(headers, spanEntry); // adds `traceparent` when tracing is on
 
   let res;
@@ -142,14 +145,44 @@ export async function request(path, { method = "GET", body, form, operation } = 
   }
 
   if (res.status === 204) return null;
+  if (responseType === "blob") return res.blob();
   return res.json();
 }
 
 // ---- auth -------------------------------------------------------------------
 // Credentials are verified server-side against Supabase Auth; the backend
 // returns the matching public.users row. No secrets cross the wire either way.
-export const login = (email, password) =>
-  request("/auth/login", { method: "POST", body: { email, password }, operation: "auth.login" }); // { user: {id,name,email,role} }
+export const login = async (email, password) => {
+  const result = await request("/auth/login", {
+    method: "POST",
+    body: { email, password },
+    operation: "auth.login",
+  });
+  if (!result?.accessToken) {
+    throw new Error("Sign-in response did not include an access token.");
+  }
+  setAccessToken(result.accessToken);
+  return result;
+}; // { user: {id,name,email,role}, accessToken }
+
+export const requestPasswordReset = (email) =>
+  request("/auth/forgot-password", {
+    method: "POST",
+    body: { email },
+    operation: "auth.password_reset.request",
+  });
+export const resetPassword = (email, otp, newPassword) =>
+  request("/auth/reset-password", {
+    method: "POST",
+    body: { email, otp, newPassword },
+    operation: "auth.password_reset.complete",
+  });
+export const changePassword = (currentPassword, newPassword) =>
+  request("/auth/password", {
+    method: "POST",
+    body: { currentPassword, newPassword },
+    operation: "auth.password.change",
+  });
 
 // ---- users ----------------------------------------------------------------
 export const listUsers = () => request("/users", { operation: "users.list" });
@@ -259,16 +292,15 @@ export const listKbPopular = (viewerId) =>
   request(`/kb/popular?viewerId=${encodeURIComponent(viewerId)}`);
 export const getKbDoc = (slug, viewerId) =>
   request(`/kb/${encodeURIComponent(slug)}?viewerId=${encodeURIComponent(viewerId)}`);
-// The file endpoint streams the PDF itself (it is gated by viewerId on the
-// server), so this resolves to a plain URL — no JSON hop, no signed token.
-// download=true eats the response as an attachment (save dialog proposes the
-// policy title); the default flavour renders the PDF inline.
-export const getKbDocUrl = (slug, viewerId, download = false) =>
-  Promise.resolve({
-    url:
-      `${BASE}/kb/${encodeURIComponent(slug)}/file?viewerId=${encodeURIComponent(viewerId)}` +
-      `&download=${download ? "true" : "false"}`,
-  });
+// Fetch the protected PDF with the session bearer token, then expose a local
+// blob URL for the iframe or download link.
+export const getKbDocUrl = async (slug, viewerId, download = false) => {
+  const file = await request(
+    `/kb/${encodeURIComponent(slug)}/file?viewerId=${encodeURIComponent(viewerId)}&download=${download}`,
+    { operation: "kb.file", responseType: "blob" },
+  );
+  return { url: URL.createObjectURL(file) };
+};
 
 // ---- notifications ----------------------------------------------------------
 const withQuery = (path, params) => {

@@ -68,12 +68,14 @@ beforeEach(() => {
     "hrdesk.user",
     JSON.stringify({ id: "agent-1", name: "Alicia Gomez", role: "agent", via: "password" }),
   );
+  localStorage.setItem("hrdesk.accessToken", "test-access-token");
 });
 
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   localStorage.removeItem("hrdesk.user");
+  localStorage.removeItem("hrdesk.accessToken");
   markNotificationRead.mockClear();
   markAllNotificationsRead.mockClear();
 });

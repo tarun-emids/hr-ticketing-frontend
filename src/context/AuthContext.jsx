@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import * as api from "../api/client";
+import { clearAccessToken, getAccessToken } from "../api/session";
 
 const AuthContext = createContext(null);
 
@@ -12,15 +13,22 @@ export function AuthProvider({ children }) {
       // treat them as mock leftovers and require a fresh sign-in.
       const stored = localStorage.getItem("hrdesk.user");
       const parsed = stored ? JSON.parse(stored) : null;
-      return parsed?.via === "password" ? parsed : null;
+      return parsed?.via === "password" && getAccessToken() ? parsed : null;
     } catch {
       return null;
     }
   });
 
-  // Load the real user list once at startup (employees first, then agents).
+  // User data is protected, so load it only after restoring or completing login.
   useEffect(() => {
+    if (!user) {
+      setUsers([]);
+      setUsersReady(false);
+      return undefined;
+    }
+
     let alive = true;
+    setUsersReady(false);
     api
       .listUsers()
       .then((list) => {
@@ -31,17 +39,20 @@ export function AuthProvider({ children }) {
         setUser((cur) => (cur && list.some((u) => u.id === cur.id) ? cur : null));
       })
       .catch(() => {
-        // Backend unreachable — keep any stored session so the UI stays usable
+        // Keep the session usable if loading the supporting user list fails.
         if (alive) setUsersReady(true);
       });
     return () => {
       alive = false;
     };
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (user) localStorage.setItem("hrdesk.user", JSON.stringify(user));
-    else localStorage.removeItem("hrdesk.user");
+    else {
+      localStorage.removeItem("hrdesk.user");
+      clearAccessToken();
+    }
   }, [user]);
 
   const value = {
@@ -58,7 +69,10 @@ export function AuthProvider({ children }) {
       setUser(sessionUser);
       return sessionUser;
     },
-    logout: () => setUser(null),
+    logout: () => {
+      clearAccessToken();
+      setUser(null);
+    },
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
