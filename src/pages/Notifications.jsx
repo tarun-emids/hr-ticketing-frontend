@@ -59,14 +59,10 @@ export default function Notifications() {
     <div className="mx-auto max-w-3xl">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
-            <IconArrowDownRight size={16} aria-hidden />
-            NOTIFICATIONS
-          </span>
           <h1 className="text-h3 text-warm">
             All notifications
             {unread > 0 && (
-              <span className="mono-label ml-3 align-middle text-[10px] text-teal-deep">
+              <span className="ml-3 align-middle text-caption font-medium text-teal-deep">
                 {unread} unread
               </span>
             )}
@@ -81,7 +77,7 @@ export default function Notifications() {
             onClick={() => {
               if (user?.id) dispatch(markAllNotificationsRead({ userId: user.id })).catch(() => {});
             }}
-            className="mono-label border border-warm/30 px-3 py-1.5 text-[10px] text-warm/60 transition-colors hover:border-teal hover:text-teal-deep"
+            className="rounded-lg border border-warm/25 px-3 py-1.5 text-caption font-medium text-warm/55 transition-colors hover:border-teal hover:text-teal-deep"
           >
             Mark all read
           </button>
@@ -109,7 +105,7 @@ export default function Notifications() {
           <button
             onClick={loadMore}
             disabled={loadingMore}
-            className="mono-label inline-flex items-center gap-2 border border-warm/30 px-4 py-3 text-[10px] text-warm/60 transition-colors hover:border-teal hover:text-teal-deep disabled:opacity-40"
+            className="inline-flex items-center gap-2 rounded-lg border border-warm/25 px-4 py-2.5 text-body font-medium text-warm/60 transition-colors hover:border-teal hover:text-teal-deep disabled:opacity-40"
           >
             {loadingMore ? "Loading…" : "Load older"}
             <IconArrowDownRight size={16} aria-hidden />

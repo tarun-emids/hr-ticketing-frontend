@@ -82,11 +82,6 @@ export default function EmployeeDashboard() {
   return (
     <div className="mx-auto max-w-4xl">
       <header className="mb-8">
-        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
-          <IconArrowDownRight size={16} aria-hidden />
-          01 / EMPLOYEE
-        </span>
-        <div className="rule-teal mb-5" />
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-h3 text-warm">My tickets</h1>
@@ -100,7 +95,7 @@ export default function EmployeeDashboard() {
           </div>
           <Link
             to="/new-ticket"
-            className="mono-label inline-flex items-center gap-2 border border-teal bg-teal px-4 py-3 text-[10px] text-warm transition-colors hover:bg-teal-light"
+            className="inline-flex items-center gap-2 rounded-lg bg-teal px-4 py-2.5 text-body font-medium text-canvas shadow-xs transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <IconPlus size={16} aria-hidden />
             New ticket
@@ -137,7 +132,7 @@ export default function EmployeeDashboard() {
 
       {!draftsLoading && drafts.length > 0 && (
         <section className="mb-8">
-          <h2 className="mono-label mb-3 text-[10px] text-warm/45">
+          <h2 className="mb-3 text-caption font-semibold text-warm/60">
             Saved drafts · {drafts.length}
           </h2>
           <div className="flex flex-col gap-2">
@@ -166,7 +161,7 @@ export default function EmployeeDashboard() {
                 <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
                   <Link
                     to={`/drafts/${draft.id}/edit`}
-                    className="mono-label border border-teal px-3 py-2 text-center text-[10px] text-teal-deep hover:bg-teal/10"
+                    className="rounded-lg border border-teal/40 px-3 py-1.5 text-center text-body font-medium text-teal-deep transition-colors hover:bg-teal/10"
                   >
                     Continue
                   </Link>
@@ -174,7 +169,7 @@ export default function EmployeeDashboard() {
                     type="button"
                     onClick={() => removeDraft(draft.id)}
                     disabled={Boolean(deletingDraft)}
-                    className="mono-label border border-warm/25 px-3 py-2 text-[10px] text-warm/50 hover:border-error hover:text-error-deep disabled:opacity-40"
+                    className="rounded-lg border border-warm/20 px-3 py-1.5 text-body font-medium text-warm/50 transition-colors hover:border-error/50 hover:text-error-deep disabled:opacity-40"
                   >
                     {deletingDraft === draft.id ? "Deleting…" : "Delete"}
                   </button>
@@ -199,8 +194,8 @@ export default function EmployeeDashboard() {
             return (
               <>
                 <section className="mb-8">
-                  <h2 className="mono-label mb-3 text-[10px] text-teal">
-                    OPEN / IN PROGRESS · {open.length}
+                  <h2 className="mb-3 text-caption font-semibold text-teal-deep">
+                    Open / in progress · {open.length}
                   </h2>
                   {open.length ? (
                     <div className="flex flex-col gap-2">
@@ -216,8 +211,8 @@ export default function EmployeeDashboard() {
                 </section>
                 {settled.length > 0 && (
                   <section>
-                    <h2 className="mono-label mb-3 text-[10px] text-warm/45">
-                      SETTLED · {settled.length} RESOLVED OR CLOSED
+                    <h2 className="mb-3 text-caption font-semibold text-warm/60">
+                      Settled · {settled.length} resolved or closed
                     </h2>
                     <div className="flex flex-col gap-2">
                       {settled.map((t) => (

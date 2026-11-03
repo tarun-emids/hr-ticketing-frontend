@@ -13,11 +13,6 @@ export default function HRDashboard() {
   return (
     <div className="mx-auto max-w-4xl">
       <header className="mb-8">
-        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
-          <IconArrowDownRight size={16} aria-hidden />
-          02 / MY PERFORMANCE
-        </span>
-        <div className="rule-teal mb-5" />
         <h1 className="flex items-center gap-3 text-h3 text-warm">
           <IconUser size={18} aria-hidden />
           {user?.name || "My performance"}

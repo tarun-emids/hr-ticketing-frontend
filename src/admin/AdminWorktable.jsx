@@ -56,8 +56,6 @@ export default function AdminWorktable() {
     <div className="mx-auto max-w-5xl">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="mono-label mb-2 text-[10px] text-teal">↘ A D M I N · W O R K T A B L E</p>
-          <div className="rule-teal mb-4" />
           <h1 className="text-h3 text-warm">Agents × Tickets</h1>
         </div>
         <div className="flex gap-2" role="tablist" aria-label="Period">

@@ -20,8 +20,8 @@ import { selectUser } from "../state/authSlice";
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB — same cap the backend enforces
 
 const FIELD =
-  "w-full border bg-canvas px-3 py-3 text-body-lg text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none";
-const LABEL = "mb-1.5 block mono-label text-[10px] text-warm/50";
+  "w-full rounded-lg border border-surface-2 bg-surface px-3 py-2.5 text-body text-warm placeholder:text-warm/35 focus:border-teal focus:outline-none";
+const LABEL = "mb-1.5 block text-caption font-medium text-warm/55";
 
 function FieldError({ msg }) {
   if (!msg) return null;
@@ -323,7 +323,7 @@ export default function TicketForm() {
               ) : (
                 <label
                   htmlFor="tf-file"
-                  className="flex cursor-pointer items-center gap-3 border border-dashed border-warm/30 bg-canvas px-3 py-5 text-body text-warm/50 transition-colors hover:border-teal/50 hover:text-warm"
+                  className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-warm/25 bg-surface px-3 py-4 text-body text-warm/50 transition-colors hover:border-teal/50 hover:text-warm"
                 >
                   <IconUpload size={16} aria-hidden className="text-teal-deep/80" />
                   Click to attach a screenshot or document
@@ -338,7 +338,7 @@ export default function TicketForm() {
             <button
               type="button"
               onClick={() => navigate("/my-tickets")}
-              className="mono-label px-2 py-2 text-[10px] text-warm/50 hover:text-warm"
+              className="rounded-lg px-2 py-2 text-body text-warm/50 hover:text-warm"
             >
               Cancel
             </button>
@@ -346,14 +346,14 @@ export default function TicketForm() {
               type="button"
               onClick={onSaveDraft}
               disabled={submitting || savingDraft}
-              className="mono-label border border-warm/35 px-4 py-3 text-[10px] text-warm/65 transition-colors hover:border-teal hover:text-teal-deep disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-lg border border-warm/25 bg-surface px-4 py-2.5 text-body font-medium text-warm transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {savingDraft ? "Saving…" : "Save draft"}
             </button>
             <button
               type="submit"
               disabled={submitting || savingDraft}
-              className="mono-label inline-flex items-center gap-2 border border-teal bg-teal px-5 py-3 text-[10px] text-warm transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-lg bg-teal px-4 py-2.5 text-body font-medium text-canvas shadow-xs transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {submitting ? "Submitting…" : "Submit ticket"}
               <IconArrowDownRight size={16} aria-hidden />

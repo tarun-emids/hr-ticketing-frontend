@@ -40,8 +40,6 @@ export default function AdminOverview() {
     <div className="mx-auto max-w-5xl">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="mono-label mb-2 text-[10px] text-teal">↘ A D M I N · C O N S O L E</p>
-          <div className="rule-teal mb-4" />
           <h1 className="text-h3 text-warm">Ticket analytics</h1>
         </div>
         <div className="flex gap-2" role="tablist" aria-label="Window">
@@ -127,9 +125,7 @@ export default function AdminOverview() {
           <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
             {data.responseDistribution?.length > 0 && (
               <section>
-                <p className="mono-label mb-3 text-[10px] text-warm/40">
-                  FIG. 01 · FIRST RESPONSE TIME
-                </p>
+                <p className="mb-3 text-caption font-medium text-warm/50">First response time</p>
                 <div className="border border-surface-2 bg-surface p-4">
                   <HistogramBars
                     data={data.responseDistribution}
@@ -141,9 +137,7 @@ export default function AdminOverview() {
             )}
             {data.solveDistribution?.length > 0 && (
               <section>
-                <p className="mono-label mb-3 text-[10px] text-warm/40">
-                  FIG. 02 · TOTAL TIME TO SOLVE
-                </p>
+                <p className="mb-3 text-caption font-medium text-warm/50">Time to solve</p>
                 <div className="border border-surface-2 bg-surface p-4">
                   <HistogramBars
                     data={data.solveDistribution}
@@ -157,7 +151,7 @@ export default function AdminOverview() {
 
           {/* ---- status split bars ---- */}
           <section className="mb-8">
-            <p className="mono-label mb-3 text-[10px] text-warm/40">FIG. 03 · STATUS SPLIT</p>
+            <p className="mb-3 text-caption font-medium text-warm/50">Status split</p>
             <div className="border border-surface-2 bg-surface p-4">
               <CountBars
                 data={[
@@ -178,9 +172,9 @@ export default function AdminOverview() {
           {/* ---- volume + backlog trend (created / resolved / open pile) ---- */}
           {data.trend?.length > 0 && (
             <section className="mb-8">
-              <p className="mono-label mb-3 text-[10px] text-warm/40">
-                FIG. 04 · VOLUME &amp; BACKLOG TREND ({WINDOWS.find((w) => w.key === window)?.label}{" "}
-                · creations, resolutions and the open pile at each day's end)
+              <p className="mb-3 text-caption font-medium text-warm/50">
+                Volume &amp; backlog trend ({WINDOWS.find((w) => w.key === window)?.label} ·
+                creations, resolutions and the open pile at each day's end)
               </p>
               <div className="border border-surface-2 bg-surface p-4">
                 <TimeLines
@@ -200,8 +194,8 @@ export default function AdminOverview() {
           {/* ---- aging of the unresolved pile (how long the waiting waited) ---- */}
           {data.aging?.length > 0 && (
             <section className="mb-8">
-              <p className="mono-label mb-3 text-[10px] text-warm/40">
-                FIG. 05 · AGING OF UNRESOLVED (CURRENT AGE OF THE OPEN PILE · ALL TIME)
+              <p className="mb-3 text-caption font-medium text-warm/50">
+                Aging of unresolved (all time)
               </p>
               <div className="border border-surface-2 bg-surface p-4">
                 <CountBars
@@ -219,8 +213,8 @@ export default function AdminOverview() {
           {/* ---- peak activity heatmap (weekday × hour of creation) ---- */}
           {data.heatmap?.total > 0 && (
             <section className="mb-8">
-              <p className="mono-label mb-3 text-[10px] text-warm/40">
-                FIG. 06 · PEAK ACTIVITY · CREATIONS BY WEEKDAY × HOUR (ALL TIME)
+              <p className="mb-3 text-caption font-medium text-warm/50">
+                Peak activity — creations by weekday × hour (all time)
               </p>
               <div className="border border-surface-2 bg-surface p-4 overflow-x-auto">
                 <Heatmap heatmap={data.heatmap} />
@@ -231,9 +225,8 @@ export default function AdminOverview() {
           {/* ---- resolution SLA compliance (per-priority targets) ---- */}
           {data.sla?.resolvable > 0 && (
             <section className="mb-8">
-              <p className="mono-label mb-3 text-[10px] text-warm/40">
-                FIG. 07 · RESOLUTION SLA COMPLIANCE · TARGETS URGENT 8H / HIGH 24H / MEDIUM 48H /
-                LOW 72H (ALL TIME)
+              <p className="mb-3 text-caption font-medium text-warm/50">
+                Resolution SLA compliance (targets: urgent 8h · high 24h · medium 48h · low 72h)
               </p>
               <div className="border border-surface-2 bg-surface p-5">
                 <div className="mb-5 flex items-end gap-6">
@@ -260,9 +253,8 @@ export default function AdminOverview() {
 
           {/* ---- category load + repetitive subjects (the KB signal) ---- */}
           <section>
-            <p className="mono-label mb-3 text-[10px] text-warm/40">
-              FIG. 08 · WHERE THE TICKETS COME FROM (KB-improvement input on the Agents × Tickets
-              screen)
+            <p className="mb-3 text-caption font-medium text-warm/50">
+              Where the tickets come from
             </p>
             <div className="border border-surface-2 bg-surface p-5">
               {data.categories?.length ? (

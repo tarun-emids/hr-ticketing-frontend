@@ -63,17 +63,13 @@ export default function KbSearch() {
         type="button"
         onClick={goBack(navigate)}
         title="Go back (Alt+← works too)"
-        className="mono-label mb-6 inline-flex items-center gap-2 text-[10px] text-warm/45 transition-colors hover:text-teal"
+        className="mb-6 inline-flex items-center gap-2 text-body text-warm/45 transition-colors hover:text-teal-deep"
       >
         <Icon d={PATHS.arrowLeft} className="h-3.5 w-3.5" />
         Back
       </button>
 
       <header className="mb-8">
-        <span className="mono-label mb-3 block text-[10px] text-teal">
-          ↘ 0 2 / K N O W L E D G E
-        </span>
-        <div className="rule-teal mb-5" />
         <h1 className="text-h3 text-warm">Knowledge base</h1>
         <p className="mt-1.5 text-caption text-warm/45">
           {q ? heading : "Company policies — the documents your role is allowed to see"}
@@ -91,7 +87,7 @@ export default function KbSearch() {
         />
         <button
           type="submit"
-          className="mono-label border border-l-0 border-teal bg-teal px-4 text-[10px] text-canvas transition-colors hover:bg-teal-light"
+          className="border border-l-0 bg-teal px-4 py-2.5 text-body font-medium text-canvas transition-colors hover:opacity-90"
         >
           Search
         </button>

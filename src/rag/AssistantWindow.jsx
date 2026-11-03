@@ -65,7 +65,7 @@ export default function AssistantWindow({ onClose }) {
       style={{ maxHeight: "70vh" }}
     >
       <div className="flex items-center justify-between px-5 pb-1 pt-5">
-        <span className="mono-label text-[10px] text-teal">↘ H R · A S S I S T A N T</span>
+        <span className="text-caption font-medium text-teal-deep">HR assistant</span>
         <button
           type="button"
           onClick={onClose}
@@ -75,7 +75,6 @@ export default function AssistantWindow({ onClose }) {
           ×
         </button>
       </div>
-      <div className="rule-teal mx-5 mb-3" />
 
       {/* Thread */}
       <div ref={threadRef} className="flex-1 overflow-y-auto px-5 py-2">
@@ -104,7 +103,7 @@ export default function AssistantWindow({ onClose }) {
           placeholder="Ask about a policy…"
           aria-label="Ask the HR assistant"
           maxLength={500}
-          className="w-full bg-canvas px-5 py-3.5 text-body text-warm placeholder:text-warm/30 focus:outline-none"
+          className="w-full bg-surface px-5 py-3.5 text-body text-warm placeholder:text-warm/35 focus:outline-none"
         />
         <button
           type="submit"
@@ -154,7 +153,7 @@ function Citations({ citations }) {
           key={`${c.ref}-${c.blockNo}-${i}`}
           to={`/kb/${c.slug}`}
           title={`${c.ref} · ${c.title} — ${c.section}, paragraph ${c.blockNo}: “${c.snippet}”`}
-          className="mono-label inline-flex items-center gap-1.5 border border-teal/40 px-2 py-1 text-[9px] text-teal-light transition-colors hover:border-teal hover:text-teal"
+          className="inline-flex items-center gap-1.5 rounded-md border border-teal/40 px-2 py-1 text-micro text-teal-deep transition-colors hover:border-teal hover:text-teal-deep"
         >
           <Icon d={PATHS.kb} className="h-3 w-3" />
           {c.ref} · ¶{c.blockNo}

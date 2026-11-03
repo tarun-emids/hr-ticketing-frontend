@@ -26,11 +26,6 @@ export default function AgentMyTickets() {
   return (
     <div className="mx-auto max-w-6xl">
       <header className="mb-8">
-        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
-          <IconArrowDownRight size={16} aria-hidden />
-          02 / MY TICKETS
-        </span>
-        <div className="rule-teal mb-5" />
         <h1 className="text-h3 text-warm">My tickets</h1>
         <p className="mt-1.5 text-caption text-warm/45">
           {mine.length === 0
