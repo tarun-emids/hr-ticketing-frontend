@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { IconMenu2 } from "@tabler/icons-react";
 import Sidebar from "./Sidebar";
 import NotificationBell from "./NotificationBell";
+import ThemeToggle from "./ThemeToggle";
 import AssistantBubble from "../rag/AssistantBubble";
 
 export default function Layout() {
@@ -24,13 +25,16 @@ export default function Layout() {
           <div className="mb-4 flex items-center justify-between">
             <button
               onClick={() => setMobileOpen(true)}
-              className="mono-label inline-flex items-center gap-2 border border-warm/30 bg-transparent px-3 py-3 text-[10px] text-warm lg:hidden"
+              className="inline-flex items-center gap-2 rounded-lg border border-warm/15 px-3 py-2 text-caption font-medium text-warm/70 transition-colors hover:bg-surface-2 lg:hidden"
               aria-label="Open menu"
             >
               <IconMenu2 size={16} aria-hidden />
               Menu
             </button>
-            <NotificationBell />
+            <div className="flex items-center gap-2.5">
+              <ThemeToggle />
+              <NotificationBell />
+            </div>
           </div>
           <Outlet />
         </div>

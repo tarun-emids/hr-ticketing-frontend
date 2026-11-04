@@ -4,134 +4,179 @@
 @import "@fontsource/jetbrains-mono/500.css";
 
 /*
- * Emids Brand System v1.0 — mapped tokens, LIGHT execution.
- * 06 COLOR: warm-white canvas #F2F2F0 · surface #FBFBF9 · surface-2 #E8E8E3 · ink #0E0E0E
- *           (token names are neutral: canvas = page bg, warm = ink, surface = card).
- *           Teal light/deep #ABC7CA / #47A2B0 / #2A7682 — teal is the anchor fill;
- *           meaningful teal TEXT renders in teal-deep (≥4.5:1 on warm white).
- *           Signals confirm, never lead: link #00B9F9 · success #45BDA0 · error #E04F4F —
- *           fills/borders/dots in the signal color, signal TEXT in its -deep pair
- *           (link-deep/ok-deep/error-deep/accent-deep) for AA on light.
- * 07 TYPE:  Inter variable + JetBrains Mono (labels ≤10px, caps, tracked 0.12–0.22em).
- * 08 GRID:  8pt baseline, 4pt snap — spacing only in multiples of 4;
- *           14px gutters, ≥30px margins, holes of 2/4/8 columns.
- * 09 ICONS: Tabler v3 — 24px grid, 1.5px stroke, rounded caps, outline only.
- * 04 MARK:  8px bottom-left radius is the only soft corner (hero cards, plates,
- *           brand frames — never buttons, inputs, table cells, modals).
- *           Elevation is colour, not shadow: never box-shadow, blur or glass.
- * SHELL:    frame maps to 1440px design width at 8px/unit: spine = 168px (7/60),
- *           top bar = 56px (7/48), mid-bar band on hero plates at
- *           left 11.67% · width 35% · top 43.75% · height 14.58%.
+ * HR Desk design system v2 — neutral surfaces + teal accent, light & dark.
+ * Tokens keep the names the codebase already uses (canvas / surface /
+ * surface-2 / warm ink / teal family / signal pairs); their VALUES come from
+ * theme CSS variables set on :root (light) and html.dark, so every existing
+ * utility (bg-surface, border-surface-2, text-warm/45 …) responds to dark
+ * mode with no component changes.
  */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+
+  --app-canvas: #fafafa;
+  --app-surface: #ffffff;
+  --app-surface-2: #f4f4f5;
+  --app-warm: #18181b;
+
+  --app-teal-light: #ccfbf1;
+  --app-teal: #0d9488;
+  --app-teal-deep: #0f766e;
+
+  --app-link: #0284c7;
+  --app-ok: #10b981;
+  --app-error: #ef4444;
+  --app-accent: #f59e0b;
+
+  /* Accessible signal TEXT pairs on the light surface ladder. */
+  --app-link-deep: #0369a1;
+  --app-ok-deep: #047857;
+  --app-error-deep: #b91c1c;
+  --app-accent-deep: #b45309;
+
+  --app-mauve: #a78bfa;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --app-canvas: #131316;
+  --app-surface: #1b1b1f;
+  --app-surface-2: #26262b;
+  --app-warm: #f4f4f5;
+
+  --app-teal-light: #115e59;
+  --app-teal: #2dd4bf;
+  --app-teal-deep: #99f6e4;
+
+  --app-link: #38bdf8;
+  --app-ok: #34d399;
+  --app-error: #f87171;
+  --app-accent: #fbbf24;
+
+  /* Signal text on a dark ladder reads lighter. */
+  --app-link-deep: #7dd3fc;
+  --app-ok-deep: #6ee7b7;
+  --app-error-deep: #fca5a5;
+  --app-accent-deep: #fcd34d;
+
+  --app-mauve: #a78bfa;
+}
+
+@theme inline {
+  --color-canvas: var(--app-canvas);
+  --color-surface: var(--app-surface);
+  --color-surface-2: var(--app-surface-2);
+  --color-warm: var(--app-warm);
+
+  --color-teal-light: var(--app-teal-light);
+  --color-teal: var(--app-teal);
+  --color-teal-deep: var(--app-teal-deep);
+
+  --color-link: var(--app-link);
+  --color-ok: var(--app-ok);
+  --color-error: var(--app-error);
+  --color-accent: var(--app-accent);
+
+  --color-link-deep: var(--app-link-deep);
+  --color-ok-deep: var(--app-ok-deep);
+  --color-error-deep: var(--app-error-deep);
+  --color-accent-deep: var(--app-accent-deep);
+
+  --color-mauve: var(--app-mauve);
+}
+
 @theme {
-  --font-sans: "Inter Variable", "Inter", Aptos, system-ui, sans-serif;
+  --font-sans: "Inter Variable", "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", Consolas, monospace;
 
-  --color-canvas: #f2f2f0;
-  --color-surface: #fbfbf9;
-  --color-surface-2: #e8e8e3;
-  --color-warm: #0e0e0e;
-
-  --color-teal-light: #abc7ca;
-  --color-teal: #47a2b0;
-  --color-teal-deep: #2a7682;
-
-  --color-link: #00b9f9;
-  --color-ok: #45bda0;
-  --color-error: #e04f4f;
-
-  /* Accessible signal TEXT pairs for the light surface ladder. */
-  --color-link-deep: #0b6aa8;
-  --color-ok-deep: #0e7a55;
-  --color-error-deep: #c0392b;
-  --color-accent-deep: #7a5c10;
-
-  --color-mauve: #b89dcb;
-  --color-accent: #f2c94c;
-
-  --text-display: 46px;
-  --text-display--line-height: 0.85;
+  /* Type scale: standard SaaS steps, sentence case. */
+  --text-display: 44px;
+  --text-display--line-height: 1.04;
   --text-display--font-weight: 700;
-  --text-h2: 36px;
-  --text-h2--line-height: 0.85;
+  --text-display--letter-spacing: -0.02em;
+  --text-h2: 30px;
+  --text-h2--line-height: 1.1;
   --text-h2--font-weight: 700;
+  --text-h2--letter-spacing: -0.015em;
   --text-h3: 20px;
-  --text-h3--line-height: 1;
-  --text-h3--font-weight: 700;
-  --text-body-lg: 16px;
-  --text-body-lg--line-height: 1.2;
-  --text-body: 12px;
-  --text-body--line-height: 1.2;
-  --text-caption: 11px;
-  --text-caption--line-height: 1.4;
-  --text-caption--font-weight: 500;
-  --text-micro: 10px;
-  --text-micro--line-height: 1.3;
+  --text-h3--line-height: 1.25;
+  --text-h3--font-weight: 600;
+  --text-body-lg: 15px;
+  --text-body-lg--line-height: 1.5;
+  --text-body: 14px;
+  --text-body--line-height: 1.5;
+  --text-caption: 12px;
+  --text-caption--line-height: 1.55;
+  --text-micro: 11px;
+  --text-micro--line-height: 1.4;
+
+  --radius-xl: 12px;
 }
 
-/* The brand's one soft note: 8px radius, bottom-left only. */
-@utility soft-bl {
-  border-radius: 0 0 0 8px;
-}
-
-/* Mono technical voice: all caps, tracked 0.18em (brand: 0.12–0.22em). */
+/* Data/labels: small, medium weight, gentle tracking — sentence case. */
 @utility mono-label {
   font-family: var(--font-mono);
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.02em;
 }
 
-/* Hairline rule in teal — the eyebrow marker of the system. */
+/* The accent marker of the system: a short rounded bar. */
 @utility rule-teal {
   width: 3rem;
-  height: 2px;
-  background: var(--color-teal);
+  height: 3px;
+  border-radius: 9999px;
+  background: var(--app-teal);
 }
 
-/* The teal gradient: left → right, three stops, never rotated. */
+/* Legacy call sites: the brand's soft corner now reads as a plain card. */
+@utility soft-bl {
+  border-radius: 12px;
+}
+
+/* Kept for the one branded band that still wants it (Login plate). */
 @utility teal-gradient {
   background-image: linear-gradient(
     to right,
-    #9dc6cc 0%,
-    #72b3be 50%,
-    #57a6b3 100%
+    var(--app-teal) 0%,
+    color-mix(in srgb, var(--app-teal) 78%, #0f766e) 100%
   );
 }
 
 body {
-  background-color: var(--color-canvas);
-  color: var(--color-warm);
+  background-color: var(--app-canvas);
+  color: var(--app-warm);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
 }
 
-/* Elevation is colour, not shadow. */
-*,
-::before,
-::after {
-  box-shadow: none !important;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
-/* Focus feedback without brand-breaking shadows. */
 :focus-visible {
-  outline: 1px solid var(--color-teal);
+  outline: 2px solid var(--app-teal);
   outline-offset: 1px;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-teal) 35%, transparent);
+  background: color-mix(in srgb, var(--app-teal) 30%, transparent);
 }
 
-select,
-option {
-  background-color: var(--color-surface);
-  color: var(--color-warm);
-}
-
-/* Form controls on the warm-white canvas */
+/* Form controls follow the active theme. */
 input,
 textarea,
 select {
-  color-scheme: light;
+  color-scheme: light dark;
 }

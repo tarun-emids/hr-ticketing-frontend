@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { IconArrowDownRight } from "@tabler/icons-react";
-import { useAuth } from "../context/AuthContext";
-import { useTickets } from "../hooks";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { fetchTickets, selectAllTickets, selectTicketsLoading } from "../state/ticketsSlice";
+import { selectUser, selectUsers } from "../state/authSlice";
 import TicketTable from "../components/TicketTable";
 import { SkeletonList, EmptyState } from "../components/primitives";
 
@@ -8,19 +10,22 @@ import { SkeletonList, EmptyState } from "../components/primitives";
 // tickets whose assignee is this agent. The all-tickets view stays on
 // /inbox; a filter by name or the status column narrows further there.
 export default function AgentMyTickets() {
-  const { users, user } = useAuth();
-  const { tickets, loading } = useTickets();
+  const dispatch = useAppDispatch();
+  const users = useAppSelector(selectUsers);
+  const user = useAppSelector(selectUser);
+  const tickets = useAppSelector(selectAllTickets);
+  const loading = useAppSelector(selectTicketsLoading);
   const mine = tickets.filter((t) => t.assigneeId === user.id);
+
+  useEffect(() => {
+    dispatch(fetchTickets());
+  }, [dispatch]);
+
   const openMine = mine.filter((t) => !["Resolved", "Closed"].includes(t.status));
 
   return (
     <div className="mx-auto max-w-6xl">
       <header className="mb-8">
-        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
-          <IconArrowDownRight size={16} aria-hidden />
-          02 / MY TICKETS
-        </span>
-        <div className="rule-teal mb-5" />
         <h1 className="text-h3 text-warm">My tickets</h1>
         <p className="mt-1.5 text-caption text-warm/45">
           {mine.length === 0

@@ -1,21 +1,23 @@
 const CHIP =
-  "mono-label inline-flex items-center gap-1.5 whitespace-nowrap border px-2 py-1";
+  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border px-2 py-0.5 font-medium";
 
 export default function Badge({ label, className = "", size = "sm" }) {
   return (
-    <span className={`${CHIP} ${size === "md" ? "text-[11px] px-2.5 py-1" : "text-[10px]"} ${className}`}>
+    <span
+      className={`${CHIP} ${size === "md" ? "text-caption px-2.5 py-1" : "text-micro"} ${className}`}
+    >
       {label}
     </span>
   );
 }
 
-/* Signal colours confirm, never lead. Two signals max on a surface. */
+/* Status tints carry meaning; text keeps an AA-contrast deep pair per theme. */
 const STATUS_STYLES = {
-  Open: "text-link-deep border-link/35",
-  "In Progress": "text-teal-deep border-teal/45",
-  "Waiting on Employee": "text-accent-deep border-accent/35",
-  Resolved: "text-ok-deep border-ok/35",
-  Closed: "text-warm/45 border-warm/25",
+  Open: "text-link-deep bg-link/10 border-link/25",
+  "In Progress": "text-teal-deep bg-teal/10 border-teal/30",
+  "Waiting on Employee": "text-accent-deep bg-accent/10 border-accent/30",
+  Resolved: "text-ok-deep bg-ok/10 border-ok/25",
+  Closed: "text-warm/55 bg-warm/5 border-warm/15",
 };
 
 export function StatusBadge({ status, size = "sm" }) {
@@ -25,14 +27,18 @@ export function StatusBadge({ status, size = "sm" }) {
 }
 
 const PRIORITY_STYLES = {
-  Urgent: "text-error-deep border-error/45",
-  High: "text-accent-deep border-accent/40",
-  Medium: "text-warm/65 border-warm/30",
-  Low: "text-warm/40 border-warm/20",
+  Urgent: "text-error-deep bg-error/10 border-error/30",
+  High: "text-accent-deep bg-accent/10 border-accent/30",
+  Medium: "text-warm/60 bg-warm/5 border-warm/15",
+  Low: "text-warm/45 bg-warm/5 border-warm/10",
 };
 
 export function PriorityBadge({ priority, size = "sm" }) {
   return (
-    <Badge label={priority} size={size} className={PRIORITY_STYLES[priority] ?? PRIORITY_STYLES.Low} />
+    <Badge
+      label={priority}
+      size={size}
+      className={PRIORITY_STYLES[priority] ?? PRIORITY_STYLES.Low}
+    />
   );
 }

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { IconArrowDownRight } from "@tabler/icons-react";
-import { useAuth } from "../context/AuthContext";
+import { useAppDispatch } from "../state/hooks";
+import { login as loginThunk } from "../state/authSlice";
 import * as api from "../api/client";
 import Logo from "../components/Logo";
 
 const FIELD =
-  "w-full border border-surface-2 bg-surface px-3 py-2.5 text-body-lg text-warm placeholder:text-warm/25 focus:border-teal focus:outline-none";
-const LABEL = "mb-1.5 block mono-label text-[10px] text-warm/50";
+  "w-full rounded-lg border border-surface-2 bg-surface px-3 py-2.5 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none";
+const LABEL = "mb-1.5 block text-caption font-medium text-warm/60";
 
 function FieldError({ msg }) {
   if (!msg) return null;
@@ -20,7 +20,7 @@ function FieldError({ msg }) {
 }
 
 export default function Login() {
-  const { login } = useAuth();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -53,13 +53,18 @@ export default function Login() {
 
       setSubmitting(true);
       try {
-        await login(email.trim(), password);
+        await dispatch(loginThunk({ email: email.trim(), password })).unwrap();
         // Every persona lands on the shared home dashboard (role-aware nav
         // boxes + knowledge-base search) — the role's own workspace stays one
         // click away in the sidebar.
         navigate("/dashboard");
       } catch (err) {
-        setErrors({ _form: err.message || "Could not sign in — is the API running?" });
+        // unwrap() rejects with the thunk's rejectWithValue payload (a string)
+        setErrors({
+          _form:
+            (typeof err === "string" ? err : err?.message) ||
+            "Could not sign in — is the API running?",
+        });
       } finally {
         setSubmitting(false);
       }
@@ -122,40 +127,21 @@ export default function Login() {
 
   return (
     <div className="relative flex min-h-screen bg-canvas">
-      <div aria-hidden className="teal-gradient pointer-events-none absolute inset-x-0 top-0 h-1" />
       {/* Brand plate */}
-      <section className="relative hidden flex-1 flex-col overflow-hidden p-12 lg:flex">
-        {/* Frame mid-bar: x 7-28 of the 60×48 modular grid, parked in the
-            empty lower band of the plate so it never collides with copy. */}
-        <div
-          aria-hidden
-          className="absolute z-0 bg-teal"
-          style={{ left: "11.67%", top: "70%", width: "35%", height: "14.58%" }}
-        >
-          <span className="mono-label absolute bottom-0 right-0 px-4 pb-3 text-[10px] text-warm">
-            0 1 / H R D E S K
-          </span>
-        </div>
+      <section className="relative hidden flex-1 flex-col justify-between overflow-hidden border-r border-surface-2 bg-surface p-12 lg:flex">
         <Logo size="lg" />
 
-        <div className="relative z-10 mt-16 max-w-xl">
-          <span className="mono-label mb-4 flex items-center gap-2 text-[10px] text-teal-deep">
-            <IconArrowDownRight size={16} aria-hidden />
-            HR DESK / INTERNAL
-          </span>
-          <div className="rule-teal mb-6" />
+        <div className="max-w-xl">
           <h1 className="text-display text-warm">
             Outcomes you can <span className="text-teal-deep">track.</span>
           </h1>
-          <p className="mt-6 text-body-lg text-warm">
+          <p className="mt-5 max-w-md text-body-lg text-warm/65">
             Raise requests, follow the thread, know exactly where each ticket stands — without
             chasing anyone down.
           </p>
         </div>
 
-        <p className="mono-label mt-auto text-[10px] text-warm/35">
-          EMIDS / HR DESK / INTERNAL · CONFIDENTIAL
-        </p>
+        <p className="text-caption text-warm/35">Emids · HR desk · confidential</p>
       </section>
 
       {/* Sign-in card */}
@@ -163,21 +149,19 @@ export default function Login() {
         <form
           onSubmit={onSubmit}
           noValidate
-          className="soft-bl w-full max-w-md border border-surface-2 bg-surface p-8"
+          className="w-full max-w-md rounded-2xl border border-surface-2 bg-surface p-8 shadow-sm"
         >
           <div className="mb-8 flex items-center gap-3 lg:hidden">
             <Logo size="nav" />
           </div>
 
-          <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
-            <IconArrowDownRight size={16} aria-hidden />
-            {mode === "login"
-              ? "01 / SIGN IN"
-              : mode === "forgot-request"
-                ? "02 / RESET PASSWORD"
-                : "03 / VERIFY CODE"}
-          </span>
-          <div className="rule-teal mb-6" />
+          <h1 className="text-h3 text-warm">
+            {mode === "login" ? "Sign in" : "Reset your password"}
+          </h1>
+          <p className="mt-1 text-caption text-warm/50">
+            Use the account your organisation gave you.
+          </p>
+          <div className="mt-6" />
 
           {mode !== "forgot-reset" && (
             <>
@@ -293,15 +277,15 @@ export default function Login() {
           <button
             type="submit"
             disabled={submitting}
-            className="mono-label w-full border border-teal bg-teal py-3.5 text-[10px] text-canvas transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
+            className="mt-2 w-full rounded-lg bg-teal py-2.5 text-body font-medium text-canvas shadow-xs transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {submitting
               ? "Please wait…"
               : mode === "login"
-                ? "Sign in ↘"
+                ? "Sign in"
                 : mode === "forgot-request"
-                  ? "Send reset code ↘"
-                  : "Reset password ↘"}
+                  ? "Send reset code"
+                  : "Reset password"}
           </button>
 
           {mode === "forgot-reset" && (
@@ -355,7 +339,10 @@ export default function Login() {
           )}
 
           {errors._form && (
-            <div role="alert" className="mt-4 border border-error/40 bg-error/10 px-4 py-3">
+            <div
+              role="alert"
+              className="mt-4 rounded-lg border border-error/35 bg-error/10 px-3 py-2.5"
+            >
               <FieldError msg={errors._form} />
             </div>
           )}

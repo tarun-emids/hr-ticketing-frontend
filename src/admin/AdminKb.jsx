@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { IconTrash, IconUpload } from "@tabler/icons-react";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import {
   deleteAdminKbDocument,
   listAdminKbDocuments,
@@ -26,7 +27,7 @@ function FilePicker({ value, onChange, existing = null, label = "Policy PDF" }) 
       />
       <label
         htmlFor={`file-${label.replace(/\s+/g, "-").toLowerCase()}`}
-        className="flex cursor-pointer items-center gap-3 border border-dashed border-teal/40 bg-canvas px-4 py-3 transition-colors hover:border-teal"
+        className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-teal/40 bg-surface px-4 py-3 transition-colors hover:border-teal"
       >
         <IconUpload size={18} aria-hidden className="shrink-0 text-teal" />
         <span className="min-w-0 flex-1 truncate text-caption text-warm/60">
@@ -35,7 +36,7 @@ function FilePicker({ value, onChange, existing = null, label = "Policy PDF" }) 
       </label>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {value ? (
-          <span className="mono-label flex items-center gap-2 border border-teal/40 bg-teal/10 px-2 py-1 text-[9px] text-teal-light">
+          <span className="mono-label flex items-center gap-2 border border-teal/40 bg-teal/10 px-2 py-1 text-[9px] text-teal-deep">
             {value.name} · {formatBytes(value.size)}
             <button
               type="button"
@@ -66,7 +67,7 @@ function FilePicker({ value, onChange, existing = null, label = "Policy PDF" }) 
 // the embeddings key is configured. Employees never see this surface; the
 // pool gates (employee / HR-only) are edited per document here.
 export default function AdminKb() {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const [rows, setRows] = useState(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -167,10 +168,6 @@ export default function AdminKb() {
   return (
     <div className="mx-auto max-w-4xl">
       <header className="mb-8">
-        <span className="mono-label mb-2 block text-[10px] text-teal">
-          ↘ A D M I N · P O L I C I E S
-        </span>
-        <div className="rule-teal mb-4" />
         <h1 className="text-h3 text-warm">Knowledge base documents</h1>
         <p className="mt-1 text-caption text-warm/45">
           Upload new PDFs, rewrite metadata, replace files — the assistant citations follow
@@ -181,7 +178,7 @@ export default function AdminKb() {
       {notice && (
         <p
           role="status"
-          className="mb-4 border border-teal/40 bg-teal/10 px-4 py-2.5 text-caption text-teal-light"
+          className="mb-4 border border-teal/40 bg-teal/10 px-4 py-2.5 text-caption text-teal-deep"
         >
           {notice}
         </p>
@@ -218,19 +215,19 @@ export default function AdminKb() {
           required
           placeholder="Policy title"
           aria-label="Policy title"
-          className="border border-surface-2 bg-canvas px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
         />
         <input
           name="category"
           placeholder="Category (e.g. Leave)"
           aria-label="Category"
-          className="border border-surface-2 bg-canvas px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
         />
         <select
           name="audience"
           aria-label="Audience"
           defaultValue="employee"
-          className="border border-surface-2 bg-canvas px-3 py-2 text-body text-warm focus:border-teal focus:outline-none"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm focus:border-teal focus:outline-none"
         >
           <option value="employee">employee pool</option>
           <option value="hr">HR-only pool</option>
@@ -239,20 +236,20 @@ export default function AdminKb() {
           name="keywords"
           placeholder="keywords, comma separated"
           aria-label="Keywords"
-          className="border border-surface-2 bg-canvas px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
         />
         <div className="grid grid-cols-2 gap-2">
           <input
             name="version"
             placeholder="v1.0"
             aria-label="Version"
-            className="border border-surface-2 bg-canvas px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+            className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
           />
           <input
             name="effectiveDate"
             type="date"
             aria-label="Effective date"
-            className="border border-surface-2 bg-canvas px-3 py-2 text-body text-warm focus:border-teal focus:outline-none"
+            className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm focus:border-teal focus:outline-none"
           />
         </div>
         <textarea
@@ -260,7 +257,7 @@ export default function AdminKb() {
           placeholder="One-line summary shown on cards"
           rows={2}
           aria-label="Summary"
-          className="border border-surface-2 bg-canvas px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none sm:col-span-2"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none sm:col-span-2"
         />
         <button
           type="submit"
@@ -285,20 +282,20 @@ export default function AdminKb() {
                     value={edit.title}
                     onChange={(e) => setEdit({ ...edit, title: e.target.value })}
                     aria-label="Title"
-                    className="border border-surface-2 bg-canvas px-3 py-2 text-body text-warm focus:border-teal focus:outline-none"
+                    className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm focus:border-teal focus:outline-none"
                   />
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     <input
                       value={edit.category}
                       onChange={(e) => setEdit({ ...edit, category: e.target.value })}
                       aria-label="Category"
-                      className="border border-surface-2 bg-canvas px-3 py-2 text-caption text-warm focus:border-teal focus:outline-none"
+                      className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-caption text-warm focus:border-teal focus:outline-none"
                     />
                     <select
                       value={edit.audience}
                       onChange={(e) => setEdit({ ...edit, audience: e.target.value })}
                       aria-label="Audience"
-                      className="border border-surface-2 bg-canvas px-3 py-2 text-caption text-warm focus:border-teal focus:outline-none"
+                      className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-caption text-warm focus:border-teal focus:outline-none"
                     >
                       <option value="employee">employee</option>
                       <option value="hr">hr</option>
@@ -307,14 +304,14 @@ export default function AdminKb() {
                       value={edit.version}
                       onChange={(e) => setEdit({ ...edit, version: e.target.value })}
                       aria-label="Version"
-                      className="border border-surface-2 bg-canvas px-3 py-2 text-caption text-warm focus:border-teal focus:outline-none"
+                      className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-caption text-warm focus:border-teal focus:outline-none"
                     />
                     <input
                       value={edit.effectiveDate ?? ""}
                       onChange={(e) => setEdit({ ...edit, effectiveDate: e.target.value })}
                       type="date"
                       aria-label="Effective date"
-                      className="border border-surface-2 bg-canvas px-3 py-2 text-caption text-warm focus:border-teal focus:outline-none"
+                      className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-caption text-warm focus:border-teal focus:outline-none"
                     />
                   </div>
                   <textarea
@@ -322,7 +319,7 @@ export default function AdminKb() {
                     onChange={(e) => setEdit({ ...edit, summary: e.target.value })}
                     aria-label="Summary"
                     rows={2}
-                    className="border border-surface-2 bg-canvas px-3 py-2 text-caption text-warm focus:border-teal focus:outline-none"
+                    className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-caption text-warm focus:border-teal focus:outline-none"
                   />
                   <textarea
                     value={edit.keywords}
@@ -330,7 +327,7 @@ export default function AdminKb() {
                     rows={1}
                     placeholder="keywords, comma separated"
                     aria-label="Keywords"
-                    className="border border-surface-2 bg-canvas px-3 py-2 text-caption text-warm focus:border-teal focus:outline-none"
+                    className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-caption text-warm focus:border-teal focus:outline-none"
                   />
                   <div>
                     <FilePicker
@@ -365,7 +362,7 @@ export default function AdminKb() {
                   <span className="mono-label text-[10px] text-teal">{doc.ref}</span>
                   <Link
                     to={`/kb/${doc.slug}`}
-                    className="min-w-0 flex-1 truncate text-body-lg text-warm hover:text-teal-light"
+                    className="min-w-0 flex-1 truncate text-body-lg text-warm hover:text-teal-deep"
                   >
                     {doc.title}
                   </Link>

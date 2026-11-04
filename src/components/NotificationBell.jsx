@@ -1,21 +1,41 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useNotifications } from "../hooks";
-import { markAllNotificationsRead, markNotificationRead } from "../data/notifications";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
+import {
+  fetchNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  selectNotifications,
+  selectUnreadCount,
+} from "../state/notificationsSlice";
 import NotificationRow from "./NotificationRow";
-import { IconArrowDownRight, IconBell } from "@tabler/icons-react";
+import { IconBell } from "@tabler/icons-react";
 
 const BADGE_CAP = 9;
+const POLL_MS = 20000;
 
 export default function NotificationBell() {
-  const { user } = useAuth();
-  const { items, unread } = useNotifications(user?.id, 20000);
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+  const items = useAppSelector(selectNotifications);
+  const unread = useAppSelector(selectUnreadCount);
+  const userId = user?.id;
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const bellRef = useRef(null);
   const itemRefs = useRef([]);
+
+  // One initial pull + a 20s refresh, as before — the badge stays
+  // authoritative via the slice's mark-read-then-refetch behaviour.
+  useEffect(() => {
+    if (!userId) return undefined;
+    const refresh = () => dispatch(fetchNotifications({ userId, limit: 50 })).catch(() => {});
+    refresh();
+    const interval = setInterval(refresh, POLL_MS);
+    return () => clearInterval(interval);
+  }, [userId, dispatch]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -44,7 +64,7 @@ export default function NotificationBell() {
     if (n.ticketRef) {
       navigate(`/tickets/${n.ticketRef}`);
       closeAndRefocus();
-      if (!n.read) markNotificationRead(n.id, user.id).catch(() => {});
+      if (!n.read) dispatch(markNotificationRead({ id: n.id, userId: user.id })).catch(() => {});
     }
   };
 
@@ -82,13 +102,13 @@ export default function NotificationBell() {
         aria-expanded={open}
         aria-label={ariaLabel}
         title={ariaLabel}
-        className="relative border border-warm/25 p-1.5 text-warm/50 transition-colors hover:border-teal hover:text-teal-deep focus:border-teal focus:outline-none"
+        className="relative rounded-lg border border-warm/15 p-2 text-warm/55 transition-colors hover:border-warm/30 hover:text-warm focus:outline-none"
       >
-        <IconBell size={16} aria-hidden />
+        <IconBell size={15} aria-hidden />
         {unread > 0 && (
           <span
             data-testid="unread-badge"
-            className="mono-label absolute -right-1.5 -top-1.5 min-w-[14px] bg-teal px-[3px] text-center text-[9px] leading-[14px] text-warm"
+            className="absolute -right-1.5 -top-1.5 min-w-[16px] rounded-full bg-teal px-1 text-center text-[10px] font-medium leading-4 text-canvas"
           >
             {badge}
           </span>
@@ -99,22 +119,28 @@ export default function NotificationBell() {
         <div
           role="dialog"
           aria-label="Notifications"
-          className="soft-bl absolute right-0 top-full z-50 mt-2 w-80 border border-surface-2 bg-surface"
+          className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-surface-2 bg-surface shadow-lg"
         >
-          <p className="mono-label border-b border-surface-2 px-4 py-3 text-[10px] text-warm/40">
-            REPLIES / RECENT
+          <p className="border-b border-surface-2 px-4 py-3 text-caption font-medium text-warm/50">
+            Recent notifications
           </p>
 
           {items.length === 0 ? (
-            <p className="px-4 py-6 text-body text-warm/40">Nothing yet — quiet is fine.</p>
+            <p className="px-4 py-6 text-body text-warm/50">Nothing yet — you're all caught up.</p>
           ) : (
-            <ul role="menu" aria-label="Recent notifications" className="max-h-[26rem] overflow-y-auto">
+            <ul
+              role="menu"
+              aria-label="Recent notifications"
+              className="max-h-[26rem] overflow-y-auto"
+            >
               {items.map((n, i) => (
                 <li key={n.id} role="none">
                   <NotificationRow
                     notification={n}
                     role="menuitem"
-                    itemRef={(el) => { itemRefs.current[i] = el; }}
+                    itemRef={(el) => {
+                      itemRefs.current[i] = el;
+                    }}
                     tabIndex={i === 0 ? 0 : -1}
                     onKeyDown={(e) => onItemKey(e, i, n)}
                     onOpen={openItem}
@@ -124,19 +150,24 @@ export default function NotificationBell() {
             </ul>
           )}
 
-          <div className="flex items-center justify-between border-t border-surface-2 px-4 py-3">
+          <div className="flex items-center justify-between bg-surface-2/60 px-4 py-2.5">
             <button
-              onClick={() => { if (user?.id) markAllNotificationsRead(user.id).catch(() => {}); }}
-              className="mono-label text-[10px] text-warm/45 transition-colors hover:text-teal-deep focus:outline-none focus-visible:text-teal-deep"
+              onClick={() => {
+                if (user?.id)
+                  dispatch(markAllNotificationsRead({ userId: user.id })).catch(() => {});
+              }}
+              className="text-caption font-medium text-warm/55 transition-colors hover:text-teal-deep focus:outline-none"
             >
               Mark all read
             </button>
             <button
-              onClick={() => { navigate("/notifications"); closeAndRefocus(); }}
-              className="mono-label inline-flex items-center gap-1.5 text-[10px] text-teal-deep transition-colors hover:text-teal-deep focus:outline-none focus-visible:text-teal-deep"
+              onClick={() => {
+                navigate("/notifications");
+                closeAndRefocus();
+              }}
+              className="text-caption font-medium text-teal-deep transition-colors hover:underline focus:outline-none"
             >
               View all
-              <IconArrowDownRight size={16} aria-hidden />
             </button>
           </div>
         </div>

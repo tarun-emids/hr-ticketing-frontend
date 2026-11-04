@@ -1,5 +1,6 @@
 import { IconArrowDownRight, IconUser } from "@tabler/icons-react";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import AgentMetricsView from "../admin/AgentMetricsView";
 
 // HR dashboard — the AGENT'S OWN performance (route /hr-dashboard).
@@ -8,15 +9,10 @@ import AgentMetricsView from "../admin/AgentMetricsView";
 // sees in the drill-down, fetched for themselves — the backend's
 // self-or-admin rule blocks agents from reading anybody else's numbers).
 export default function HRDashboard() {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   return (
     <div className="mx-auto max-w-4xl">
       <header className="mb-8">
-        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
-          <IconArrowDownRight size={16} aria-hidden />
-          02 / MY PERFORMANCE
-        </span>
-        <div className="rule-teal mb-5" />
         <h1 className="flex items-center gap-3 text-h3 text-warm">
           <IconUser size={18} aria-hidden />
           {user?.name || "My performance"}

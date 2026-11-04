@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import { listKbPopular, searchKb } from "../api/client";
 import { Spinner, EmptyState } from "../components/primitives";
 import { effectiveFormatter } from "../utils";
@@ -14,7 +15,7 @@ const goBack = (navigate) => () => {
 };
 
 export default function KbSearch() {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const q = (searchParams.get("q") ?? "").trim();
@@ -52,7 +53,9 @@ export default function KbSearch() {
     setSearchParams(next ? { q: next } : {}, { replace: true });
   };
 
-  const heading = q ? `${results?.length ?? "—"} result${results?.length === 1 ? "" : "s"} for “${q}”` : "Latest in your library";
+  const heading = q
+    ? `${results?.length ?? "—"} result${results?.length === 1 ? "" : "s"} for “${q}”`
+    : "Latest in your library";
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -60,15 +63,13 @@ export default function KbSearch() {
         type="button"
         onClick={goBack(navigate)}
         title="Go back (Alt+← works too)"
-        className="mono-label mb-6 inline-flex items-center gap-2 text-[10px] text-warm/45 transition-colors hover:text-teal"
+        className="mb-6 inline-flex items-center gap-2 text-body text-warm/45 transition-colors hover:text-teal-deep"
       >
         <Icon d={PATHS.arrowLeft} className="h-3.5 w-3.5" />
         Back
       </button>
 
       <header className="mb-8">
-        <span className="mono-label mb-3 block text-[10px] text-teal">↘ 0 2 / K N O W L E D G E</span>
-        <div className="rule-teal mb-5" />
         <h1 className="text-h3 text-warm">Knowledge base</h1>
         <p className="mt-1.5 text-caption text-warm/45">
           {q ? heading : "Company policies — the documents your role is allowed to see"}
@@ -82,18 +83,21 @@ export default function KbSearch() {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Search policies by title, topic or keyword…"
           aria-label="Search the knowledge base"
-          className="flex-1 border border-surface-2 bg-surface px-4 py-2.5 text-body-lg text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="flex-1 rounded-l-xl border border-surface-2 bg-surface px-4 py-2.5 text-body-lg text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
         />
         <button
           type="submit"
-          className="mono-label border border-l-0 border-teal bg-teal px-4 text-[10px] text-canvas transition-colors hover:bg-teal-light"
+          className="rounded-r-xl bg-teal px-4 py-2.5 text-body font-medium text-canvas transition-colors hover:opacity-90"
         >
           Search
         </button>
       </form>
 
       {error && (
-        <div className="mb-5 border border-error/40 bg-error/10 px-4 py-3 text-caption text-error" role="alert">
+        <div
+          className="mb-5 border border-error/40 bg-error/10 px-4 py-3 text-caption text-error"
+          role="alert"
+        >
           {error}
         </div>
       )}
@@ -132,7 +136,7 @@ export default function KbSearch() {
                       <span className="mono-label text-[9px] text-warm/30">{doc.version}</span>
                     )}
                   </div>
-                  <p className="text-body-lg font-medium text-warm group-hover:text-teal-light">
+                  <p className="text-body-lg font-medium text-warm group-hover:text-teal-deep">
                     {doc.title}
                   </p>
                   <p className="mt-1 text-caption leading-relaxed text-warm/45 line-clamp-2">

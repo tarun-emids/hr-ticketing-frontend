@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import { agentLeaderboard, listAdminAccounts } from "./api";
 import AgentMetricsView from "./AgentMetricsView";
 import { Icon, PATHS } from "../components/icons";
@@ -10,7 +11,7 @@ import { Icon, PATHS } from "../components/icons";
 // the agents use on their personal dashboard; the admin additionally gets the
 // team leaderboard so the score-comparison graph has its peers.
 export default function AdminAgentDrilldown() {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const { agentId } = useParams();
   const [agent, setAgent] = useState(null);
   const [peers, setPeers] = useState(null);
@@ -38,19 +39,15 @@ export default function AdminAgentDrilldown() {
     <div className="mx-auto max-w-4xl">
       <Link
         to="/admin/worktable"
-        className="mono-label mb-6 inline-flex items-center gap-2 text-[10px] text-warm/45 transition-colors hover:text-teal"
+        className="mb-6 inline-flex items-center gap-2 text-body text-warm/45 transition-colors hover:text-teal-deep"
       >
         <Icon d={PATHS.arrowLeft} className="h-3.5 w-3.5" />
         Back to the worktable
       </Link>
 
       <header className="mb-8">
-        <span className="mono-label mb-2 block text-[10px] text-teal">
-          ↘ A G E N T · P E R F O R M A N C E
-        </span>
-        <div className="rule-teal mb-4" />
         <h1 className="text-h3 text-warm">{agent ? agent.name : "Agent"}</h1>
-        {agent && <p className="mono-label mt-1 text-[9px] text-warm/35">{agent.email}</p>}
+        {agent && <p className="mt-1 text-caption text-warm/45">{agent.email}</p>}
       </header>
 
       <AgentMetricsView agentId={agentId} agentName={agent?.name} peers={peers} />
