@@ -1,6 +1,7 @@
-// Brand chart primitives (src/admin) — recharts wrapped to the Emids rules:
-// one accent (Emids Teal), no gradients, mono 10px labels, grid never louder
-// than the data. Every chart is responsive: give it a sized parent.
+// Chart primitives (src/admin) — recharts wrapped to the design system:
+// one accent (teal), no gradients, small quiet labels, grid never louder
+// than the data. Colors read the CSS theme variables so light and dark
+// surfaces both work; every chart is responsive: give it a sized parent.
 import {
   Bar,
   BarChart,
@@ -15,35 +16,44 @@ import {
   YAxis,
 } from "recharts";
 
-const TEAL = "#47a2b0";
-const TEAL_LIGHT = "#abc7ca";
-const GRID = "#262626"; // surface-2
-const WARM = "#f2f2f0";
+const TEAL = "#0d9488";
+const TEAL_LIGHT = "#5eead4";
 
 const AXIS_STYLE = {
-  tick: { fill: WARM, fontSize: 10, fontFamily: "JetBrains Mono, Consolas, monospace" },
-  stroke: GRID,
+  tick: {
+    fill: "var(--app-warm, #18181b)",
+    fillOpacity: 0.6,
+    fontSize: 11,
+    fontFamily: "Inter Variable, Inter, system-ui, sans-serif",
+  },
+  stroke: "var(--app-surface-2, #f4f4f5)",
 };
+
+const GRID = "color-mix(in srgb, var(--app-warm, #18181b) 12%, transparent)";
+
+// Warm-neutral hint text inside chart frames (theme-aware).
+const CONSUMED_CAPTION = "var(--app-warm, #18181b)";
 
 const tooltipStyle = {
   contentStyle: {
-    background: "#141414",
-    border: `1px solid ${GRID}`,
-    borderRadius: 0,
-    borderBottomLeftRadius: 8,
-    fontSize: 11,
-    color: WARM,
+    background: "var(--app-surface, #ffffff)",
+    border: "1px solid var(--app-surface-2, #e4e4e7)",
+    borderRadius: 10,
+    fontSize: 12,
+    color: "var(--app-warm, #18181b)",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
   },
-  labelStyle: { color: "rgba(242,242,240,0.5)", fontSize: 10 },
-  itemStyle: { color: WARM },
+  labelStyle: { color: CONSUMED_CAPTION, fillOpacity: 0.55, fontSize: 11 },
+  itemStyle: { color: CONSUMED_CAPTION, fontSize: 12 },
 };
 
 // Rotated y-axis caption — the "what am I looking at" label every chart
-// carries (recharts measures it inside-left). Tiny mono, quiet warm.
+// carries (recharts measures it inside-left).
 const Y_LABEL_STYLE = {
-  fill: "rgba(242,242,240,0.45)",
-  fontSize: 9,
-  fontFamily: "JetBrains Mono, Consolas, monospace",
+  fill: "var(--app-warm, #18181b)",
+  fillOpacity: 0.45,
+  fontSize: 10,
+  fontFamily: "Inter Variable, Inter, system-ui, sans-serif",
 };
 
 export function CountBars({
@@ -59,7 +69,12 @@ export function CountBars({
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 8, right: 8, bottom: xLabel ? 20 : 4, left: -4 }}>
         <CartesianGrid stroke={GRID} vertical={false} />
-        <XAxis dataKey={xKey} axisLine={{ stroke: GRID }} tickLine={false} style={AXIS_STYLE.tick}>
+        <XAxis
+          dataKey={xKey}
+          axisLine={{ stroke: AXIS_STYLE.stroke }}
+          tickLine={false}
+          style={AXIS_STYLE.tick}
+        >
           {xLabel && (
             <Label value={xLabel} offset={8} position="insideBottom" style={Y_LABEL_STYLE} />
           )}
@@ -71,8 +86,14 @@ export function CountBars({
           style={AXIS_STYLE.tick}
           label={{ value: yLabel, angle: -90, position: "insideLeft", style: Y_LABEL_STYLE }}
         />
-        <Tooltip cursor={{ fill: "rgba(71,162,176,0.08)" }} {...tooltipStyle} />
-        <Bar dataKey={yKey} fill={TEAL} maxBarSize={28} name={`${yKey}${suffix}`} />
+        <Tooltip cursor={{ fill: "rgba(13,148,136,0.08)" }} {...tooltipStyle} />
+        <Bar
+          dataKey={yKey}
+          fill={TEAL}
+          maxBarSize={28}
+          radius={[3, 3, 0, 0]}
+          name={`${yKey}${suffix}`}
+        />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -86,7 +107,7 @@ export function TimeLines({ data, series, height = 220, yLabel = "tickets", xLab
         <CartesianGrid stroke={GRID} vertical={false} />
         <XAxis
           dataKey="label"
-          axisLine={{ stroke: GRID }}
+          axisLine={{ stroke: AXIS_STYLE.stroke }}
           tickLine={false}
           style={AXIS_STYLE.tick}
           interval="preserveStartEnd"
@@ -103,7 +124,7 @@ export function TimeLines({ data, series, height = 220, yLabel = "tickets", xLab
           label={{ value: yLabel, angle: -90, position: "insideLeft", style: Y_LABEL_STYLE }}
         />
         <Tooltip {...tooltipStyle} />
-        <Legend wrapperStyle={{ fontSize: 10, color: "rgba(242,242,240,0.4)" }} />
+        <Legend wrapperStyle={{ fontSize: 11, color: CONSUMED_CAPTION, opacity: 0.65 }} />
         {series.map((s) => (
           <Line
             key={s.key}
@@ -150,7 +171,7 @@ export function HistogramBars({ data, height = 180, xLabel = "tickets", yLabel =
           tickLine={false}
           style={AXIS_STYLE.tick}
         >
-          <Label value={xLabel} offset={-2} position="insideBottom" style={AXIS_STYLE.tick} />
+          <Label value={xLabel} offset={-2} position="insideBottom" style={Y_LABEL_STYLE} />
         </XAxis>
         <YAxis
           type="category"
@@ -171,8 +192,8 @@ export function HistogramBars({ data, height = 180, xLabel = "tickets", yLabel =
               : undefined
           }
         />
-        <Tooltip cursor={{ fill: "rgba(71,162,176,0.08)" }} {...tooltipStyle} />
-        <Bar dataKey="count" fill={TEAL} maxBarSize={16} name="tickets" radius={[0, 1, 1, 0]} />
+        <Tooltip cursor={{ fill: "rgba(13,148,136,0.08)" }} {...tooltipStyle} />
+        <Bar dataKey="count" fill={TEAL} maxBarSize={16} name="tickets" radius={[0, 2, 2, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -189,35 +210,35 @@ export function Heatmap({ heatmap }) {
     <div className="min-w-[560px]">
       <div className="grid grid-cols-[3rem_repeat(24,1fr)]">
         {Array.from({ length: 24 }, (_, h) => (
-          <span key={h} className="pb-1 text-center font-mono text-[8px] text-warm/25">
+          <span key={h} className="pb-1 text-center font-mono text-[9px] text-warm/30">
             {h % 3 === 0 ? String(h).padStart(2, "0") : ""}
           </span>
         ))}
       </div>
       {days.map((day, d) => (
         <div key={day} className="grid grid-cols-[3rem_repeat(24,1fr)] items-center">
-          <span className="mono-label text-[9px] text-warm/40">{day}</span>
+          <span className="text-[10px] font-medium text-warm/50">{day}</span>
           {cells[d].map((count, h) => {
             const isPeak = peak && peak.day === day && peak.hour === h;
             return (
               <span
                 key={h}
                 title={`${peakLabel(day, h)} — ${count}`}
-                className={`mx-px h-4 rounded-[1px] ${
-                  isPeak ? "outline outline-1 outline-warm/60" : ""
+                className={`mx-px h-4 rounded-[2px] ${
+                  isPeak ? "outline outline-1 outline-teal" : ""
                 }`}
                 style={{
                   backgroundColor:
                     count > 0
-                      ? `rgba(71,162,176,${(0.16 + 0.84 * (count / max)).toFixed(2)})`
-                      : "rgba(255,255,255,0.03)",
+                      ? `color-mix(in srgb, var(--app-teal) ${Math.round(15 + 85 * (count / max))}%, transparent)`
+                      : "color-mix(in srgb, var(--app-warm) 6%, transparent)",
                 }}
               />
             );
           })}
         </div>
       ))}
-      <p className="mt-3 text-[10px] text-warm/30">
+      <p className="mt-3 text-caption text-warm/40">
         {peak
           ? `Busiest cell: ${peakLabel(peak.day, peak.hour)} — ${peak.count}`
           : "No creations yet."}
@@ -234,14 +255,16 @@ export function RankedBars({ rows, labelKey, valueKey, max }) {
       {rows.map((row, i) => (
         <li key={i} className="flex items-center gap-3">
           <span className="w-28 shrink-0 truncate text-caption text-warm/70">{row[labelKey]}</span>
-          <span className="h-2 flex-1 bg-surface-2">
+          <span className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
             <span
-              className="block h-2 bg-teal"
+              className="block h-2 rounded-full bg-teal"
               style={{ width: `${Math.max(4, (row[valueKey] / top) * 100)}%` }}
               aria-hidden
             />
           </span>
-          <span className="w-10 text-right font-mono text-[11px] text-warm">{row[valueKey]}</span>
+          <span className="w-10 text-right font-mono text-[11px] text-warm/80">
+            {row[valueKey]}
+          </span>
         </li>
       ))}
     </ul>

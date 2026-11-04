@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectIsAgent, selectUser } from "../state/authSlice";
 import { useTicketsPage } from "../hooks";
 import { searchKb } from "../api/client";
 import heroImg from "../assets/kb-hero.png";
@@ -24,16 +25,16 @@ function NavBox({ to, icon, title, body, stat, className = "" }) {
   return (
     <Link
       to={to}
-      className={`soft-bl group flex items-center gap-5 border border-surface-2 bg-surface p-6 transition-colors hover:border-teal/60 hover:bg-surface-2/40 sm:p-7 ${className}`}
+      className={`group flex items-center gap-5 rounded-xl border border-surface-2 bg-surface p-6 shadow-xs transition-colors hover:border-teal/50 hover:bg-surface-2 sm:p-7 ${className}`}
     >
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-surface-2 bg-surface-2 text-teal-light">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-teal/10 text-teal-deep">
         <Icon d={icon} className="h-5 w-5" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-h3 text-warm group-hover:text-teal-light">{title}</span>
-        <span className="mt-1.5 block text-caption text-warm/45">{body}</span>
+        <span className="block text-h3 text-warm">{title}</span>
+        <span className="mt-1.5 block text-body text-warm/55">{body}</span>
         {stat != null && (
-          <span className="mono-label mt-2.5 block text-[10px] text-warm/40">{stat}</span>
+          <span className="mt-2.5 block text-caption font-medium text-warm/45">{stat}</span>
         )}
       </span>
       <Icon
@@ -45,8 +46,9 @@ function NavBox({ to, icon, title, body, stat, className = "" }) {
 }
 
 export default function HomeDashboard() {
-  const { user, isAgent } = useAuth();
-  // Admin is a rare role: the auth context exposes user/isAgent, so derive it here.
+  const user = useAppSelector(selectUser);
+  const isAgent = useAppSelector(selectIsAgent);
+  // Admin is a rare role: the auth slice exposes user/isAgent, so derive it here.
   const isAdmin = user?.role === "admin";
   const navigate = useNavigate();
   const view = useTicketsPage(user?.id, { page: 1, pageSize: 100 });
@@ -229,11 +231,11 @@ export default function HomeDashboard() {
 
   const suggestionBody = () => {
     if (suggestState === "loading") {
-      return <p className="px-5 py-4 text-caption text-warm/40">Searching the library…</p>;
+      return <p className="px-5 py-3.5 text-caption text-warm/50">Searching the library…</p>;
     }
     if (suggestState === "error") {
       return (
-        <p className="px-5 py-4 text-caption text-error/80">Search is unavailable right now.</p>
+        <p className="px-5 py-4 text-caption text-error-deep">Search is unavailable right now.</p>
       );
     }
     if (!suggestions?.length) {
@@ -241,7 +243,7 @@ export default function HomeDashboard() {
         <button
           type="button"
           onClick={submit}
-          className="block w-full px-5 py-4 text-left text-caption text-warm/50 hover:text-teal-light"
+          className="block w-full px-5 py-4 text-left text-body text-warm/55 hover:text-teal-deep"
         >
           No direct hit — press Enter to search “{query.trim()}” anyway ↘
         </button>
@@ -252,12 +254,12 @@ export default function HomeDashboard() {
         key={doc.slug}
         type="button"
         onClick={() => openSuggestion(doc.slug)}
-        className="flex w-full items-center gap-4 border-b border-surface-2/70 px-5 py-3 text-left last:border-b-0 hover:bg-surface-2/60"
+        className="flex w-full items-center gap-4 border-b border-surface-2 px-5 py-3 text-left last:border-b-0 hover:bg-surface-2"
       >
-        <span className="mono-label shrink-0 text-[9px] text-teal">{doc.ref}</span>
+        <span className="font-mono text-[11px] shrink-0 text-teal-deep">{doc.ref}</span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-body-lg font-medium text-warm">{doc.title}</span>
-          <span className="mono-label block text-[9px] text-warm/35">{doc.category}</span>
+          <span className="block text-caption text-warm/45">{doc.category}</span>
         </span>
         <Icon d={ARROW} className="h-3.5 w-3.5 shrink-0 text-warm/25" />
       </button>
@@ -268,20 +270,18 @@ export default function HomeDashboard() {
     <div className="mx-auto max-w-5xl">
       {/* ---- Hero: eMids-branded search plate ---- */}
       <section
-        className="soft-bl relative overflow-hidden border border-surface-2 bg-canvas"
+        className="relative overflow-hidden rounded-2xl border border-surface-2 bg-canvas shadow-xs"
         style={{
           backgroundImage: `url(${heroImg})`,
           backgroundSize: "cover",
           backgroundPosition: "center 30%",
         }}
       >
-        <div className="absolute inset-x-0 top-0 h-[3px] teal-gradient" aria-hidden />
         <div className="relative flex flex-col gap-6 bg-canvas/35 px-6 py-10 sm:px-10 sm:py-14">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="mono-label text-[10px] text-teal-light">↘ 0 0 / HR DESK</p>
-              <h1 className="mt-3 text-h2 text-warm">Hello, {firstName ? firstName : "there"}.</h1>
-              <p className="mt-2 text-body-lg text-warm/65">
+              <h1 className="text-h2 text-warm">Hello, {firstName ? firstName : "there"}.</h1>
+              <p className="mt-2 text-body-lg text-warm/70">
                 {isAdmin
                   ? "Search the full policy library — employee and HR documents."
                   : isAgent
@@ -289,7 +289,6 @@ export default function HomeDashboard() {
                     : "Search the policy library, or jump into your workspace."}
               </p>
             </div>
-            <p className="mono-label text-[10px] text-warm/35">EMIDS / KNOWLEDGE BASE</p>
           </div>
 
           {/* Search bar */}
@@ -307,19 +306,19 @@ export default function HomeDashboard() {
                   onFocus={() => setOpen(true)}
                   placeholder="Search the knowledge base — try “leave carry forward” or “payslip”…"
                   aria-label="Search the knowledge base"
-                  className="w-full border border-surface-2 bg-canvas/80 py-3.5 pl-11 pr-4 text-body-lg text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+                  className="w-full rounded-l-xl rounded-r-none border border-surface-2 bg-surface py-3 pl-11 pr-4 text-body-lg text-warm placeholder:text-warm/35 focus:border-teal focus:outline-none"
                 />
               </div>
               <button
                 type="submit"
-                className="mono-label border border-l-0 border-teal bg-teal px-5 text-[10px] text-canvas transition-colors hover:bg-teal-light"
+                className="rounded-l-none rounded-r-xl bg-teal px-5 py-3 text-body font-medium text-canvas transition-colors hover:opacity-90"
               >
                 Search
               </button>
             </form>
 
             {open && suggestState !== "idle" ? (
-              <div className="absolute inset-x-0 top-full z-20 mt-1.5 border border-surface-2 bg-surface soft-bl">
+              <div className="absolute inset-x-0 top-full z-20 mt-1.5 overflow-hidden rounded-xl border border-surface-2 bg-surface shadow-lg">
                 {suggestionBody()}
               </div>
             ) : null}
@@ -327,7 +326,7 @@ export default function HomeDashboard() {
 
           {/* Quick terms */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="mono-label mr-1 text-[9px] text-warm/30">Try:</span>
+            <span className="mr-1 text-caption text-warm/40">Try:</span>
             {QUICK_TERMS.map((term) => (
               <button
                 key={term}
@@ -336,7 +335,7 @@ export default function HomeDashboard() {
                   setQuery(term);
                   navigate(`/kb?q=${encodeURIComponent(term)}`);
                 }}
-                className="mono-label border border-warm/15 bg-canvas/50 px-2.5 py-1.5 text-[9px] text-warm/55 transition-colors hover:border-teal hover:text-teal"
+                className="rounded-full border border-warm/15 bg-canvas/60 px-3 py-1 text-caption font-medium text-warm/60 transition-colors hover:border-teal hover:text-teal-deep"
               >
                 {term}
               </button>
@@ -347,8 +346,7 @@ export default function HomeDashboard() {
 
       {/* ---- Workspace navigation boxes ---- */}
       <section className="mt-10">
-        <p className="mono-label mb-4 text-[10px] text-warm/40">0 1 / W O R K S P A C E</p>
-        <div className="rule-teal mb-6" />
+        <p className="mb-4 text-caption font-medium text-warm/50">Workspace</p>
         {boxes}
       </section>
     </div>

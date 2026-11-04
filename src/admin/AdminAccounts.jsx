@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import {
   changeAccountRole,
   createAdminAccount,
@@ -23,7 +24,7 @@ const ROLE_SECTIONS = [
 // are printed verbatim: open-ticket demotions, history-preserving deletes,
 // last-admin protection.
 export default function AdminAccounts() {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const [rows, setRows] = useState(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -94,10 +95,6 @@ export default function AdminAccounts() {
   return (
     <div className="mx-auto max-w-4xl">
       <header className="mb-8">
-        <span className="mono-label mb-2 block text-[10px] text-teal">
-          ↘ A D M I N · A C C O U N T S
-        </span>
-        <div className="rule-teal mb-4" />
         <h1 className="text-h3 text-warm">Accounts & permissions</h1>
         <p className="mt-1 text-caption text-warm/45">
           Promotions take effect at next login · deletions are refused when history must survive.
@@ -107,7 +104,7 @@ export default function AdminAccounts() {
       {notice && (
         <p
           role="status"
-          className="mb-4 border border-teal/40 bg-teal/10 px-4 py-2.5 text-caption text-teal-light"
+          className="mb-4 border border-teal/40 bg-teal/10 px-4 py-2.5 text-caption text-teal-deep"
         >
           {notice}
         </p>
@@ -146,7 +143,7 @@ export default function AdminAccounts() {
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           aria-label="Full name"
-          className="border border-surface-2 bg-canvas px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
         />
         <input
           required
@@ -155,13 +152,13 @@ export default function AdminAccounts() {
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
           aria-label="Work email"
-          className="border border-surface-2 bg-canvas px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
         />
         <select
           value={form.role}
           onChange={(e) => setForm({ ...form, role: e.target.value })}
           aria-label="Role"
-          className="border border-surface-2 bg-canvas px-3 py-2 text-body text-warm focus:border-teal focus:outline-none"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm focus:border-teal focus:outline-none"
         >
           {ROLES.map((r) => (
             <option key={r} value={r}>
@@ -177,7 +174,7 @@ export default function AdminAccounts() {
           onChange={(e) => setForm({ ...form, password: e.target.value })}
           aria-label="Initial password"
           minLength={8}
-          className="border border-surface-2 bg-canvas px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
         />
         <button
           type="submit"
@@ -220,7 +217,7 @@ function AccountRow({ row, currentUserId, busy, onReRole, onDelete, keepRole }) 
         onChange={(e) => onReRole(row, e.target.value)}
         disabled={busy}
         aria-label={`Role for ${row.name}`}
-        className="mono-label border border-warm/20 bg-canvas px-2 py-1.5 text-[10px] text-warm focus:border-teal focus:outline-none"
+        className="rounded-lg border border-warm/20 bg-surface px-2 py-1.5 text-caption font-medium text-warm focus:border-teal focus:outline-none"
       >
         {ROLES.map((r) => (
           <option key={r} value={r}>

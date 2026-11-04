@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAppSelector } from "../state/hooks";
+import { selectUser } from "../state/authSlice";
 import { getKbDoc, getKbDocUrl } from "../api/client";
 import { Spinner, EmptyState } from "../components/primitives";
 import { Icon, PATHS } from "../components/icons";
@@ -8,7 +9,7 @@ import { effectiveFormatter, formatBytes } from "../utils";
 
 export default function KbViewer() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   const { slug } = useParams();
   const [doc, setDoc] = useState(null); // null until loaded; false = 403/404
   const [docError, setDocError] = useState("");
@@ -41,43 +42,24 @@ export default function KbViewer() {
 
   const loadUrl = useCallback(() => {
     setUrlError("");
-    setFileUrl((currentUrl) => {
-      if (currentUrl) URL.revokeObjectURL(currentUrl);
-      return null;
-    });
+    setFileUrl(null);
     getKbDocUrl(slug, user.id)
-      .then((r) => {
-        setFileUrl((currentUrl) => {
-          if (currentUrl) URL.revokeObjectURL(currentUrl);
-          return r.url;
-        });
-      })
+      .then((r) => setFileUrl(r.url))
       .catch((e) => setUrlError(e.message || "Could not prepare the document viewer."));
   }, [slug, user.id]);
 
+  // Navigates to the download-flavoured signed URL; Content-Disposition:
+  // attachment makes the browser save the file (naming it after the policy).
   const startDownload = useCallback(() => {
     setDownloadError("");
     setDownloading(true);
     getKbDocUrl(slug, user.id, true)
       .then((r) => {
-        const link = document.createElement("a");
-        link.href = r.url;
-        link.download = `${doc.title}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.setTimeout(() => URL.revokeObjectURL(r.url), 1000);
+        window.location.assign(r.url);
       })
       .catch((e) => setDownloadError(e.message || "The download could not be started."))
       .finally(() => setDownloading(false));
-  }, [doc?.title, slug, user.id]);
-
-  useEffect(
-    () => () => {
-      if (fileUrl) URL.revokeObjectURL(fileUrl);
-    },
-    [fileUrl],
-  );
+  }, [slug, user.id]);
 
   useEffect(() => {
     if (doc) loadUrl();
@@ -99,7 +81,7 @@ export default function KbViewer() {
             : navigate("/dashboard")
         }
         title="Go back"
-        className="mono-label mb-6 inline-flex items-center gap-2 text-[10px] text-warm/45 transition-colors hover:text-teal"
+        className="mb-6 inline-flex items-center gap-2 text-body text-warm/45 transition-colors hover:text-teal-deep"
       >
         <Icon d={PATHS.arrowLeft} className="h-3.5 w-3.5" />
         Back
@@ -150,7 +132,7 @@ export default function KbViewer() {
               href={fileUrl ?? "#"}
               target="_blank"
               rel="noreferrer"
-              className={`mono-label inline-flex items-center gap-2 border border-teal bg-teal px-4 py-2.5 text-[10px] text-canvas transition-colors hover:bg-teal-light ${
+              className={`inline-flex items-center gap-2 rounded-lg bg-teal px-4 py-2.5 text-body font-medium text-canvas shadow-xs transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 ${
                 fileUrl ? "" : "pointer-events-none opacity-40"
               }`}
             >
@@ -161,7 +143,7 @@ export default function KbViewer() {
               type="button"
               onClick={startDownload}
               disabled={!doc || downloading}
-              className={`mono-label inline-flex items-center gap-2 border border-warm/20 px-4 py-2.5 text-[10px] text-warm transition-colors hover:border-teal hover:text-teal ${
+              className={`inline-flex items-center gap-2 rounded-lg border border-warm/25 bg-surface px-4 py-2.5 text-body font-medium text-warm transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-40 ${
                 doc && !downloading ? "" : "pointer-events-none opacity-40"
               }`}
             >
@@ -171,8 +153,8 @@ export default function KbViewer() {
             <button
               type="button"
               onClick={loadUrl}
-              className="mono-label inline-flex items-center gap-2 border border-transparent px-3 text-[10px] text-warm/45 hover:text-warm"
-              title="Reload the document if the viewer went blank"
+              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-body text-warm/45 hover:text-warm"
+              title="Signed links expire — refresh if the viewer went blank"
             >
               <Icon d={PATHS.refresh} className="h-3.5 w-3.5" />
               Refresh link
@@ -191,7 +173,7 @@ export default function KbViewer() {
                 <button
                   type="button"
                   onClick={loadUrl}
-                  className="mono-label border border-teal px-4 py-2 text-[10px] text-teal hover:bg-teal/10"
+                  className="rounded-lg border border-teal/40 px-4 py-2 text-body font-medium text-teal-deep transition-colors hover:bg-teal/10"
                 >
                   Try again
                 </button>
@@ -211,8 +193,7 @@ export default function KbViewer() {
           </div>
 
           <p className="mt-3 text-caption text-warm/30">
-            The document is fetched securely from your account. Reload it any time with “Refresh
-            link”.
+            Link is signed and short-lived — regenerate it any time with “Refresh link”.
           </p>
         </>
       )}

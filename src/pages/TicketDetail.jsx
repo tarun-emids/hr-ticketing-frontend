@@ -10,39 +10,37 @@ import {
   IconPaperclip,
 } from "@tabler/icons-react";
 import { CATEGORIES, PRIORITIES, STATUSES } from "../data/users";
-import { agentWorkload } from "../api/client";
+import { agentWorkload, getAttachmentUrl, getFeedback, submitFeedback } from "../api/client";
 import {
-  getTicket,
-  subscribe,
-  refreshTicket,
-  updateStatus,
-  assignTicket,
-  autoAssignTicket,
-  setPriority,
-  setCategory,
-  getAttachmentUrl,
-  getFeedback,
-  submitFeedback,
-} from "../data/store";
-import { useAuth } from "../context/AuthContext";
+  assignTicketTicket,
+  autoAssignTicketTicket,
+  fetchTicket,
+  selectTicketById,
+  setCategoryTicket,
+  setPriorityTicket,
+  updateStatusTicket,
+} from "../state/ticketsSlice";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { selectUser, selectUsers } from "../state/authSlice";
 import { StatusBadge, PriorityBadge } from "../components/Badge";
 import Thread from "../components/Thread";
 import { Spinner, EmptyState, Button } from "../components/primitives";
 import { formatDateTime, timeAgo } from "../utils";
 
 const SELECT =
-  "w-full border border-surface-2 bg-canvas px-2.5 py-2 text-body text-warm focus:border-teal focus:outline-none";
+  "w-full rounded-lg border border-surface-2 bg-surface px-2.5 py-2 text-body text-warm focus:border-teal focus:outline-none";
 
 function MetaItem({ label, children }) {
   return (
     <div className="min-w-0">
-      <p className="mono-label text-[10px] text-warm/40">{label}</p>
+      <p className="text-caption font-medium text-warm/50">{label}</p>
       <div className="mt-1.5 text-body-lg text-warm/85">{children}</div>
     </div>
   );
 }
 
 function AgentControls({ ticket, actor, users }) {
+  const dispatch = useAppDispatch();
   const agents = users.filter((u) => u.role === "agent");
   const [workload, setWorkload] = useState([]);
   const [routing, setRouting] = useState(false);
@@ -58,7 +56,7 @@ function AgentControls({ ticket, actor, users }) {
   const routeNow = async () => {
     setRouting(true);
     try {
-      await autoAssignTicket(ticket.id, actor.id);
+      await dispatch(autoAssignTicketTicket({ ticketId: ticket.id, viewerId: actor.id })).unwrap();
     } catch (e) {
       window.alert(`Auto-assign failed: ${e.message}`);
     } finally {
@@ -71,7 +69,15 @@ function AgentControls({ ticket, actor, users }) {
       <MetaItem label="Status">
         <select
           value={ticket.status}
-          onChange={(e) => updateStatus(ticket.id, e.target.value, actor.id)}
+          onChange={(e) =>
+            dispatch(
+              updateStatusTicket({
+                ticketId: ticket.id,
+                status: e.target.value,
+                actorId: actor.id,
+              }),
+            )
+          }
           className={SELECT}
         >
           {STATUSES.map((s) => (
@@ -82,7 +88,15 @@ function AgentControls({ ticket, actor, users }) {
       <MetaItem label="Assignee">
         <select
           value={ticket.assigneeId ?? ""}
-          onChange={(e) => assignTicket(ticket.id, e.target.value || null, actor.id)}
+          onChange={(e) =>
+            dispatch(
+              assignTicketTicket({
+                ticketId: ticket.id,
+                assigneeId: e.target.value || null,
+                viewerId: actor.id,
+              }),
+            )
+          }
           className={SELECT}
         >
           <option value="">Unassigned</option>
@@ -97,7 +111,15 @@ function AgentControls({ ticket, actor, users }) {
       <MetaItem label="Priority">
         <select
           value={ticket.priority}
-          onChange={(e) => setPriority(ticket.id, e.target.value, actor.id)}
+          onChange={(e) =>
+            dispatch(
+              setPriorityTicket({
+                ticketId: ticket.id,
+                priority: e.target.value,
+                viewerId: actor.id,
+              }),
+            )
+          }
           className={SELECT}
         >
           {PRIORITIES.map((p) => (
@@ -108,7 +130,15 @@ function AgentControls({ ticket, actor, users }) {
       <MetaItem label="Re-categorise">
         <select
           value={ticket.category}
-          onChange={(e) => setCategory(ticket.id, e.target.value, actor.id)}
+          onChange={(e) =>
+            dispatch(
+              setCategoryTicket({
+                ticketId: ticket.id,
+                category: e.target.value,
+                viewerId: actor.id,
+              }),
+            )
+          }
           className={SELECT}
         >
           {CATEGORIES.map((c) => (
@@ -121,7 +151,7 @@ function AgentControls({ ticket, actor, users }) {
           type="button"
           onClick={routeNow}
           disabled={routing || ["Resolved", "Closed"].includes(ticket.status)}
-          className="mono-label border border-teal/50 px-3 py-2 text-[10px] text-teal-deep transition-colors hover:bg-teal/10 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-lg border border-teal/40 px-3 py-2 text-body font-medium text-teal-deep transition-colors hover:bg-teal/10 disabled:cursor-not-allowed disabled:opacity-40"
           title="Route to the least-loaded HR agent"
         >
           {routing ? "Routing…" : "Auto-assign"}
@@ -272,7 +302,7 @@ function AttachmentChip({ ticket, actorId }) {
                 type="button"
                 autoFocus
                 onClick={() => setPreviewOpen(false)}
-                className="mono-label border border-warm/40 px-3 py-2 text-[10px] text-warm transition-colors hover:border-teal hover:text-teal-deep"
+                className="rounded-lg border border-warm/25 px-3 py-1.5 text-caption font-medium text-warm/70 transition-colors hover:border-teal hover:text-teal-deep"
                 aria-label="Close image preview"
               >
                 Close ×
@@ -293,7 +323,7 @@ function AttachmentChip({ ticket, actorId }) {
   }
 
   return (
-    <div className="mt-5 flex flex-wrap items-center gap-2 border border-surface-2 bg-canvas px-3 py-3 text-body text-warm/80">
+    <div className="mt-5 flex flex-wrap items-center gap-2 rounded-xl border border-surface-2 bg-surface px-3 py-3 text-body text-warm/85">
       <IconPaperclip size={16} aria-hidden className="text-teal-deep/80" />
       <button
         type="button"
@@ -309,7 +339,7 @@ function AttachmentChip({ ticket, actorId }) {
       {busy ? (
         <span className="mono-label text-[10px] text-warm/25">opening…</span>
       ) : (
-        <span className="mono-label inline-flex items-center gap-1 text-[10px] text-warm/25">
+        <span className="inline-flex items-center gap-1 text-caption text-warm/35">
           open <IconArrowUpRight size={12} aria-hidden />
         </span>
       )}
@@ -445,19 +475,16 @@ function FeedbackPanel({ ticket, actor, users, isOwner }) {
 
 export default function TicketDetail() {
   const { id } = useParams();
-  const { user, users } = useAuth();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+  const users = useAppSelector(selectUsers);
+  const ticket = useAppSelector((state) => selectTicketById(state, id));
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const justCreated = searchParams.get("created") === "1";
-  const [, force] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [banner, setBanner] = useState(justCreated);
-
-  useEffect(() => {
-    const unsub = subscribe(() => force((n) => n + 1));
-    return () => unsub();
-  }, []);
 
   useEffect(() => {
     if (!user?.id) {
@@ -470,9 +497,11 @@ export default function TicketDetail() {
     let alive = true;
     setLoading(true);
     setError(null);
-    refreshTicket(id, user.id)
+    // Fulfilled upserts the ticket into the RTK cache — the selector re-renders.
+    dispatch(fetchTicket({ id, viewerId: user.id }))
+      .unwrap()
       .catch((e) => {
-        if (alive) setError(e.message ?? String(e));
+        if (alive) setError(e?.message ?? String(e));
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -480,7 +509,7 @@ export default function TicketDetail() {
     return () => {
       alive = false;
     };
-  }, [id, user?.id]);
+  }, [id, user?.id, dispatch]);
 
   useEffect(() => {
     if (!banner) return undefined;
@@ -501,8 +530,6 @@ export default function TicketDetail() {
       </div>
     );
   }
-
-  const ticket = getTicket(id);
 
   if (!ticket) {
     return (
@@ -538,7 +565,7 @@ export default function TicketDetail() {
     <div className="mx-auto max-w-4xl">
       <button
         onClick={() => navigate(isAgent ? "/inbox" : "/my-tickets")}
-        className="mono-label inline-flex items-center gap-2 text-[10px] text-warm/45 transition-colors hover:text-teal-deep"
+        className="inline-flex items-center gap-2 text-body text-warm/50 transition-colors hover:text-teal-deep"
       >
         <IconArrowLeft size={16} aria-hidden />
         Back to {isAgent ? "inbox" : "my tickets"}
@@ -552,16 +579,12 @@ export default function TicketDetail() {
       )}
 
       <header className="mt-6 mb-6">
-        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
-          <IconArrowDownRight size={16} aria-hidden />
-          TICKET
-        </span>
         <div className="mb-3 flex flex-wrap items-center gap-3">
           <span className="mono-label text-[10px] text-warm/40">{ticket.id}</span>
           <StatusBadge status={ticket.status} size="md" />
           <PriorityBadge priority={ticket.priority} size="md" />
         </div>
-        <h1 className="text-h3 text-warm sm:text-h2 sm:leading-[0.85]">{ticket.subject}</h1>
+        <h1 className="text-h3 text-warm sm:text-h2">{ticket.subject}</h1>
         <p className="mt-2 text-caption text-warm/50">
           {employee?.name} · {employee?.email} · opened {timeAgo(ticket.createdAt)}
         </p>
@@ -596,9 +619,7 @@ export default function TicketDetail() {
         )}
       </section>
 
-      <p className="mono-label mb-4 text-[10px] text-warm/40">
-        CONVERSATION / FIG. {ticket.id.replace("-", ".")}
-      </p>
+      <p className="mb-3 text-caption font-medium text-warm/50">Conversation</p>
       <Thread ticket={ticket} users={users} viewer={user} />
     </div>
   );

@@ -8,7 +8,8 @@ import {
   IconPlus,
   IconX,
 } from "@tabler/icons-react";
-import { useAuth } from "../context/AuthContext";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { logout, selectIsAgent, selectUser } from "../state/authSlice";
 import Logo from "./Logo";
 
 // Shared landing page: role-aware nav boxes + knowledge-base search.
@@ -65,7 +66,7 @@ const AGENT_NAV = [
 
 function NavItems({ items, onNavigate, collapsed }) {
   return (
-    <nav className="flex flex-col">
+    <nav className="flex flex-col gap-0.5">
       {items.map((item) => (
         <NavLink
           key={item.to}
@@ -74,15 +75,15 @@ function NavItems({ items, onNavigate, collapsed }) {
           title={collapsed ? item.label : undefined}
           aria-label={item.label}
           className={({ isActive }) =>
-            `flex items-center gap-3 border-b border-warm/10 py-3 text-[10px] transition-colors mono-label ${
-              collapsed ? "lg:justify-center" : ""
-            } ${isActive ? "text-teal" : "text-warm/50 hover:text-warm"}`
+            `flex items-center gap-3 rounded-lg px-3 py-2.5 text-body font-medium transition-colors ${
+              collapsed ? "lg:justify-center lg:px-2" : ""
+            } ${isActive ? "bg-teal/10 text-teal-deep" : "text-warm/60 hover:bg-surface-2 hover:text-warm"}`
           }
         >
           {({ isActive }) => (
             <>
               <svg
-                className={`h-4 w-4 shrink-0 ${isActive ? "text-teal" : "text-warm/40"}`}
+                className={`h-4 w-4 shrink-0 ${isActive ? "text-teal-deep" : "text-warm/45"}`}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -92,9 +93,6 @@ function NavItems({ items, onNavigate, collapsed }) {
                 <path d={item.icon} />
               </svg>
               <span className={collapsed ? "lg:hidden" : ""}>{item.label}</span>
-              {isActive && (
-                <span className={`ml-auto h-[2px] w-6 bg-teal ${collapsed ? "lg:hidden" : ""}`} />
-              )}
             </>
           )}
         </NavLink>
@@ -104,25 +102,27 @@ function NavItems({ items, onNavigate, collapsed }) {
 }
 
 export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNavigate, onHide }) {
-  const { user, isAgent, logout } = useAuth();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+  const isAgent = useAppSelector(selectIsAgent);
   const isAdmin = user?.role === "admin";
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-surface-2 bg-canvas transition-[width,transform] lg:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-surface-2 bg-surface transition-[width,transform] lg:translate-x-0 ${
         collapsed ? "lg:w-16" : "lg:w-64"
       } ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
     >
       <button
         onClick={onHide}
-        className="absolute right-3 top-3 border border-warm/35 p-1 text-warm/50 hover:text-warm lg:hidden"
+        className="absolute right-3 top-3 rounded-lg border border-warm/15 p-1.5 text-warm/50 transition-colors hover:bg-surface-2 hover:text-warm lg:hidden"
         aria-label="Close menu"
       >
         <IconX size={16} aria-hidden />
       </button>
 
       <div
-        className={`flex flex-col gap-2 border-b border-surface-2 px-6 pb-5 pt-6 ${collapsed ? "lg:items-center lg:px-2" : ""}`}
+        className={`flex flex-col gap-2 border-b border-surface-2 px-5 pb-5 pt-6 ${collapsed ? "lg:items-center lg:px-2" : ""}`}
       >
         <span className={collapsed ? "lg:hidden" : ""}>
           <Logo size="nav" />
@@ -132,12 +132,12 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
             <Logo size="nav" markOnly />
           </span>
         )}
-        <p className={`mono-label text-[10px] text-warm/40 ${collapsed ? "lg:hidden" : ""}`}>
-          HR Desk / Internal ticketing
+        <p className={`text-caption text-warm/45 ${collapsed ? "lg:hidden" : ""}`}>
+          HR desk · internal ticketing
         </p>
         <button
           onClick={onToggleCollapse}
-          className={`hidden border border-warm/15 p-1.5 text-warm/50 hover:border-teal hover:text-teal lg:block ${collapsed ? "self-center" : "self-start"}`}
+          className={`hidden rounded-lg border border-warm/15 p-1.5 text-warm/50 transition-colors hover:border-teal hover:text-teal lg:block ${collapsed ? "self-center" : "self-start"}`}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-expanded={!collapsed}
           aria-controls="workspace-navigation"
@@ -162,9 +162,11 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
 
       <div
         id="workspace-navigation"
-        className={`flex-1 overflow-y-auto p-6 ${collapsed ? "lg:px-2" : ""}`}
+        className={`flex-1 overflow-y-auto p-4 ${collapsed ? "lg:px-2" : ""}`}
       >
-        <p className={`mb-3 mono-label text-[10px] text-warm/35 ${collapsed ? "lg:hidden" : ""}`}>
+        <p
+          className={`mb-2 px-3 text-micro font-medium text-warm/40 ${collapsed ? "lg:hidden" : ""}`}
+        >
           {isAdmin ? "Admin workspace" : isAgent ? "HR workspace" : "Employee workspace"}
         </p>
         <NavItems
@@ -190,7 +192,7 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
           <span className={collapsed ? "lg:hidden" : ""}>Change password</span>
         </NavLink>
         <div className={`flex items-center gap-3 ${collapsed ? "lg:flex-col lg:gap-2" : ""}`}>
-          <span className="soft-bl flex h-9 w-9 shrink-0 items-center justify-center bg-surface-2 font-mono text-[10px] text-teal-light">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal/10 font-mono text-[11px] font-medium text-teal-deep">
             {user?.name
               .split(" ")
               .map((p) => p[0])
@@ -199,15 +201,13 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
           </span>
           <div className={`min-w-0 flex-1 ${collapsed ? "lg:hidden" : ""}`}>
             <p className="truncate text-body font-medium text-warm">{user?.name}</p>
-            <p className="mono-label text-[10px] text-warm/40">
-              {isAgent ? "HR agent" : "Employee"}
-            </p>
+            <p className="text-caption text-warm/45">{isAgent ? "HR agent" : "Employee"}</p>
           </div>
           <button
-            onClick={logout}
+            onClick={() => dispatch(logout())}
             title="Sign out"
             aria-label="Sign out"
-            className={`border border-warm/15 p-1.5 text-warm/50 hover:border-teal hover:text-teal ${collapsed ? "lg:self-center" : ""}`}
+            className={`rounded-lg p-2 text-warm/50 transition-colors hover:bg-surface-2 hover:text-error-deep ${collapsed ? "lg:self-center" : ""}`}
           >
             <IconLogout size={16} aria-hidden />
           </button>

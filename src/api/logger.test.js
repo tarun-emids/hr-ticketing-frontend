@@ -38,7 +38,7 @@ describe("frontend logger (logger.js)", () => {
     const { url, init } = ingestCalls[0];
     expect(url).toContain("/logs/ingest");
     expect(init.method).toBe("POST");
-    expect(init.headers.Authorization).toBe("Bearer test-access-token");
+    expect(init.headers.Authorization).toBeUndefined();
     const body = JSON.parse(init.body);
     expect(body.events).toHaveLength(1);
     expect(body.events[0].event).toBe("http_request_start");
@@ -88,11 +88,10 @@ describe("frontend logger (logger.js)", () => {
     expect(ingestCalls).toHaveLength(0);
   });
 
-  it("does not post to the protected log endpoint before sign-in", async () => {
+  it("posts frontend logs without a bearer token", async () => {
     localStorage.removeItem("hrdesk.accessToken");
     logEvent("http_request_start", {});
-    await new Promise((resolve) => setTimeout(resolve, 5));
-    expect(ingestCalls).toHaveLength(0);
+    await vi.waitFor(() => expect(ingestCalls).toHaveLength(1));
   });
 
   it("swallows sink failures — logging must never break ticket operations", async () => {

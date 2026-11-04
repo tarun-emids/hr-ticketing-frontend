@@ -1,0 +1,128 @@
+// Ticket states repr: RTK entity adapter replacing the pub/sub module store.
+// Write thunks whose server reply IS a ticket row upsert it on fulfilled
+// (create, reply [updated-row], status, assign, priority, category,
+// auto-pickup, draft-submit). Thunks whose reply is a different shape
+// (attachment upload -> attachment metadata) deliberately do not cache.
+import {
+  createAsyncThunk,
+  createEntityAdapter,
+  createSelector,
+  createSlice,
+} from "@reduxjs/toolkit";
+import * as api from "../api/client";
+
+const adapter = createEntityAdapter({
+  sortComparer: (a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
+});
+
+const initialState = adapter.getInitialState({
+  status: "idle", // idle | loading | succeeded | failed
+  error: null,
+});
+
+// Every read/write thunk that reaches a viewer-gated endpoint threads
+// viewerId explicitly — identity is visible at the dispatch site, matching
+// the house pattern (never derived inside the thunk).
+export const fetchTickets = createAsyncThunk("tickets/fetchAll", async ({ viewerId }) => {
+  const res = await api.listTicketsPage({ viewerId });
+  return res.items; // envelope -> rows: the adapter stores ticket rows only
+});
+export const fetchTicket = createAsyncThunk("tickets/fetchOne", ({ id, viewerId }) =>
+  api.getTicket(id, viewerId),
+);
+
+export const createTicket = createAsyncThunk("tickets/create", (payload) =>
+  api.createTicket(payload),
+);
+export const uploadAttachment = createAsyncThunk(
+  "tickets/uploadAttachment",
+  ({ ticketId, file, viewerId }) => api.uploadAttachment(ticketId, file, viewerId),
+);
+// role was only ever tolerated, never used — the server derives it from authorId
+export const addReplyTicket = createAsyncThunk("tickets/addReply", ({ ticketId, authorId, text }) =>
+  api.addReply(ticketId, { authorId, text }),
+);
+export const updateStatusTicket = createAsyncThunk(
+  "tickets/updateStatus",
+  ({ ticketId, status, actorId }) => api.updateStatus(ticketId, { status, actorId }),
+);
+export const assignTicketTicket = createAsyncThunk(
+  "tickets/assign",
+  ({ ticketId, assigneeId, viewerId }) => api.assignTicket(ticketId, { assigneeId }, viewerId),
+);
+export const setPriorityTicket = createAsyncThunk(
+  "tickets/setPriority",
+  ({ ticketId, priority, viewerId }) => api.setPriority(ticketId, { priority }, viewerId),
+);
+export const setCategoryTicket = createAsyncThunk(
+  "tickets/setCategory",
+  ({ ticketId, category, viewerId }) => api.setCategory(ticketId, { category }, viewerId),
+);
+// auto-assign returns routing metadata (routedTo) plus the ticket; cache only
+// the ticket itself so entries keep the canonical shape.
+export const autoAssignTicketTicket = createAsyncThunk(
+  "tickets/autoAssign",
+  async ({ ticketId, viewerId }) => {
+    const { routedTo: _routedTo, ...ticket } = await api.autoAssignTicket(ticketId, viewerId);
+    return ticket;
+  },
+);
+export const submitDraftTicket = createAsyncThunk("tickets/submitDraft", ({ draftId, payload }) =>
+  api.submitDraft(draftId, payload),
+);
+
+const onTicketFulfilled = (state, action) => {
+  adapter.upsertOne(state, action.payload);
+};
+
+const ticketsSlice = createSlice({
+  name: "tickets",
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTickets.pending, (state) => {
+        // stale-while-revalidate: only show a spinner when nothing is cached;
+        // otherwise keep displaying the cached list while the refetch runs
+        if (state.ids.length === 0) state.status = "loading";
+      })
+      .addCase(fetchTickets.fulfilled, (state, action) => {
+        adapter.setAll(state, action.payload);
+        state.status = "succeeded";
+        state.error = null;
+      })
+      .addCase(fetchTickets.rejected, (state, action) => {
+        if (state.ids.length === 0) {
+          state.status = "failed";
+          state.error = action.error?.message ?? "Failed to load tickets";
+        }
+      })
+      // NOTE: uploadAttachment.fulfilled intentionally does NOT upsert — the
+      // server replies with attachment metadata, not a ticket row; caching it
+      // would insert a junk entity into the adapter.
+      .addCase(fetchTicket.fulfilled, onTicketFulfilled)
+      .addCase(createTicket.fulfilled, onTicketFulfilled)
+      .addCase(addReplyTicket.fulfilled, onTicketFulfilled) // add_reply returns the updated ticket row
+      .addCase(updateStatusTicket.fulfilled, onTicketFulfilled)
+      .addCase(assignTicketTicket.fulfilled, onTicketFulfilled)
+      .addCase(autoAssignTicketTicket.fulfilled, onTicketFulfilled)
+      .addCase(setPriorityTicket.fulfilled, onTicketFulfilled)
+      .addCase(setCategoryTicket.fulfilled, onTicketFulfilled)
+      .addCase(submitDraftTicket.fulfilled, onTicketFulfilled);
+  },
+});
+
+export default ticketsSlice.reducer;
+
+export const { selectAll: selectAllTickets, selectById: selectTicketById } = adapter.getSelectors(
+  (state) => state.tickets,
+);
+
+// Matches what useTickets rendered: a spinner until real data ever arrives
+// (first load), then cached data while idle/refetching, and an empty state on
+// hard failure when there was nothing cached.
+export const selectTicketsLoading = createSelector(
+  (state) => state.tickets.ids,
+  (state) => state.tickets.status,
+  (ids, status) => status === "idle" || (status === "loading" && ids.length === 0),
+);

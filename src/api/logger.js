@@ -1,5 +1,3 @@
-import { getAccessToken } from "./session";
-
 // Structured frontend logger → the backend's EXISTING logs/app.log.
 //
 // Events are POSTed (fire-and-forget, batch of one) to /api/logs/ingest,
@@ -44,8 +42,6 @@ export function newCorrelationId() {
 export function logEvent(event, { level = "INFO", correlationId = null, ...fields }) {
   if (!logsEnabled()) return;
   try {
-    const accessToken = getAccessToken();
-    if (!accessToken) return;
     const payload = {
       logId: randomId(),
       correlationId,
@@ -58,7 +54,6 @@ export function logEvent(event, { level = "INFO", correlationId = null, ...field
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({ events: [payload] }),
       keepalive: true, // survives page unload for failure-path events

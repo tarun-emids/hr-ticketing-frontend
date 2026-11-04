@@ -32,15 +32,23 @@ export default function NotificationRow({
       onKeyDown={onKeyDown}
       onClick={() => onOpen(n)}
       aria-disabled={!n.ticketRef}
-      className={`flex w-full items-start gap-3 border-b border-surface-2 px-4 py-3 text-left transition-colors focus:outline-none focus-visible:border-teal ${
-        n.read ? "" : "bg-surface-2/40"
-      } ${n.ticketRef ? "hover:bg-surface-2/60" : "cursor-default"}`}
+      className={`flex w-full items-start gap-3 border-b border-surface-2 px-4 py-3.5 text-left transition-colors focus:outline-none ${
+        n.read ? "" : "bg-surface-2/50"
+      } ${n.ticketRef ? "hover:bg-surface-2" : "cursor-default"}`}
     >
-      <span aria-hidden className={`mt-1.5 w-1.5 shrink-0 ${n.read ? "" : "bg-teal h-1.5"}`} />
-      <Row size={16} aria-hidden className="mt-0.5 shrink-0 text-teal-deep/80" />
+      <span
+        aria-hidden
+        className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${n.read ? "bg-transparent" : "bg-teal"}`}
+      />
+      <span
+        aria-hidden
+        className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-2 text-teal-deep"
+      >
+        <Row size={14} />
+      </span>
       <span className="min-w-0">
-        <span className="block text-body text-warm/90">{n.message}</span>
-        <span className="mono-label mt-1 block text-[10px] text-warm/35">{timeAgo(n.createdAt)}</span>
+        <span className="block text-body text-warm">{n.message}</span>
+        <span className="mt-0.5 block text-caption text-warm/45">{timeAgo(n.createdAt)}</span>
       </span>
     </button>
   );

@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { store } from "./state/store";
+import { useAppDispatch, useAppSelector } from "./state/hooks";
+import { fetchUsers, selectUser, selectUsersReady } from "./state/authSlice";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
@@ -23,9 +26,11 @@ import ChangePassword from "./pages/ChangePassword";
 import "./index.css";
 
 function RequireAuth({ role, children }) {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
+  const usersReady = useAppSelector(selectUsersReady);
   const location = useLocation();
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!usersReady) return null;
   if (role && user.role !== role) {
     return (
       <Navigate
@@ -37,10 +42,22 @@ function RequireAuth({ role, children }) {
   return children;
 }
 
+// Loads the user directory once at startup — the old AuthProvider's behaviour
+// (session invalidated when the stored id no longer exists; stored session
+// kept when the backend is unreachable) lives in the authSlice now.
+function UsersLoader() {
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(fetchUsers());
+  }, [dispatch]);
+  return null;
+}
+
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <Provider store={store}>
+        <UsersLoader />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
@@ -51,6 +68,7 @@ function App() {
             }
           >
             <Route path="/dashboard" element={<HomeDashboard />} />
+            <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/kb" element={<KbSearch />} />
             <Route path="/kb/:slug" element={<KbViewer />} />
@@ -149,13 +167,13 @@ function App() {
           <Route path="/" element={<RootRedirect />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </AuthProvider>
+      </Provider>
     </BrowserRouter>
   );
 }
 
 function RootRedirect() {
-  const { user } = useAuth();
+  const user = useAppSelector(selectUser);
   if (!user) return <Navigate to="/login" replace />;
   // The home dashboard is the shared landing page (role-aware nav boxes +
   // knowledge-base search): every signed-in role starts there.

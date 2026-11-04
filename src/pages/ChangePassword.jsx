@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { logout as logoutThunk, selectUser } from "../state/authSlice";
 import * as api from "../api/client";
 
 const FIELD =
@@ -13,8 +14,9 @@ function FieldError({ msg }) {
 }
 
 export default function ChangePassword() {
-  const { logout } = useAuth();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const user = useAppSelector(selectUser);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -37,8 +39,8 @@ export default function ChangePassword() {
 
     setSubmitting(true);
     try {
-      await api.changePassword(currentPassword, newPassword);
-      logout();
+      await api.changePassword(user.email, currentPassword, newPassword);
+      await dispatch(logoutThunk()).unwrap();
       navigate("/login", {
         replace: true,
         state: { passwordChanged: true },

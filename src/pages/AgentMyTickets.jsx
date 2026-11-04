@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { IconArrowDownRight } from "@tabler/icons-react";
-import { useAuth } from "../context/AuthContext";
 import { agentWorkload } from "../api/client";
+import { useAppSelector } from "../state/hooks";
+import { selectUser, selectUsers } from "../state/authSlice";
 import TicketTable from "../components/TicketTable";
 
 // MY TICKETS — the HR agent's own backlog (route /assigned-to-me): a pinned
 // assignee filter on the server. Stats come from the workload API (per-agent
 // open/total), matching the numbers the assignment screen shows.
 export default function AgentMyTickets() {
-  const { users, user } = useAuth();
+  const users = useAppSelector(selectUsers);
+  const user = useAppSelector(selectUser);
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
@@ -31,11 +32,6 @@ export default function AgentMyTickets() {
   return (
     <div className="mx-auto max-w-6xl">
       <header className="mb-8">
-        <span className="mono-label mb-3 flex items-center gap-2 text-[10px] text-teal-deep">
-          <IconArrowDownRight size={16} aria-hidden />
-          02 / MY TICKETS
-        </span>
-        <div className="rule-teal mb-5" />
         <h1 className="text-h3 text-warm">My tickets</h1>
         <p className="mt-1.5 text-caption text-warm/45">
           {!stats
