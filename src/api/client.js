@@ -172,10 +172,10 @@ export const resetPassword = (email, otp, newPassword) =>
     body: { email, otp, newPassword },
     operation: "auth.password_reset.complete",
   });
-export const changePassword = (currentPassword, newPassword) =>
+export const changePassword = (email, currentPassword, newPassword) =>
   request("/auth/password", {
     method: "POST",
-    body: { currentPassword, newPassword },
+    body: { email, currentPassword, newPassword },
     operation: "auth.password.change",
   });
 
