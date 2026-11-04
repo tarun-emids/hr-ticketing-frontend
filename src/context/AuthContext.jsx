@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import * as api from "../api/client";
-import { clearAccessToken, getAccessToken } from "../api/session";
+import { clearAccessToken } from "../api/session";
 
 const AuthContext = createContext(null);
 
@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
       // treat them as mock leftovers and require a fresh sign-in.
       const stored = localStorage.getItem("hrdesk.user");
       const parsed = stored ? JSON.parse(stored) : null;
-      return parsed?.via === "password" && getAccessToken() ? parsed : null;
+      return parsed?.via === "password" ? parsed : null;
     } catch {
       return null;
     }
@@ -60,8 +60,8 @@ export function AuthProvider({ children }) {
     users,
     usersReady,
     isAgent: user?.role === "agent",
-    // login verifies email + password via the backend (Supabase Auth under
-    // the hood) and resolves the matching public.users row. Throws an Error
+    // Login verifies the email and password against the backend account table.
+    // Throws an Error
     // with a user-facing message on failure (invalid credentials etc.).
     login: async (email, password) => {
       const res = await api.login(email, password);

@@ -78,12 +78,13 @@ describe("frontend trace context (client.js + trace.js)", () => {
     expect(headers.traceparent).toMatch(TRACE_RE);
   });
 
-  it("sends the saved bearer token on API calls", async () => {
+  it("does not require or send a bearer token on API calls", async () => {
     await listTickets();
-    expect(httpCalls()[0].init.headers.Authorization).toBe("Bearer test-access-token");
+    expect(httpCalls()[0].init.headers.Authorization).toBeUndefined();
   });
 
-  it("stores the bearer token returned by login", async () => {
+  it("accepts the backend login response without a bearer token", async () => {
+    localStorage.removeItem("hrdesk.accessToken");
     vi.stubGlobal(
       "fetch",
       vi.fn(
@@ -91,15 +92,16 @@ describe("frontend trace context (client.js + trace.js)", () => {
           new Response(
             JSON.stringify({
               user: { id: "u1", name: "Priya Sharma", role: "employee" },
-              accessToken: "issued-access-token",
             }),
             { status: 200, headers: { "Content-Type": "application/json" } },
           ),
       ),
     );
 
-    await login("priya@example.com", "password");
-    expect(localStorage.getItem("hrdesk.accessToken")).toBe("issued-access-token");
+    await expect(login("priya@example.com", "password")).resolves.toMatchObject({
+      user: { id: "u1", name: "Priya Sharma", role: "employee" },
+    });
+    expect(localStorage.getItem("hrdesk.accessToken")).toBeNull();
   });
 
   it("ingest events carry the SAME trace/span ids the header carries", async () => {

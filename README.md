@@ -32,6 +32,10 @@ local development only; do not use them in production. To enable the HR
 assistant, set `RAG_GEMINI_API_KEY` in `hr-ticketing-backend/.env` before
 starting the backend.
 
+The backend initializes passwords for local demo accounts that do not yet
+have one. The default is `ChangeMe123!`; set `HR_DESK_TEMP_PASSWORD` in
+`hr-ticketing-backend/.env` to override it. Existing passwords are not changed.
+
 ## Login and password recovery
 
 Sign-in at `/login` is verified by the backend against the organisation-managed
@@ -46,9 +50,9 @@ through the backend's configured Mailpit SMTP service. The UI follows the
 backend's password requirements: at least 8 characters and no more than 72
 UTF-8 bytes.
 
-The backend returns a short-lived bearer access token after sign-in. The
-frontend keeps it with the signed-in session and sends it on protected API
-requests, including notification refreshes and frontend log ingestion.
+The backend verifies passwords against the account database and returns the
+matching user. The frontend keeps the signed-in user in local browser storage;
+the current API does not issue bearer tokens.
 
 ## Demo flow
 

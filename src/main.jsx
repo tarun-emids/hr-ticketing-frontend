@@ -23,9 +23,10 @@ import ChangePassword from "./pages/ChangePassword";
 import "./index.css";
 
 function RequireAuth({ role, children }) {
-  const { user } = useAuth();
+  const { user, usersReady } = useAuth();
   const location = useLocation();
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!usersReady) return null;
   if (role && user.role !== role) {
     return (
       <Navigate
@@ -39,7 +40,7 @@ function RequireAuth({ role, children }) {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
