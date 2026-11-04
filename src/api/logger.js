@@ -52,7 +52,9 @@ export function logEvent(event, { level = "INFO", correlationId = null, ...field
     };
     fetch(INGEST_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ events: [payload] }),
       keepalive: true, // survives page unload for failure-path events
     }).catch(() => {

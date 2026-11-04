@@ -8,6 +8,7 @@ const savedViteLogs = import.meta.env.VITE_LOGS;
 
 beforeEach(() => {
   ingestCalls = [];
+  localStorage.setItem("hrdesk.accessToken", "test-access-token");
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url, init) => {
@@ -21,6 +22,7 @@ afterEach(() => {
   import.meta.env.VITE_LOGS = savedViteLogs;
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
+  localStorage.removeItem("hrdesk.accessToken");
 });
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -36,6 +38,7 @@ describe("frontend logger (logger.js)", () => {
     const { url, init } = ingestCalls[0];
     expect(url).toContain("/logs/ingest");
     expect(init.method).toBe("POST");
+    expect(init.headers.Authorization).toBeUndefined();
     const body = JSON.parse(init.body);
     expect(body.events).toHaveLength(1);
     expect(body.events[0].event).toBe("http_request_start");
@@ -83,6 +86,12 @@ describe("frontend logger (logger.js)", () => {
     logEvent("http_request_start", {});
     await new Promise((resolve) => setTimeout(resolve, 5));
     expect(ingestCalls).toHaveLength(0);
+  });
+
+  it("posts frontend logs without a bearer token", async () => {
+    localStorage.removeItem("hrdesk.accessToken");
+    logEvent("http_request_start", {});
+    await vi.waitFor(() => expect(ingestCalls).toHaveLength(1));
   });
 
   it("swallows sink failures — logging must never break ticket operations", async () => {

@@ -4,7 +4,7 @@ import { Provider } from "react-redux";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { store } from "./state/store";
 import { useAppDispatch, useAppSelector } from "./state/hooks";
-import { fetchUsers, selectUser } from "./state/authSlice";
+import { fetchUsers, selectUser, selectUsersReady } from "./state/authSlice";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
@@ -22,12 +22,15 @@ import AdminAccounts from "./admin/AdminAccounts";
 import AdminKb from "./admin/AdminKb";
 import KbSearch from "./pages/KbSearch";
 import KbViewer from "./pages/KbViewer";
+import ChangePassword from "./pages/ChangePassword";
 import "./index.css";
 
 function RequireAuth({ role, children }) {
   const user = useAppSelector(selectUser);
+  const usersReady = useAppSelector(selectUsersReady);
   const location = useLocation();
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!usersReady) return null;
   if (role && user.role !== role) {
     return (
       <Navigate
@@ -52,7 +55,7 @@ function UsersLoader() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Provider store={store}>
         <UsersLoader />
         <Routes>
@@ -65,6 +68,8 @@ function App() {
             }
           >
             <Route path="/dashboard" element={<HomeDashboard />} />
+            <Route path="/change-password" element={<ChangePassword />} />
+            <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/kb" element={<KbSearch />} />
             <Route path="/kb/:slug" element={<KbViewer />} />
             <Route

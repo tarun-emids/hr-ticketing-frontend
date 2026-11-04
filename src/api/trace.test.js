@@ -8,7 +8,7 @@
 // the original operation's trace. Each event also carries the business
 // `operation` label so frontend rows can be filtered like backend flow events.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createTicket, listTickets, updateStatus, uploadAttachment } from "./client";
+import { createTicket, listTickets, login, updateStatus, uploadAttachment } from "./client";
 
 const TRACE_RE = /^00-[0-9a-f]{32}-[0-9a-f]{16}-01$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -20,6 +20,7 @@ const savedViteTrace = import.meta.env.VITE_TRACE;
 
 beforeEach(() => {
   calls = [];
+  localStorage.setItem("hrdesk.accessToken", "test-access-token");
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url, init) => {
@@ -36,6 +37,7 @@ afterEach(() => {
   import.meta.env.VITE_TRACE = savedViteTrace;
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
+  localStorage.removeItem("hrdesk.accessToken");
 });
 
 const traceIdFrom = (init) => init.headers.traceparent.slice(3, 35);
@@ -74,6 +76,32 @@ describe("frontend trace context (client.js + trace.js)", () => {
     const { headers } = httpCalls()[0].init;
     expect(headers["X-Request-ID"]).toMatch(UUID_RE);
     expect(headers.traceparent).toMatch(TRACE_RE);
+  });
+
+  it("does not require or send a bearer token on API calls", async () => {
+    await listTickets();
+    expect(httpCalls()[0].init.headers.Authorization).toBeUndefined();
+  });
+
+  it("accepts the backend login response without a bearer token", async () => {
+    localStorage.removeItem("hrdesk.accessToken");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              user: { id: "u1", name: "Priya Sharma", role: "employee" },
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          ),
+      ),
+    );
+
+    await expect(login("priya@example.com", "password")).resolves.toMatchObject({
+      user: { id: "u1", name: "Priya Sharma", role: "employee" },
+    });
+    expect(localStorage.getItem("hrdesk.accessToken")).toBeNull();
   });
 
   it("ingest events carry the SAME trace/span ids the header carries", async () => {

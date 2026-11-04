@@ -49,7 +49,7 @@ function logRequest(method, path, status, durationMs, traceId, requestId) {
 
 // Exported for feature modules (src/rag) so every call keeps the shared
 // logging/tracing pipeline; domain endpoints keep their own thin wrappers.
-export async function request(path, { method = "GET", body, form, operation } = {}) {
+export async function request(path, { method = "GET", body, form, operation, responseType } = {}) {
   const correlationId = newCorrelationId();
   const startedAt = performance.now();
   const endpoint = path.split("?")[0]; // path only — query strings are never logged
@@ -142,14 +142,42 @@ export async function request(path, { method = "GET", body, form, operation } = 
   }
 
   if (res.status === 204) return null;
+  if (responseType === "blob") return res.blob();
   return res.json();
 }
 
 // ---- auth -------------------------------------------------------------------
-// Credentials are verified server-side against Supabase Auth; the backend
-// returns the matching public.users row. No secrets cross the wire either way.
-export const login = (email, password) =>
-  request("/auth/login", { method: "POST", body: { email, password }, operation: "auth.login" }); // { user: {id,name,email,role} }
+// Credentials are verified server-side against the provisioned account table.
+export const login = async (email, password) => {
+  const result = await request("/auth/login", {
+    method: "POST",
+    body: { email, password },
+    operation: "auth.login",
+  });
+  if (!result?.user) {
+    throw new Error("Sign-in response did not include a user.");
+  }
+  return result;
+}; // { user: {id,name,email,role} }
+
+export const requestPasswordReset = (email) =>
+  request("/auth/forgot-password", {
+    method: "POST",
+    body: { email },
+    operation: "auth.password_reset.request",
+  });
+export const resetPassword = (email, otp, newPassword) =>
+  request("/auth/reset-password", {
+    method: "POST",
+    body: { email, otp, newPassword },
+    operation: "auth.password_reset.complete",
+  });
+export const changePassword = (currentPassword, newPassword) =>
+  request("/auth/password", {
+    method: "POST",
+    body: { currentPassword, newPassword },
+    operation: "auth.password.change",
+  });
 
 // ---- users ----------------------------------------------------------------
 export const listUsers = () => request("/users", { operation: "users.list" });
@@ -255,16 +283,15 @@ export const listKbPopular = (viewerId) =>
   request(`/kb/popular?viewerId=${encodeURIComponent(viewerId)}`);
 export const getKbDoc = (slug, viewerId) =>
   request(`/kb/${encodeURIComponent(slug)}?viewerId=${encodeURIComponent(viewerId)}`);
-// The file endpoint streams the PDF itself (it is gated by viewerId on the
-// server), so this resolves to a plain URL — no JSON hop, no signed token.
-// download=true eats the response as an attachment (save dialog proposes the
-// policy title); the default flavour renders the PDF inline.
-export const getKbDocUrl = (slug, viewerId, download = false) =>
-  Promise.resolve({
-    url:
-      `${BASE}/kb/${encodeURIComponent(slug)}/file?viewerId=${encodeURIComponent(viewerId)}` +
-      `&download=${download ? "true" : "false"}`,
-  });
+// Fetch the PDF through the shared API client, then expose a local blob URL
+// for the iframe or download link.
+export const getKbDocUrl = async (slug, viewerId, download = false) => {
+  const file = await request(
+    `/kb/${encodeURIComponent(slug)}/file?viewerId=${encodeURIComponent(viewerId)}&download=${download}`,
+    { operation: "kb.file", responseType: "blob" },
+  );
+  return { url: URL.createObjectURL(file) };
+};
 
 // ---- notifications ----------------------------------------------------------
 const withQuery = (path, params) => {
