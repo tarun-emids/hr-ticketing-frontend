@@ -121,7 +121,7 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
         </div>
       )}
 
-      <div className="rounded-xl border border-surface-2 bg-surface-2/60 p-4">
+      <div className="flex flex-col gap-4 rounded-xl border border-surface-2 bg-surface-2/60 p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <IconSearch

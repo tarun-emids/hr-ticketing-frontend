@@ -67,7 +67,7 @@ export function CountBars({
 }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} margin={{ top: 8, right: 8, bottom: xLabel ? 20 : 4, left: -4 }}>
+      <BarChart data={data} margin={{ top: 8, right: 12, bottom: xLabel ? 34 : 10, left: 12 }}>
         <CartesianGrid stroke={GRID} vertical={false} />
         <XAxis
           dataKey={xKey}
@@ -75,16 +75,14 @@ export function CountBars({
           tickLine={false}
           style={AXIS_STYLE.tick}
         >
-          {xLabel && (
-            <Label value={xLabel} offset={8} position="insideBottom" style={Y_LABEL_STYLE} />
-          )}
+          {xLabel && <Label value={xLabel} offset={10} position="bottom" style={Y_LABEL_STYLE} />}
         </XAxis>
         <YAxis
           allowDecimals={false}
           axisLine={false}
           tickLine={false}
           style={AXIS_STYLE.tick}
-          label={{ value: yLabel, angle: -90, position: "insideLeft", style: Y_LABEL_STYLE }}
+          label={{ value: yLabel, angle: -90, position: "left", style: Y_LABEL_STYLE }}
         />
         <Tooltip cursor={{ fill: "rgba(13,148,136,0.08)" }} {...tooltipStyle} />
         <Bar
@@ -103,7 +101,7 @@ export function CountBars({
 export function TimeLines({ data, series, height = 220, yLabel = "tickets", xLabel }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <LineChart data={data} margin={{ top: 8, right: 8, bottom: xLabel ? 20 : 4, left: -4 }}>
+      <LineChart data={data} margin={{ top: 8, right: 12, bottom: xLabel ? 34 : 10, left: 12 }}>
         <CartesianGrid stroke={GRID} vertical={false} />
         <XAxis
           dataKey="label"
@@ -112,19 +110,21 @@ export function TimeLines({ data, series, height = 220, yLabel = "tickets", xLab
           style={AXIS_STYLE.tick}
           interval="preserveStartEnd"
         >
-          {xLabel && (
-            <Label value={xLabel} offset={8} position="insideBottom" style={Y_LABEL_STYLE} />
-          )}
+          {xLabel && <Label value={xLabel} offset={10} position="bottom" style={Y_LABEL_STYLE} />}
         </XAxis>
         <YAxis
           allowDecimals={false}
           axisLine={false}
           tickLine={false}
           style={AXIS_STYLE.tick}
-          label={{ value: yLabel, angle: -90, position: "insideLeft", style: Y_LABEL_STYLE }}
+          label={{ value: yLabel, angle: -90, position: "left", style: Y_LABEL_STYLE }}
         />
         <Tooltip {...tooltipStyle} />
-        <Legend wrapperStyle={{ fontSize: 11, color: CONSUMED_CAPTION, opacity: 0.65 }} />
+        <Legend
+          verticalAlign="top"
+          align="center"
+          wrapperStyle={{ fontSize: 11, color: CONSUMED_CAPTION, opacity: 0.65, paddingBottom: 6 }}
+        />
         {series.map((s) => (
           <Line
             key={s.key}
@@ -162,7 +162,7 @@ export function DualCountLines({ data, lines, height = 220 }) {
 export function HistogramBars({ data, height = 180, xLabel = "tickets", yLabel = null }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
+      <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, bottom: 26, left: 8 }}>
         <CartesianGrid stroke={GRID} horizontal={false} />
         <XAxis
           type="number"
@@ -171,7 +171,7 @@ export function HistogramBars({ data, height = 180, xLabel = "tickets", yLabel =
           tickLine={false}
           style={AXIS_STYLE.tick}
         >
-          <Label value={xLabel} offset={-2} position="insideBottom" style={Y_LABEL_STYLE} />
+          <Label value={xLabel} offset={10} position="bottom" style={Y_LABEL_STYLE} />
         </XAxis>
         <YAxis
           type="category"
