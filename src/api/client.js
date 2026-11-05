@@ -183,9 +183,12 @@ export const changePassword = (email, currentPassword, newPassword) =>
 export const listUsers = () => request("/users", { operation: "users.list" });
 
 // ---- tickets ----------------------------------------------------------------
-export const listTickets = () => request("/tickets", { operation: "tickets.list" });
-export const getTicket = (id) =>
-  request(`/tickets/${encodeURIComponent(id)}`, { operation: "tickets.get" });
+export const listTicketsPage = (params) =>
+  request(withQuery("/tickets", params), { operation: "tickets.list" });
+export const getTicket = (id, viewerId) =>
+  request(withQuery(`/tickets/${encodeURIComponent(id)}`, { viewerId }), {
+    operation: "tickets.get",
+  });
 export const createTicket = (body) =>
   request("/tickets", { method: "POST", body, operation: "tickets.create" });
 export const addReply = (id, body) =>
@@ -200,20 +203,20 @@ export const updateStatus = (id, body) =>
     body,
     operation: "tickets.status",
   });
-export const assignTicket = (id, body) =>
-  request(`/tickets/${encodeURIComponent(id)}/assignee`, {
+export const assignTicket = (id, body, viewerId) =>
+  request(withQuery(`/tickets/${encodeURIComponent(id)}/assignee`, { viewerId }), {
     method: "PATCH",
     body,
     operation: "tickets.assign",
   });
-export const setPriority = (id, body) =>
-  request(`/tickets/${encodeURIComponent(id)}/priority`, {
+export const setPriority = (id, body, viewerId) =>
+  request(withQuery(`/tickets/${encodeURIComponent(id)}/priority`, { viewerId }), {
     method: "PATCH",
     body,
     operation: "tickets.priority",
   });
-export const setCategory = (id, body) =>
-  request(`/tickets/${encodeURIComponent(id)}/category`, {
+export const setCategory = (id, body, viewerId) =>
+  request(withQuery(`/tickets/${encodeURIComponent(id)}/category`, { viewerId }), {
     method: "PATCH",
     body,
     operation: "tickets.category",
@@ -266,9 +269,10 @@ export const getDraftAttachmentUrl = (id, employeeId) =>
   });
 
 // ---- assignment -------------------------------------------------------------
-export const agentWorkload = () => request("/agents/workload", { operation: "agents.workload" }); // [{id,name,email,openCount,totalCount}]
-export const autoAssignTicket = (id) =>
-  request(`/tickets/${encodeURIComponent(id)}/auto-assign`, {
+export const agentWorkload = (viewerId) =>
+  request(withQuery("/agents/workload", { viewerId }), { operation: "agents.workload" }); // [{id,name,email,openCount,totalCount}]
+export const autoAssignTicket = (id, viewerId) =>
+  request(withQuery(`/tickets/${encodeURIComponent(id)}/auto-assign`, { viewerId }), {
     method: "POST",
     operation: "tickets.auto_assign",
   });
@@ -322,16 +326,28 @@ export const markAllNotificationsRead = (userId) =>
   }); // { updated }
 
 // ---- attachments ------------------------------------------------------------
-export const uploadAttachment = (id, file) => {
+export const uploadAttachment = (id, file, viewerId) => {
   const form = new FormData();
   form.append("file", file);
-  return request(`/tickets/${encodeURIComponent(id)}/attachment`, {
+  return request(withQuery(`/tickets/${encodeURIComponent(id)}/attachment`, { viewerId }), {
     method: "POST",
     form,
     operation: "attachment.upload",
   });
 };
-export const getAttachmentUrl = (id) =>
-  request(`/tickets/${encodeURIComponent(id)}/attachment`, {
+export const getAttachmentUrl = (id, viewerId) =>
+  request(withQuery(`/tickets/${encodeURIComponent(id)}/attachment`, { viewerId }), {
     operation: "attachment.url",
   }); // { name, size, url, expiresInSeconds }
+
+// ---- ticket-closure feedback --------------------------------------------------
+export const getFeedback = (id, userId) =>
+  request(`/tickets/${encodeURIComponent(id)}/feedback?userId=${encodeURIComponent(userId)}`, {
+    operation: "feedback.get",
+  }); // { ticketId, employeeId, rating, comment, createdAt, updatedAt }
+export const submitFeedback = (id, body) =>
+  request(`/tickets/${encodeURIComponent(id)}/feedback`, {
+    method: "POST",
+    body,
+    operation: "feedback.submit",
+  });

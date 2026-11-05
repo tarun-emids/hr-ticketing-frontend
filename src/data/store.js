@@ -1,0 +1,105 @@
+// API-backed ticket store — single-ticket read + write cache.
+//
+// Contract:
+//   - getTicket(id) is a SYNCHRONOUS read of the local single-ticket cache,
+//     so TicketDetail keeps working unchanged; refreshTicket(id) pulls fresh
+//     data from the API and notifies subscribers.
+//   - Ticket LISTS no longer live in this store: the legacy full-pull
+//     accessors were deleted along with the API's legacy array contract —
+//     paginated list reads live in useTicketsPage (src/hooks.js).
+//   - every write goes to the API, merges the authoritative returned ticket
+//     into the cache (status bumps, auto pickup reply, closedBy… server-side),
+//     then notifies.
+import * as api from "../api/client";
+
+let tickets = [];
+const listeners = new Set();
+
+const notify = () => listeners.forEach((fn) => fn());
+const sortDesc = (list) =>
+  [...list].sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
+
+function upsert(saved) {
+  const i = tickets.findIndex((t) => t.id === saved.id);
+  if (i >= 0) {
+    tickets[i] = saved;
+  } else {
+    tickets.unshift(saved);
+  }
+  tickets = sortDesc(tickets);
+}
+
+export function subscribe(fn) {
+  listeners.add(fn);
+  return () => listeners.delete(fn);
+}
+
+export function getTicket(id) {
+  return tickets.find((t) => t.id === id) ?? null;
+}
+
+async function updateCache(promise) {
+  const saved = await promise;
+  upsert(saved);
+  notify();
+  return saved;
+}
+
+// ---- cache refreshers -------------------------------------------------------
+export function refreshTicket(id, viewerId) {
+  return updateCache(api.getTicket(id, viewerId));
+}
+
+// ---- writes -----------------------------------------------------------------
+export const createTicket = (payload) => updateCache(api.createTicket(payload));
+
+export const uploadAttachment = (ticketId, file, viewerId) =>
+  updateCache(api.uploadAttachment(ticketId, file, viewerId));
+
+// role is derived from authorId server-side; kept in the signature for compatibility
+export const addReply = (ticketId, { authorId, text }) =>
+  updateCache(api.addReply(ticketId, { authorId, text }));
+
+export const updateStatus = (ticketId, status, actorId) =>
+  updateCache(api.updateStatus(ticketId, { status, actorId }));
+
+export const assignTicket = (ticketId, assigneeId, viewerId) =>
+  updateCache(api.assignTicket(ticketId, { assigneeId }, viewerId));
+
+// Auto-assign returns the updated ticket plus routing metadata
+// (routedTo); cache only the ticket itself so entries keep the
+// canonical shape.
+export const autoAssignTicket = (ticketId, viewerId) =>
+  updateCache(api.autoAssignTicket(ticketId, viewerId).then(({ ...ticket }) => ticket));
+
+export const setPriority = (ticketId, priority, viewerId) =>
+  updateCache(api.setPriority(ticketId, { priority }, viewerId));
+
+export const setCategory = (ticketId, category, viewerId) =>
+  updateCache(api.setCategory(ticketId, { category }, viewerId));
+
+// ---- attachments ------------------------------------------------------------
+export function getAttachmentUrl(ticketId, viewerId) {
+  return api.getAttachmentUrl(ticketId, viewerId);
+}
+
+// ---- ticket drafts ----------------------------------------------------------
+export const listDrafts = (employeeId) => api.listDrafts(employeeId);
+export const getDraft = (draftId, employeeId) => api.getDraft(draftId, employeeId);
+export const createDraft = (payload) => api.createDraft(payload);
+export const updateDraft = (draftId, employeeId, payload) =>
+  api.updateDraft(draftId, employeeId, payload);
+export const deleteDraft = (draftId, employeeId) => api.deleteDraft(draftId, employeeId);
+export const submitDraft = (draftId, payload) => updateCache(api.submitDraft(draftId, payload));
+export const uploadDraftAttachment = (draftId, employeeId, file) =>
+  api.uploadDraftAttachment(draftId, employeeId, file);
+export const deleteDraftAttachment = (draftId, employeeId) =>
+  api.deleteDraftAttachment(draftId, employeeId);
+export const getDraftAttachmentUrl = (draftId, employeeId) =>
+  api.getDraftAttachmentUrl(draftId, employeeId);
+
+// ---- ticket-closure feedback --------------------------------------------------
+// NOT part of the ticket cache: feedback has its own shape and lifecycle,
+// so it skips updateCache like the drafts endpoints do.
+export const getFeedback = (ticketId, userId) => api.getFeedback(ticketId, userId);
+export const submitFeedback = (ticketId, body) => api.submitFeedback(ticketId, body);

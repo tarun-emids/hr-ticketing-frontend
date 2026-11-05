@@ -107,7 +107,9 @@ export default function Login() {
       setNotice(result.message);
       setErrors({});
     } catch (err) {
-      setErrors({ _form: err.message || "Could not reset your password. Please try again." });
+      setErrors({
+        _form: err.message || "Could not reset your password. Please try again.",
+      });
     } finally {
       setSubmitting(false);
     }

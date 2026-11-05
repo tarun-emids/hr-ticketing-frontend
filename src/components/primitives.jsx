@@ -74,3 +74,17 @@ export function Avatar({ name, tone = "surface", size = "h-8 w-8 text-[11px]" })
     </span>
   );
 }
+
+// eslint-disable-next-line no-unused-vars -- Comp is referenced as a JSX component.
+export function Button({ as: Comp = "button", className = "", variant = "primary", ...props }) {
+  const base =
+    "mono-label inline-flex items-center justify-center gap-2 border px-4 py-3 text-[10px] transition-colors disabled:cursor-not-allowed disabled:opacity-40";
+  const variants = {
+    primary: "border-teal bg-teal text-warm hover:bg-teal-light",
+    ghost: "border-warm/35 bg-transparent text-warm hover:border-teal hover:text-teal-deep",
+    flat: "border-transparent text-warm/60 hover:text-warm",
+  };
+  return (
+    <Comp className={`${base} ${variants[variant] ?? variants.ghost} ${className}`} {...props} />
+  );
+}

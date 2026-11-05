@@ -10,7 +10,7 @@ import {
   IconPaperclip,
 } from "@tabler/icons-react";
 import { CATEGORIES, PRIORITIES, STATUSES } from "../data/users";
-import { agentWorkload, getAttachmentUrl } from "../api/client";
+import { agentWorkload, getAttachmentUrl, getFeedback, submitFeedback } from "../api/client";
 import {
   assignTicketTicket,
   autoAssignTicketTicket,
@@ -24,7 +24,7 @@ import { useAppDispatch, useAppSelector } from "../state/hooks";
 import { selectUser, selectUsers } from "../state/authSlice";
 import { StatusBadge, PriorityBadge } from "../components/Badge";
 import Thread from "../components/Thread";
-import { Spinner, EmptyState } from "../components/primitives";
+import { Spinner, EmptyState, Button } from "../components/primitives";
 import { formatDateTime, timeAgo } from "../utils";
 
 const SELECT =
@@ -46,17 +46,17 @@ function AgentControls({ ticket, actor, users }) {
   const [routing, setRouting] = useState(false);
 
   useEffect(() => {
-    agentWorkload()
+    agentWorkload(actor.id)
       .then(setWorkload)
       .catch(() => setWorkload([]));
-  }, [ticket.assigneeId, ticket.id]);
+  }, [ticket.assigneeId, ticket.id, actor?.id]);
 
   const openCountFor = (id) => workload.find((w) => w.id === id)?.openCount;
 
   const routeNow = async () => {
     setRouting(true);
     try {
-      await dispatch(autoAssignTicketTicket(ticket.id)).unwrap();
+      await dispatch(autoAssignTicketTicket({ ticketId: ticket.id, viewerId: actor.id })).unwrap();
     } catch (e) {
       window.alert(`Auto-assign failed: ${e.message}`);
     } finally {
@@ -90,7 +90,11 @@ function AgentControls({ ticket, actor, users }) {
           value={ticket.assigneeId ?? ""}
           onChange={(e) =>
             dispatch(
-              assignTicketTicket({ ticketId: ticket.id, assigneeId: e.target.value || null }),
+              assignTicketTicket({
+                ticketId: ticket.id,
+                assigneeId: e.target.value || null,
+                viewerId: actor.id,
+              }),
             )
           }
           className={SELECT}
@@ -108,7 +112,13 @@ function AgentControls({ ticket, actor, users }) {
         <select
           value={ticket.priority}
           onChange={(e) =>
-            dispatch(setPriorityTicket({ ticketId: ticket.id, priority: e.target.value }))
+            dispatch(
+              setPriorityTicket({
+                ticketId: ticket.id,
+                priority: e.target.value,
+                viewerId: actor.id,
+              }),
+            )
           }
           className={SELECT}
         >
@@ -121,7 +131,13 @@ function AgentControls({ ticket, actor, users }) {
         <select
           value={ticket.category}
           onChange={(e) =>
-            dispatch(setCategoryTicket({ ticketId: ticket.id, category: e.target.value }))
+            dispatch(
+              setCategoryTicket({
+                ticketId: ticket.id,
+                category: e.target.value,
+                viewerId: actor.id,
+              }),
+            )
           }
           className={SELECT}
         >
@@ -147,7 +163,7 @@ function AgentControls({ ticket, actor, users }) {
   );
 }
 
-function AttachmentChip({ ticket }) {
+function AttachmentChip({ ticket, actorId }) {
   const [busy, setBusy] = useState(false);
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
@@ -155,19 +171,24 @@ function AttachmentChip({ ticket }) {
   const isImage = /\.(apng|avif|bmp|gif|jpe?g|png|svg|webp)$/i.test(ticket.attachment.name);
 
   const fetchUrl = async () => {
-    const res = await getAttachmentUrl(ticket.id);
+    const res = await getAttachmentUrl(ticket.id, actorId);
     if (!res?.url) throw new Error("The attachment URL was not returned.");
     return res.url;
   };
 
   useEffect(() => {
     if (!isImage) return undefined;
+
     let active = true;
     setBusy(true);
     setError("");
-    fetchUrl()
-      .then((attachmentUrl) => {
-        if (active) setUrl(attachmentUrl);
+
+    getAttachmentUrl(ticket.id, actorId)
+      .then((res) => {
+        if (!res?.url) {
+          throw new Error("The attachment URL was not returned.");
+        }
+        if (active) setUrl(res.url);
       })
       .catch((e) => {
         if (active) setError(e.message ?? String(e));
@@ -175,10 +196,11 @@ function AttachmentChip({ ticket }) {
       .finally(() => {
         if (active) setBusy(false);
       });
+
     return () => {
       active = false;
     };
-  }, [ticket.id, isImage]);
+  }, [ticket.id, isImage, actorId]);
 
   useEffect(() => {
     if (!previewOpen) return undefined;
@@ -325,6 +347,132 @@ function AttachmentChip({ ticket }) {
   );
 }
 
+function FeedbackPanel({ ticket, actor, users, isOwner }) {
+  const [feedback, setFeedback] = useState(null);
+  const [loadState, setLoadState] = useState("loading");
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    setLoadState("loading");
+    getFeedback(ticket.id, actor.id)
+      .then((data) => {
+        if (!active) return;
+        setFeedback(data);
+        setRating(data.rating);
+        setComment(data.comment);
+        setLoadState("ready");
+      })
+      .catch((e) => {
+        if (!active) return;
+        // "Ticket TKT-... has no feedback." is the friends-empty path, not a bug.
+        setLoadState(e.message.includes("no feedback") ? "missing" : "error");
+      });
+    return () => {
+      active = false;
+    };
+  }, [ticket.id, actor.id]);
+
+  const save = async () => {
+    setSaving(true);
+    setSaveError("");
+    try {
+      const saved = await submitFeedback(ticket.id, {
+        userId: actor.id,
+        rating,
+        comment,
+      });
+      setFeedback(saved);
+    } catch (e) {
+      setSaveError(e.message ?? String(e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const ratedBy = feedback ? users.find((u) => u.id === feedback.employeeId) : null;
+  const editable = isOwner && ticket.status === "Closed";
+
+  return (
+    <div className="mt-5 border-t border-surface-2 pt-5">
+      <p className="mono-label mb-3 text-[10px] text-warm/40">TICKET-CLOSURE FEEDBACK</p>
+
+      {loadState === "loading" && <p className="text-caption text-warm/45">Fetching feedback...</p>}
+      {loadState === "error" && (
+        <p className="text-caption text-error-deep" role="alert">
+          Could not load feedback.
+        </p>
+      )}
+
+      {feedback && loadState !== "error" && (
+        <div className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-body text-warm/85">
+          <span className="tabular-nums">{feedback.rating} / 5</span>
+          <span className="text-caption text-warm/60">
+            by {ratedBy?.name ?? "employee"}
+            {feedback.comment ? ` — "${feedback.comment}"` : " — no comment"}
+          </span>
+        </div>
+      )}
+
+      {editable && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <MetaItem label="Rating">
+            <select
+              value={rating}
+              onChange={(e) => setRating(Number(e.target.value))}
+              className={SELECT}
+            >
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n}>{n}</option>
+              ))}
+            </select>
+          </MetaItem>
+          <MetaItem label="Comment (Optional)">
+            <textarea
+              rows={3}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="What went well, what didn't?"
+              className={SELECT}
+            />
+          </MetaItem>
+          <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
+            <Button onClick={save} disabled={saving}>
+              {saving ? "Saving..." : feedback ? "Update feedback" : "Submit feedback"}
+            </Button>
+            {feedback && !saving && !saveError && (
+              <span className="text-caption text-ok-deep">Feedback Saved.</span>
+            )}
+            {saveError && (
+              <span className="text-caption text-error-deep" role="alert">
+                {saveError}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!editable &&
+        loadState !== "loading" &&
+        loadState !== "error" &&
+        (isOwner ? (
+          <p className="text-caption text-warm/45">
+            {feedback
+              ? "You can update your rating while the ticket is Closed."
+              : "Feedback opens once this ticket is Closed."}
+          </p>
+        ) : (
+          !feedback && (
+            <p className="text-caption text-warm/45">The employee hasn't rated this ticket yet.</p>
+          )
+        ))}
+    </div>
+  );
+}
+
 export default function TicketDetail() {
   const { id } = useParams();
   const dispatch = useAppDispatch();
@@ -339,11 +487,18 @@ export default function TicketDetail() {
   const [banner, setBanner] = useState(justCreated);
 
   useEffect(() => {
+    if (!user?.id) {
+      // No identity (not signed in / expired session): stop loading so the
+      // existing "Session expired" EmptyState can render, and wait for a
+      // future identity via the dependency array instead of failing a fetch.
+      setLoading(false);
+      return undefined;
+    }
     let alive = true;
     setLoading(true);
     setError(null);
-    // Fulfilled upserts the ticket into the store — the selector re-renders us.
-    dispatch(fetchTicket(id))
+    // Fulfilled upserts the ticket into the RTK cache — the selector re-renders.
+    dispatch(fetchTicket({ id, viewerId: user.id }))
       .unwrap()
       .catch((e) => {
         if (alive) setError(e?.message ?? String(e));
@@ -354,7 +509,7 @@ export default function TicketDetail() {
     return () => {
       alive = false;
     };
-  }, [id, dispatch]);
+  }, [id, user?.id, dispatch]);
 
   useEffect(() => {
     if (!banner) return undefined;
@@ -455,9 +610,13 @@ export default function TicketDetail() {
           </MetaItem>
         </div>
 
-        {ticket.attachment?.path && <AttachmentChip ticket={ticket} />}
+        {ticket.attachment?.path && <AttachmentChip ticket={ticket} actorId={user.id} />}
 
         {isAgent && <AgentControls ticket={ticket} actor={user} users={users} />}
+
+        {(isAgent || isMine) && (
+          <FeedbackPanel ticket={ticket} actor={user} users={users} isOwner={isMine} />
+        )}
       </section>
 
       <p className="mb-3 text-caption font-medium text-warm/50">Conversation</p>

@@ -1,7 +1,8 @@
-// Ticket state: RTK entity adapter replacing the pub/sub module store.
-// Every write thunk's fulfilled branch upserts the authoritative ticket the
-// server returns (status bumps, closedBy, auto pickup replies) — the same
-// contract the old updateCache gave callers.
+// Ticket states repr: RTK entity adapter replacing the pub/sub module store.
+// Write thunks whose server reply IS a ticket row upsert it on fulfilled
+// (create, reply [updated-row], status, assign, priority, category,
+// auto-pickup, draft-submit). Thunks whose reply is a different shape
+// (attachment upload -> attachment metadata) deliberately do not cache.
 import {
   createAsyncThunk,
   createEntityAdapter,
@@ -19,14 +20,23 @@ const initialState = adapter.getInitialState({
   error: null,
 });
 
-export const fetchTickets = createAsyncThunk("tickets/fetchAll", () => api.listTickets());
-export const fetchTicket = createAsyncThunk("tickets/fetchOne", (id) => api.getTicket(id));
+// Every read/write thunk that reaches a viewer-gated endpoint threads
+// viewerId explicitly — identity is visible at the dispatch site, matching
+// the house pattern (never derived inside the thunk).
+export const fetchTickets = createAsyncThunk("tickets/fetchAll", async ({ viewerId }) => {
+  const res = await api.listTicketsPage({ viewerId });
+  return res.items; // envelope -> rows: the adapter stores ticket rows only
+});
+export const fetchTicket = createAsyncThunk("tickets/fetchOne", ({ id, viewerId }) =>
+  api.getTicket(id, viewerId),
+);
 
 export const createTicket = createAsyncThunk("tickets/create", (payload) =>
   api.createTicket(payload),
 );
-export const uploadAttachment = createAsyncThunk("tickets/uploadAttachment", ({ ticketId, file }) =>
-  api.uploadAttachment(ticketId, file),
+export const uploadAttachment = createAsyncThunk(
+  "tickets/uploadAttachment",
+  ({ ticketId, file, viewerId }) => api.uploadAttachment(ticketId, file, viewerId),
 );
 // role was only ever tolerated, never used — the server derives it from authorId
 export const addReplyTicket = createAsyncThunk("tickets/addReply", ({ ticketId, authorId, text }) =>
@@ -36,20 +46,26 @@ export const updateStatusTicket = createAsyncThunk(
   "tickets/updateStatus",
   ({ ticketId, status, actorId }) => api.updateStatus(ticketId, { status, actorId }),
 );
-export const assignTicketTicket = createAsyncThunk("tickets/assign", ({ ticketId, assigneeId }) =>
-  api.assignTicket(ticketId, { assigneeId }),
+export const assignTicketTicket = createAsyncThunk(
+  "tickets/assign",
+  ({ ticketId, assigneeId, viewerId }) => api.assignTicket(ticketId, { assigneeId }, viewerId),
+);
+export const setPriorityTicket = createAsyncThunk(
+  "tickets/setPriority",
+  ({ ticketId, priority, viewerId }) => api.setPriority(ticketId, { priority }, viewerId),
+);
+export const setCategoryTicket = createAsyncThunk(
+  "tickets/setCategory",
+  ({ ticketId, category, viewerId }) => api.setCategory(ticketId, { category }, viewerId),
 );
 // auto-assign returns routing metadata (routedTo) plus the ticket; cache only
 // the ticket itself so entries keep the canonical shape.
-export const autoAssignTicketTicket = createAsyncThunk("tickets/autoAssign", async (ticketId) => {
-  const { routedTo, ...ticket } = await api.autoAssignTicket(ticketId);
-  return ticket;
-});
-export const setPriorityTicket = createAsyncThunk("tickets/setPriority", ({ ticketId, priority }) =>
-  api.setPriority(ticketId, { priority }),
-);
-export const setCategoryTicket = createAsyncThunk("tickets/setCategory", ({ ticketId, category }) =>
-  api.setCategory(ticketId, { category }),
+export const autoAssignTicketTicket = createAsyncThunk(
+  "tickets/autoAssign",
+  async ({ ticketId, viewerId }) => {
+    const { routedTo: _routedTo, ...ticket } = await api.autoAssignTicket(ticketId, viewerId);
+    return ticket;
+  },
 );
 export const submitDraftTicket = createAsyncThunk("tickets/submitDraft", ({ draftId, payload }) =>
   api.submitDraft(draftId, payload),
@@ -81,10 +97,12 @@ const ticketsSlice = createSlice({
           state.error = action.error?.message ?? "Failed to load tickets";
         }
       })
+      // NOTE: uploadAttachment.fulfilled intentionally does NOT upsert — the
+      // server replies with attachment metadata, not a ticket row; caching it
+      // would insert a junk entity into the adapter.
       .addCase(fetchTicket.fulfilled, onTicketFulfilled)
       .addCase(createTicket.fulfilled, onTicketFulfilled)
-      .addCase(uploadAttachment.fulfilled, onTicketFulfilled)
-      .addCase(addReplyTicket.fulfilled, onTicketFulfilled)
+      .addCase(addReplyTicket.fulfilled, onTicketFulfilled) // add_reply returns the updated ticket row
       .addCase(updateStatusTicket.fulfilled, onTicketFulfilled)
       .addCase(assignTicketTicket.fulfilled, onTicketFulfilled)
       .addCase(autoAssignTicketTicket.fulfilled, onTicketFulfilled)

@@ -1,8 +1,8 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import { IconArrowDownRight, IconPaperclip, IconPlus } from "@tabler/icons-react";
-import { useAppDispatch, useAppSelector } from "../state/hooks";
-import { fetchTickets, selectAllTickets, selectTicketsLoading } from "../state/ticketsSlice";
+import { useTicketsPage } from "../hooks";
+import { useAppSelector } from "../state/hooks";
 import { selectUser } from "../state/authSlice";
 import { StatusBadge, PriorityBadge } from "../components/Badge";
 import { SkeletonList, EmptyState } from "../components/primitives";
@@ -37,19 +37,14 @@ function TicketRow({ t }) {
 }
 
 export default function EmployeeDashboard() {
-  const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
-  const tickets = useAppSelector(selectAllTickets);
-  const loading = useAppSelector(selectTicketsLoading);
   const [drafts, setDrafts] = useState([]);
   const [draftsLoading, setDraftsLoading] = useState(true);
   const [draftError, setDraftError] = useState("");
   const [deletingDraft, setDeletingDraft] = useState("");
   const [searchParams] = useSearchParams();
 
-  useEffect(() => {
-    dispatch(fetchTickets());
-  }, [dispatch]);
+  const view = useTicketsPage(user?.id, { page: 1, pageSize: 100 });
 
   const refreshDrafts = useCallback(() => {
     setDraftsLoading(true);
@@ -77,7 +72,7 @@ export default function EmployeeDashboard() {
     }
   };
 
-  const mine = tickets.filter((t) => t.employeeId === user.id);
+  const mine = view.items;
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -86,11 +81,11 @@ export default function EmployeeDashboard() {
           <div>
             <h1 className="text-h3 text-warm">My tickets</h1>
             <p className="mt-1.5 text-caption text-warm/45">
-              {loading
+              {view.loading
                 ? "Loading your requests…"
-                : mine.length === 1
+                : view.total === 1
                   ? "1 request"
-                  : `${mine.length} requests · updates appear here automatically`}
+                  : `${view.total} requests · updates appear here automatically`}
             </p>
           </div>
           <Link
@@ -124,7 +119,7 @@ export default function EmployeeDashboard() {
         </div>
       )}
 
-      {(draftsLoading || loading) && (
+      {(draftsLoading || view.loading) && (
         <div className="mb-6 border border-surface-2 bg-surface">
           <SkeletonList rows={2} />
         </div>
@@ -180,7 +175,9 @@ export default function EmployeeDashboard() {
         </section>
       )}
 
-      {loading || draftsLoading ? null : mine.length === 0 && drafts.length === 0 && !draftError ? (
+      {view.loading || draftsLoading ? null : mine.length === 0 &&
+        drafts.length === 0 &&
+        !draftError ? (
         <EmptyState
           title="No tickets yet"
           body="When you raise a question with HR it will show up here with a live status so you never wonder where it stands."

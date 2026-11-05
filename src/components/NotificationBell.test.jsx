@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { expect, it, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { Provider } from "react-redux";
@@ -43,7 +43,7 @@ vi.mock("../api/client", () => ({
   listUsers: vi.fn(() => Promise.reject(new Error("offline test"))),
 }));
 
-import { markAllNotificationsRead, markNotificationRead } from "../api/client";
+import { markAllNotificationsRead } from "../api/client";
 
 function renderBell() {
   return render(

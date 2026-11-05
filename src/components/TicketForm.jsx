@@ -131,7 +131,9 @@ export default function TicketForm() {
         }),
       ).unwrap();
       if (file) {
-        await dispatch(uploadAttachmentThunk({ ticketId: saved.id, file })).unwrap();
+        await dispatch(
+          uploadAttachmentThunk({ ticketId: saved.id, file, viewerId: user.id }),
+        ).unwrap();
       }
       navigate(`/tickets/${saved.id}?created=1`);
     } catch (err) {

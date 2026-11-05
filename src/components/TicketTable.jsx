@@ -1,9 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTicketsPage } from "../hooks";
 import { IconArrowDown, IconArrowUp, IconArrowsSort, IconSearch } from "@tabler/icons-react";
 import { StatusBadge, PriorityBadge } from "./Badge";
-import { PRIO_ORDER } from "./sorting";
 import { timeAgo } from "../utils";
+
+const PAGE_SIZE_OPTIONS = [25, 50];
 
 const CATEGORY_OPTIONS = ["Payroll", "Leave", "Benefits", "Onboarding", "Policy", "Other"];
 const STATUS_OPTIONS = ["Open", "In Progress", "Waiting on Employee", "Resolved", "Closed"];
@@ -66,59 +68,60 @@ function SortButton({ label, mode, sortMode, setSortMode }) {
   );
 }
 
-export default function TicketTable({ tickets, users }) {
+export default function TicketTable({ viewerId, users, fixedAssignee }) {
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [status, setStatus] = useState("");
   const [category, setCategory] = useState("");
   const [priority, setPriority] = useState("");
   const [assignee, setAssignee] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [sortMode, setSortMode] = useState("updated");
+
+  // Server round-trips per keystroke are cheap to regret: 300ms debounce.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query.trim()), 300);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  const view = useTicketsPage(viewerId, {
+    page,
+    pageSize,
+    sort: sortMode.replace(/^-/, ""),
+    order: sortMode.startsWith("-") ? "desc" : "asc",
+    status: status || undefined,
+    category: category || undefined,
+    priority: priority || undefined,
+    assigneeId: fixedAssignee || assignee || undefined,
+    q: debouncedQuery || undefined,
+  });
+  const tickets = view.items;
 
   const nameOf = (id) => users.find((u) => u.id === id)?.name ?? "—";
   const firstNameOf = (id) => nameOf(id).split(" ")[0];
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const [field, dir = "asc"] = sortMode.startsWith("-")
-      ? [sortMode.slice(1), "desc"]
-      : [sortMode, "asc"];
+  const filtered = tickets;
 
-    const sorters = {
-      updated: (t) => Date.parse(t.updatedAt),
-      created: (t) => Date.parse(t.createdAt),
-      priority: (t) => PRIO_ORDER[t.priority] ?? 0,
-      subject: (t) => t.subject.toLowerCase(),
-      employee: (t) => nameOf(t.employeeId).toLowerCase(),
-      status: (t) => STATUS_OPTIONS.indexOf(t.status),
-    };
-    const key = sorters[field] ?? sorters.updated;
+  const filtersActive = Boolean(status || category || priority || assignee || debouncedQuery);
 
-    return tickets
-      .filter(
-        (t) =>
-          (!status || t.status === status) &&
-          (!category || t.category === category) &&
-          (!priority || t.priority === priority) &&
-          (!assignee || t.assigneeId === assignee) &&
-          (!q ||
-            t.subject.toLowerCase().includes(q) ||
-            t.description.toLowerCase().includes(q) ||
-            t.id.toLowerCase().includes(q) ||
-            nameOf(t.employeeId).toLowerCase().includes(q)),
-      )
-      .sort((a, b) => {
-        const av = key(a);
-        const bv = key(b);
-        const cmp = typeof av === "number" ? av - bv : String(av).localeCompare(String(bv));
-        return dir === "desc" ? -cmp : cmp;
-      });
-  }, [tickets, query, status, category, priority, assignee, sortMode, users]);
+  // A filter change invalidates the current page: the queries partition
+  // differently, so page=N no longer means the same rows.
+  useEffect(() => {
+    setPage(1);
+  }, [status, category, priority, assignee, debouncedQuery, pageSize, sortMode]);
 
-  const filtersActive = Boolean(status || category || priority || assignee || query);
+  const totalPages = Math.max(1, Math.ceil(view.total / view.pageSize));
 
   return (
     <section>
-      <div className="rounded-xl border border-surface-2 bg-surface-2/60 p-4">
+      {view.error && (
+        <div className="border border-surface-2 bg-canvas p-3 text-caption text-warm/60">
+          Couldn't load tickets: {view.error}
+        </div>
+      )}
+
+      <div className="flex flex-col gap-4 rounded-xl border border-surface-2 bg-surface-2/60 p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <IconSearch
@@ -133,8 +136,10 @@ export default function TicketTable({ tickets, users }) {
               className="w-full rounded-lg border border-surface-2 bg-surface py-2.5 pl-9 pr-3 text-body text-warm placeholder:text-warm/35 focus:border-teal focus:outline-none"
             />
           </div>
-          <p className="shrink-0 text-caption text-warm/50">
-            {filtered.length} of {tickets.length} tickets
+          <p className="text-caption shrink-0 text-warm/50">
+            {view.loading
+              ? "loading…"
+              : `${view.total} ticket${view.total === 1 ? "" : "s"} · page ${view.page} of ${totalPages}`}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -156,14 +161,16 @@ export default function TicketTable({ tickets, users }) {
             onChange={setPriority}
             options={PRIORITY_OPTIONS.map((s) => ({ value: s, label: s }))}
           />
-          <FilterSelect
-            label="ASSIGNEE"
-            value={assignee}
-            onChange={setAssignee}
-            options={users
-              .filter((u) => u.role === "agent")
-              .map((a) => ({ value: a.id, label: a.name }))}
-          />
+          {!fixedAssignee && (
+            <FilterSelect
+              label="ASSIGNEE"
+              value={assignee}
+              onChange={setAssignee}
+              options={users
+                .filter((u) => u.role === "agent")
+                .map((a) => ({ value: a.id, label: a.name }))}
+            />
+          )}
           {filtersActive && (
             <button
               onClick={() => {
@@ -172,6 +179,7 @@ export default function TicketTable({ tickets, users }) {
                 setPriority("");
                 setAssignee("");
                 setQuery("");
+                setPage(1);
               }}
               className="text-caption font-medium text-teal-deep hover:underline"
             >
@@ -312,6 +320,38 @@ export default function TicketTable({ tickets, users }) {
           </li>
         )}
       </ul>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border border-t-0 border-surface-2 bg-surface-2 p-3">
+        <div className="flex items-center gap-2">
+          {PAGE_SIZE_OPTIONS.map((size) => (
+            <button
+              key={size}
+              onClick={() => setPageSize(size)}
+              className={`mono-label text-[10px] px-2 py-1 border ${
+                pageSize === size ? "border-teal text-teal-deep" : "border-surface-2 text-warm/40"
+              }`}
+            >
+              {size} / page
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            disabled={view.page <= 1 || view.loading}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className="mono-label text-[10px] px-3 py-1.5 border border-surface-2 disabled:opacity-40"
+          >
+            ‹ Prev
+          </button>
+          <button
+            disabled={!view.hasNext || view.loading}
+            onClick={() => setPage((p) => p + 1)}
+            className="mono-label text-[10px] px-3 py-1.5 border border-surface-2 disabled:opacity-40"
+          >
+            Next ›
+          </button>
+        </div>
+      </div>
     </section>
   );
 }
