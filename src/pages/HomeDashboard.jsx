@@ -4,7 +4,7 @@ import { useAppSelector } from "../state/hooks";
 import { selectIsAgent, selectUser } from "../state/authSlice";
 import { useTicketsPage } from "../hooks";
 import { searchKb } from "../api/client";
-import heroImg from "../assets/kb-hero.png";
+import cityImg from "../assets/city-teal.jpg";
 import { Spinner } from "../components/primitives";
 import { Icon, PATHS } from "../components/icons";
 
@@ -25,21 +25,21 @@ function NavBox({ to, icon, title, body, stat, className = "" }) {
   return (
     <Link
       to={to}
-      className={`group flex items-center gap-5 rounded-xl border border-surface-2 bg-surface p-6 shadow-xs transition-colors hover:border-teal/50 hover:bg-surface-2 sm:p-7 ${className}`}
+      className={`lift group flex items-center gap-5 rounded-xl border border-surface-2 bg-surface p-6 shadow-xs transition-colors hover:border-teal/50 hover:bg-surface-2 sm:p-7 ${className}`}
     >
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-teal/10 text-teal-deep">
         <Icon d={icon} className="h-5 w-5" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-h3 text-warm">{title}</span>
-        <span className="mt-1.5 block text-body text-warm/55">{body}</span>
+        <span className="mt-1.5 block text-body text-ink-3">{body}</span>
         {stat != null && (
-          <span className="mt-2.5 block text-caption font-medium text-warm/45">{stat}</span>
+          <span className="mt-2.5 block text-caption font-medium text-ink-3">{stat}</span>
         )}
       </span>
       <Icon
         d={ARROW}
-        className="h-5 w-5 shrink-0 text-warm/25 transition-all group-hover:translate-x-0.5 group-hover:text-teal"
+        className="h-5 w-5 shrink-0 text-ink-3 transition-all group-hover:translate-x-0.5 group-hover:text-teal"
       />
     </Link>
   );
@@ -116,7 +116,7 @@ export default function HomeDashboard() {
   let boxes;
   if (ticketsLoading) {
     boxes = (
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+      <div className="stagger-fade-up grid grid-cols-1 gap-2 md:grid-cols-2">
         <div className="soft-bl border border-surface-2 bg-surface p-6">
           <Spinner label="Loading workspace" />
         </div>
@@ -128,7 +128,7 @@ export default function HomeDashboard() {
       (t) => t.assigneeId === user.id && !["Resolved", "Closed"].includes(t.status),
     ).length;
     boxes = (
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+      <div className="stagger-fade-up grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
         <NavBox
           to="/inbox"
           icon={INBOX_ICON}
@@ -197,7 +197,7 @@ export default function HomeDashboard() {
     const mine = tickets.filter((t) => t.employeeId === user.id);
     const mineActive = mine.filter((t) => !["Resolved", "Closed"].includes(t.status)).length;
     boxes = (
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+      <div className="stagger-fade-up grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
         <NavBox
           to="/my-tickets"
           icon={TICKETS_ICON}
@@ -231,7 +231,7 @@ export default function HomeDashboard() {
 
   const suggestionBody = () => {
     if (suggestState === "loading") {
-      return <p className="px-5 py-3.5 text-caption text-warm/50">Searching the library…</p>;
+      return <p className="px-5 py-3.5 text-caption text-ink-3">Searching the library…</p>;
     }
     if (suggestState === "error") {
       return (
@@ -243,7 +243,7 @@ export default function HomeDashboard() {
         <button
           type="button"
           onClick={submit}
-          className="block w-full px-5 py-4 text-left text-body text-warm/55 hover:text-teal-deep"
+          className="block w-full px-5 py-4 text-left text-body text-ink-3 hover:text-teal-deep"
         >
           No direct hit — press Enter to search “{query.trim()}” anyway ↘
         </button>
@@ -259,9 +259,9 @@ export default function HomeDashboard() {
         <span className="font-mono text-[11px] shrink-0 text-teal-deep">{doc.ref}</span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-body-lg font-medium text-warm">{doc.title}</span>
-          <span className="block text-caption text-warm/45">{doc.category}</span>
+          <span className="block text-caption text-ink-3">{doc.category}</span>
         </span>
-        <Icon d={ARROW} className="h-3.5 w-3.5 shrink-0 text-warm/25" />
+        <Icon d={ARROW} className="h-3.5 w-3.5 shrink-0 text-ink-3" />
       </button>
     ));
   };
@@ -272,16 +272,16 @@ export default function HomeDashboard() {
       <section
         className="relative overflow-hidden rounded-2xl border border-surface-2 bg-canvas shadow-xs"
         style={{
-          backgroundImage: `url(${heroImg})`,
+          backgroundImage: `url(${cityImg})`,
           backgroundSize: "cover",
-          backgroundPosition: "center 30%",
+          backgroundPosition: "center 40%",
         }}
       >
-        <div className="relative flex flex-col gap-6 bg-canvas/35 px-6 py-10 sm:px-10 sm:py-14">
+        <div className="relative flex flex-col gap-6 bg-linear-to-r from-canvas/95 via-canvas/88 to-canvas/35 px-6 py-10 sm:px-10 sm:py-14">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="text-h2 text-warm">Hello, {firstName ? firstName : "there"}.</h1>
-              <p className="mt-2 text-body-lg text-warm/70">
+              <h1 className="text-h1 text-warm">Hello, {firstName ? firstName : "there"}.</h1>
+              <p className="mt-2 text-body-lg text-ink-2">
                 {isAdmin
                   ? "Search the full policy library — employee and HR documents."
                   : isAgent
@@ -297,7 +297,7 @@ export default function HomeDashboard() {
               <div className="relative flex-1">
                 <Icon
                   d={SEARCH_ICON}
-                  className="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-warm/40"
+                  className="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-ink-3"
                 />
                 <input
                   type="search"
@@ -306,7 +306,7 @@ export default function HomeDashboard() {
                   onFocus={() => setOpen(true)}
                   placeholder="Search the knowledge base — try “leave carry forward” or “payslip”…"
                   aria-label="Search the knowledge base"
-                  className="w-full rounded-l-xl rounded-r-none border border-surface-2 bg-surface py-3 pl-11 pr-4 text-body-lg text-warm placeholder:text-warm/35 focus:border-teal focus:outline-none"
+                  className="w-full rounded-l-xl rounded-r-none border border-surface-2 bg-surface py-3 pl-11 pr-4 text-body-lg text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none"
                 />
               </div>
               <button
@@ -326,7 +326,7 @@ export default function HomeDashboard() {
 
           {/* Quick terms */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="mr-1 text-caption text-warm/40">Try:</span>
+            <span className="mr-1 text-caption text-ink-3">Try:</span>
             {QUICK_TERMS.map((term) => (
               <button
                 key={term}
@@ -335,7 +335,7 @@ export default function HomeDashboard() {
                   setQuery(term);
                   navigate(`/kb?q=${encodeURIComponent(term)}`);
                 }}
-                className="rounded-full border border-warm/15 bg-canvas/60 px-3 py-1 text-caption font-medium text-warm/60 transition-colors hover:border-teal hover:text-teal-deep"
+                className="rounded-full border border-warm/15 bg-canvas/60 px-3 py-1 text-caption font-medium text-ink-2 transition-colors hover:border-teal hover:text-teal-deep"
               >
                 {term}
               </button>
@@ -346,7 +346,7 @@ export default function HomeDashboard() {
 
       {/* ---- Workspace navigation boxes ---- */}
       <section className="mt-10">
-        <p className="mb-4 text-caption font-medium text-warm/50">Workspace</p>
+        <p className="mb-4 text-caption font-medium text-ink-3">Workspace</p>
         {boxes}
       </section>
     </div>

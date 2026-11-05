@@ -63,7 +63,7 @@ export default function KbSearch() {
         type="button"
         onClick={goBack(navigate)}
         title="Go back (Alt+← works too)"
-        className="mb-6 inline-flex items-center gap-2 text-body text-warm/45 transition-colors hover:text-teal-deep"
+        className="mb-6 inline-flex items-center gap-2 text-body text-ink-3 transition-colors hover:text-teal-deep"
       >
         <Icon d={PATHS.arrowLeft} className="h-3.5 w-3.5" />
         Back
@@ -71,7 +71,7 @@ export default function KbSearch() {
 
       <header className="mb-8">
         <h1 className="text-h3 text-warm">Knowledge base</h1>
-        <p className="mt-1.5 text-caption text-warm/45">
+        <p className="mt-1.5 text-caption text-ink-3">
           {q ? heading : "Company policies — the documents your role is allowed to see"}
         </p>
       </header>
@@ -83,7 +83,7 @@ export default function KbSearch() {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Search policies by title, topic or keyword…"
           aria-label="Search the knowledge base"
-          className="flex-1 rounded-l-xl border border-surface-2 bg-surface px-4 py-2.5 text-body-lg text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="flex-1 rounded-l-xl border border-surface-2 bg-surface px-4 py-2.5 text-body-lg text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none"
         />
         <button
           type="submit"
@@ -95,7 +95,7 @@ export default function KbSearch() {
 
       {error && (
         <div
-          className="mb-5 border border-error/40 bg-error/10 px-4 py-3 text-caption text-error"
+          className="mb-5 border border-error/40 bg-error/10 px-4 py-3 text-caption text-error-deep"
           role="alert"
         >
           {error}
@@ -128,27 +128,27 @@ export default function KbSearch() {
                 <div className="min-w-0">
                   <div className="mb-1.5 flex flex-wrap items-center gap-3">
                     <span className="mono-label text-[10px] text-teal">{doc.ref}</span>
-                    <span className="mono-label text-[10px] text-warm/35">{doc.category}</span>
-                    <span className="mono-label text-[9px] text-warm/30">
+                    <span className="mono-label text-[10px] text-ink-3">{doc.category}</span>
+                    <span className="mono-label text-[9px] text-ink-3">
                       {doc.audience === "hr" ? "HR ONLY" : "ALL EMPLOYEES"}
                     </span>
                     {doc.version && (
-                      <span className="mono-label text-[9px] text-warm/30">{doc.version}</span>
+                      <span className="mono-label text-[9px] text-ink-3">{doc.version}</span>
                     )}
                   </div>
                   <p className="text-body-lg font-medium text-warm group-hover:text-teal-deep">
                     {doc.title}
                   </p>
-                  <p className="mt-1 text-caption leading-relaxed text-warm/45 line-clamp-2">
+                  <p className="mt-1 text-caption leading-relaxed text-ink-3 line-clamp-2">
                     {doc.summary}
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-2">
                   <Icon
                     d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
-                    className="h-4 w-4 text-warm/25 transition-all group-hover:translate-x-0.5 group-hover:text-teal"
+                    className="h-4 w-4 text-ink-3 transition-all group-hover:translate-x-0.5 group-hover:text-teal"
                   />
-                  <span className="mono-label text-[9px] text-warm/30">
+                  <span className="mono-label text-[9px] text-ink-3">
                     {effectiveFormatter(doc.effectiveDate)}
                   </span>
                 </div>
@@ -159,13 +159,13 @@ export default function KbSearch() {
       )}
 
       {!q && !loading && results && results.length > 0 && (
-        <p className="mt-6 text-caption text-warm/35">
+        <p className="mt-6 text-caption text-ink-3">
           Looking for something specific? Search above — results are limited to the documents
           available to your role.
         </p>
       )}
       {q && (
-        <p className="mt-10 text-caption text-warm/25">
+        <p className="mt-10 text-caption text-ink-3">
           Top {results?.length ?? 0} match{results?.length === 1 ? "" : "es"} — shorter, more
           specific words rank better.
         </p>

@@ -23,7 +23,7 @@ const CAT_DOTS = {
 
 function FilterSelect({ label, value, options, onChange }) {
   return (
-    <label className="flex items-center gap-2 text-caption font-medium text-warm/50">
+    <label className="flex items-center gap-2 text-caption font-medium text-ink-3">
       {label}
       <select
         value={value}
@@ -47,7 +47,7 @@ function SortButton({ label, mode, sortMode, setSortMode }) {
     <button
       onClick={() => setSortMode(active ? `-${mode}` : mode)}
       className={`text-caption font-medium inline-flex items-center gap-1 transition-colors ${
-        active ? "text-teal-deep" : "text-warm/50 hover:text-warm"
+        active ? "text-teal-deep" : "text-ink-3 hover:text-warm"
       }`}
       title={`Sort by ${label}`}
     >
@@ -127,16 +127,16 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
             <IconSearch
               size={16}
               aria-hidden
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-warm/35"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"
             />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search subject, description, ID or employee…"
-              className="w-full rounded-lg border border-surface-2 bg-surface py-2.5 pl-9 pr-3 text-body text-warm placeholder:text-warm/35 focus:border-teal focus:outline-none"
+              className="w-full rounded-lg border border-surface-2 bg-surface py-2.5 pl-9 pr-3 text-body text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none"
             />
           </div>
-          <p className="text-caption shrink-0 text-warm/50">
+          <p className="shrink-0 text-caption text-ink-3">
             {view.loading
               ? "loading…"
               : `${view.total} ticket${view.total === 1 ? "" : "s"} · page ${view.page} of ${totalPages}`}
@@ -210,7 +210,7 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
                   setSortMode={setSortMode}
                 />
               </th>
-              <th className="px-3 py-3 text-caption font-medium text-warm/50">Category</th>
+              <th className="px-3 py-3 text-caption font-medium text-ink-3">Category</th>
               <th className="px-3 py-3">
                 <SortButton
                   label="Priority"
@@ -227,7 +227,7 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
                   setSortMode={setSortMode}
                 />
               </th>
-              <th className="px-3 py-3 text-caption font-medium text-warm/50">Assignee</th>
+              <th className="px-3 py-3 text-caption font-medium text-ink-3">Assignee</th>
               <th className="py-3 pl-3 pr-5 text-right">
                 <SortButton
                   label="Updated"
@@ -246,12 +246,12 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
                     <span className="text-body font-medium text-warm group-hover:text-teal-deep">
                       {t.subject}
                     </span>
-                    <span className="mt-0.5 block font-mono text-[11px] text-warm/40">{t.id}</span>
+                    <span className="mt-0.5 block font-mono text-[11px] text-ink-3">{t.id}</span>
                   </Link>
                 </td>
-                <td className="px-3 text-body text-warm/70">{nameOf(t.employeeId)}</td>
+                <td className="px-3 text-body text-ink-2">{nameOf(t.employeeId)}</td>
                 <td className="px-3">
-                  <span className="inline-flex items-center gap-1.5 text-body text-warm/70">
+                  <span className="inline-flex items-center gap-1.5 text-body text-ink-2">
                     <span
                       className={`h-2 w-2 rounded-full ${CAT_DOTS[t.category] ?? "bg-warm/30"}`}
                       title={t.category}
@@ -267,19 +267,19 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
                 </td>
                 <td className="px-3">
                   {t.assigneeId ? (
-                    <span className="text-body text-warm/70">{firstNameOf(t.assigneeId)}</span>
+                    <span className="text-body text-ink-2">{firstNameOf(t.assigneeId)}</span>
                   ) : (
-                    <span className="text-body italic text-warm/35">Unassigned</span>
+                    <span className="text-body italic text-ink-3">Unassigned</span>
                   )}
                 </td>
-                <td className="py-3.5 pl-3 pr-5 text-right text-caption text-warm/50">
+                <td className="py-3.5 pl-3 pr-5 text-right text-caption text-ink-3">
                   {timeAgo(t.updatedAt)}
                 </td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-5 py-16 text-center text-body text-warm/45">
+                <td colSpan={7} className="px-5 py-16 text-center text-body text-ink-3">
                   No tickets match the current filters.
                 </td>
               </tr>
@@ -297,14 +297,14 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
               className="block px-4 py-3 transition-colors hover:bg-surface-2/50"
             >
               <div className="mb-1 flex items-center justify-between gap-2">
-                <span className="font-mono text-[11px] text-warm/40">{t.id}</span>
-                <span className="text-caption text-warm/45">{timeAgo(t.updatedAt)}</span>
+                <span className="font-mono text-[11px] text-ink-3">{t.id}</span>
+                <span className="text-caption text-ink-3">{timeAgo(t.updatedAt)}</span>
               </div>
               <p className="text-body font-medium text-warm">{t.subject}</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 <StatusBadge status={t.status} />
                 <PriorityBadge priority={t.priority} />
-                <span className="inline-flex items-center gap-1.5 rounded-md border border-warm/15 bg-warm/5 px-2 py-0.5 text-micro font-medium text-warm/60">
+                <span className="inline-flex items-center gap-1.5 rounded-md border border-warm/15 bg-warm/5 px-2 py-0.5 text-micro font-medium text-ink-2">
                   <span
                     className={`h-2 w-2 rounded-full ${CAT_DOTS[t.category] ?? "bg-warm/30"}`}
                   />
@@ -315,7 +315,7 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
           </li>
         ))}
         {filtered.length === 0 && (
-          <li className="px-4 py-16 text-center text-body text-warm/45">
+          <li className="px-4 py-16 text-center text-body text-ink-3">
             No tickets match the current filters.
           </li>
         )}

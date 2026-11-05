@@ -5,12 +5,12 @@ import { logout as logoutThunk, selectUser } from "../state/authSlice";
 import * as api from "../api/client";
 
 const FIELD =
-  "w-full border border-surface-2 bg-surface px-3 py-2.5 text-body-lg text-warm placeholder:text-warm/25 focus:border-teal focus:outline-none";
-const LABEL = "mb-1.5 block mono-label text-[10px] text-warm/50";
+  "w-full border border-surface-2 bg-surface px-3 py-2.5 text-body-lg text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none";
+const LABEL = "mb-1.5 block mono-label text-[10px] text-ink-3";
 
 function FieldError({ msg }) {
   if (!msg) return null;
-  return <p className="mt-1.5 text-caption text-error">{msg}</p>;
+  return <p className="mt-1.5 text-caption text-error-deep">{msg}</p>;
 }
 
 export default function ChangePassword() {
@@ -57,7 +57,7 @@ export default function ChangePassword() {
       <span className="mono-label mb-3 block text-[10px] text-teal-deep">ACCOUNT / SECURITY</span>
       <div className="rule-teal mb-6" />
       <h1 className="text-h2 text-warm">Change password</h1>
-      <p className="mt-4 text-body text-warm/60">
+      <p className="mt-4 text-body text-ink-2">
         Use at least 8 characters and no more than 72 UTF-8 bytes. You’ll be asked to sign in again
         after changing it.
       </p>

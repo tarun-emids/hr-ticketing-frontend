@@ -33,8 +33,8 @@ const SELECT =
 function MetaItem({ label, children }) {
   return (
     <div className="min-w-0">
-      <p className="text-caption font-medium text-warm/50">{label}</p>
-      <div className="mt-1.5 text-body-lg text-warm/85">{children}</div>
+      <p className="text-caption font-medium text-ink-3">{label}</p>
+      <div className="mt-1.5 text-body-lg text-ink-2">{children}</div>
     </div>
   );
 }
@@ -243,9 +243,9 @@ function AttachmentChip({ ticket, actorId }) {
     return (
       <>
         <div className="mt-5 border border-surface-2 bg-canvas p-3">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-body text-warm/80">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-body text-ink-2">
             <span className="min-w-0 truncate">{ticket.attachment.name}</span>
-            <span className="mono-label shrink-0 text-[10px] text-warm/35">
+            <span className="mono-label shrink-0 text-[10px] text-ink-3">
               {(ticket.attachment.size / 1024).toFixed(0)} KB
             </span>
           </div>
@@ -261,12 +261,12 @@ function AttachmentChip({ ticket, actorId }) {
                 alt={ticket.attachment.name}
                 className="max-h-80 max-w-full object-contain object-left"
               />
-              <span className="mono-label mt-2 block text-[10px] text-warm/35">
+              <span className="mono-label mt-2 block text-[10px] text-ink-3">
                 Click image to enlarge
               </span>
             </button>
           ) : (
-            <div className="text-caption text-warm/55" role={error ? "alert" : "status"}>
+            <div className="text-caption text-ink-3" role={error ? "alert" : "status"}>
               {error ? (
                 <>
                   Could not load image: {error}{" "}
@@ -302,7 +302,7 @@ function AttachmentChip({ ticket, actorId }) {
                 type="button"
                 autoFocus
                 onClick={() => setPreviewOpen(false)}
-                className="rounded-lg border border-warm/25 px-3 py-1.5 text-caption font-medium text-warm/70 transition-colors hover:border-teal hover:text-teal-deep"
+                className="rounded-lg border border-warm/25 px-3 py-1.5 text-caption font-medium text-ink-2 transition-colors hover:border-teal hover:text-teal-deep"
                 aria-label="Close image preview"
               >
                 Close ×
@@ -312,7 +312,7 @@ function AttachmentChip({ ticket, actorId }) {
                 alt={ticket.attachment.name}
                 className="max-h-[calc(100vh-7rem)] max-w-full object-contain"
               />
-              <p className="max-w-full truncate text-caption text-warm/60">
+              <p className="max-w-full truncate text-caption text-ink-2">
                 {ticket.attachment.name}
               </p>
             </div>
@@ -323,7 +323,7 @@ function AttachmentChip({ ticket, actorId }) {
   }
 
   return (
-    <div className="mt-5 flex flex-wrap items-center gap-2 rounded-xl border border-surface-2 bg-surface px-3 py-3 text-body text-warm/85">
+    <div className="mt-5 flex flex-wrap items-center gap-2 rounded-xl border border-surface-2 bg-surface px-3 py-3 text-body text-ink-2">
       <IconPaperclip size={16} aria-hidden className="text-teal-deep/80" />
       <button
         type="button"
@@ -333,13 +333,13 @@ function AttachmentChip({ ticket, actorId }) {
       >
         {ticket.attachment.name}
       </button>
-      <span className="mono-label text-[10px] text-warm/35">
+      <span className="mono-label text-[10px] text-ink-3">
         {(ticket.attachment.size / 1024).toFixed(0)} KB
       </span>
       {busy ? (
-        <span className="mono-label text-[10px] text-warm/25">opening…</span>
+        <span className="mono-label text-[10px] text-ink-3">opening…</span>
       ) : (
-        <span className="inline-flex items-center gap-1 text-caption text-warm/35">
+        <span className="inline-flex items-center gap-1 text-caption text-ink-3">
           open <IconArrowUpRight size={12} aria-hidden />
         </span>
       )}
@@ -565,7 +565,7 @@ export default function TicketDetail() {
     <div className="mx-auto max-w-4xl">
       <button
         onClick={() => navigate(isAgent ? "/inbox" : "/my-tickets")}
-        className="inline-flex items-center gap-2 text-body text-warm/50 transition-colors hover:text-teal-deep"
+        className="inline-flex items-center gap-2 text-body text-ink-3 transition-colors hover:text-teal-deep"
       >
         <IconArrowLeft size={16} aria-hidden />
         Back to {isAgent ? "inbox" : "my tickets"}
@@ -580,12 +580,12 @@ export default function TicketDetail() {
 
       <header className="mt-6 mb-6">
         <div className="mb-3 flex flex-wrap items-center gap-3">
-          <span className="mono-label text-[10px] text-warm/40">{ticket.id}</span>
+          <span className="mono-label text-[10px] text-ink-3">{ticket.id}</span>
           <StatusBadge status={ticket.status} size="md" />
           <PriorityBadge priority={ticket.priority} size="md" />
         </div>
         <h1 className="text-h3 text-warm sm:text-h2">{ticket.subject}</h1>
-        <p className="mt-2 text-caption text-warm/50">
+        <p className="mt-2 text-caption text-ink-3">
           {employee?.name} · {employee?.email} · opened {timeAgo(ticket.createdAt)}
         </p>
       </header>
@@ -596,17 +596,17 @@ export default function TicketDetail() {
           <MetaItem label="Opened">{formatDateTime(ticket.createdAt)}</MetaItem>
           <MetaItem label="Last update">{timeAgo(ticket.updatedAt)}</MetaItem>
           <MetaItem label="Assignee">
-            {assignee ? assignee.name : <span className="text-warm/25 italic">Unassigned</span>}
+            {assignee ? assignee.name : <span className="text-ink-3 italic">Unassigned</span>}
           </MetaItem>
           <MetaItem label="Resolved">
             {ticket.resolvedAt ? (
               formatDateTime(ticket.resolvedAt)
             ) : (
-              <span className="text-warm/25">—</span>
+              <span className="text-ink-3">—</span>
             )}
           </MetaItem>
           <MetaItem label="Closed by">
-            {closedBy ? closedBy.name : <span className="text-warm/25">—</span>}
+            {closedBy ? closedBy.name : <span className="text-ink-3">—</span>}
           </MetaItem>
         </div>
 
@@ -619,7 +619,7 @@ export default function TicketDetail() {
         )}
       </section>
 
-      <p className="mb-3 text-caption font-medium text-warm/50">Conversation</p>
+      <p className="mb-3 text-caption font-medium text-ink-3">Conversation</p>
       <Thread ticket={ticket} users={users} viewer={user} />
     </div>
   );

@@ -12,6 +12,12 @@ export default function Layout() {
   const close = () => setMobileOpen(false);
   return (
     <div className="min-h-screen bg-canvas text-warm">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-teal focus:px-4 focus:py-2 focus:text-body focus:font-medium focus:text-canvas"
+      >
+        Skip to main content
+      </a>
       <Sidebar
         mobileOpen={mobileOpen}
         collapsed={sidebarCollapsed}
@@ -20,12 +26,16 @@ export default function Layout() {
         onHide={close}
       />
       {mobileOpen && <div className="fixed inset-0 z-30 bg-canvas/70 lg:hidden" onClick={close} />}
-      <main className={sidebarCollapsed ? "lg:pl-16" : "lg:pl-64"}>
+      <main
+        id="main"
+        tabIndex={-1}
+        className={`focus:outline-none ${sidebarCollapsed ? "lg:pl-16" : "lg:pl-64"}`}
+      >
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-12 lg:py-8">
           <div className="mb-4 flex items-center justify-between">
             <button
               onClick={() => setMobileOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-warm/15 px-3 py-2 text-caption font-medium text-warm/70 transition-colors hover:bg-surface-2 lg:hidden"
+              className="inline-flex items-center gap-2 rounded-lg border border-warm/15 px-3 py-2 text-caption font-medium text-ink-2 transition-colors hover:bg-surface-2 lg:hidden"
               aria-label="Open menu"
             >
               <IconMenu2 size={16} aria-hidden />

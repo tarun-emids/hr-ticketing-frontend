@@ -81,7 +81,7 @@ export default function KbViewer() {
             : navigate("/dashboard")
         }
         title="Go back"
-        className="mb-6 inline-flex items-center gap-2 text-body text-warm/45 transition-colors hover:text-teal-deep"
+        className="mb-6 inline-flex items-center gap-2 text-body text-ink-3 transition-colors hover:text-teal-deep"
       >
         <Icon d={PATHS.arrowLeft} className="h-3.5 w-3.5" />
         Back
@@ -108,20 +108,20 @@ export default function KbViewer() {
           <header className="mb-6">
             <div className="mb-2 flex flex-wrap items-center gap-3">
               <span className="mono-label text-[10px] text-teal">{doc.ref}</span>
-              <span className="mono-label text-[10px] text-warm/35">{doc.category}</span>
-              <span className="mono-label text-[9px] text-warm/30">
+              <span className="mono-label text-[10px] text-ink-3">{doc.category}</span>
+              <span className="mono-label text-[9px] text-ink-3">
                 {doc.audience === "hr" ? "HR ONLY" : "ALL EMPLOYEES"}
               </span>
             </div>
             <h1 className="text-h3 text-warm">{doc.title}</h1>
-            <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-caption text-warm/40">
+            <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-caption text-ink-3">
               <span>Version {doc.version}</span>
               <span>Effective {effectiveFormatter(doc.effectiveDate)}</span>
               {doc.pages ? <span>{doc.pages} pages</span> : null}
               {doc.fileSize ? <span>{formatBytes(doc.fileSize)}</span> : null}
             </div>
             {doc.summary && (
-              <p className="mt-3 max-w-3xl text-caption leading-relaxed text-warm/55">
+              <p className="mt-3 max-w-3xl text-caption leading-relaxed text-ink-3">
                 {doc.summary}
               </p>
             )}
@@ -153,7 +153,7 @@ export default function KbViewer() {
             <button
               type="button"
               onClick={loadUrl}
-              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-body text-warm/45 hover:text-warm"
+              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-body text-ink-3 hover:text-warm"
               title="Signed links expire — refresh if the viewer went blank"
             >
               <Icon d={PATHS.refresh} className="h-3.5 w-3.5" />
@@ -161,7 +161,7 @@ export default function KbViewer() {
             </button>
           </div>
           {downloadError && (
-            <p className="mb-2 text-caption text-error" role="alert">
+            <p className="mb-2 text-caption text-error-deep" role="alert">
               {downloadError}
             </p>
           )}
@@ -169,7 +169,7 @@ export default function KbViewer() {
           <div className="soft-bl border border-surface-2 bg-surface">
             {urlError ? (
               <div className="flex flex-col items-center gap-3 px-6 py-20 text-center">
-                <p className="text-caption text-error">{urlError}</p>
+                <p className="text-caption text-error-deep">{urlError}</p>
                 <button
                   type="button"
                   onClick={loadUrl}
@@ -192,7 +192,7 @@ export default function KbViewer() {
             )}
           </div>
 
-          <p className="mt-3 text-caption text-warm/30">
+          <p className="mt-3 text-caption text-ink-3">
             Link is signed and short-lived — regenerate it any time with “Refresh link”.
           </p>
         </>

@@ -4,6 +4,7 @@ import { useAppSelector } from "../state/hooks";
 import { selectUser } from "../state/authSlice";
 import { Icon, PATHS } from "../components/icons";
 import { Spinner } from "../components/primitives";
+import { useFocusTrap } from "../components/useFocusTrap";
 import { askAssistant } from "./api";
 
 // The assistant window application (src/rag). STATELESS BY DESIGN: the
@@ -20,6 +21,8 @@ export default function AssistantWindow({ onClose }) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const threadRef = useRef(null); // auto-scroll to the newest message
+  const dialogRef = useRef(null);
+  useFocusTrap(dialogRef, true);
 
   // Close on Escape — a chat that can't be dismissed from the keyboard is a
   // broken chat.
@@ -59,6 +62,7 @@ export default function AssistantWindow({ onClose }) {
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-label="HR assistant"
       className="soft-bl flex w-80 flex-col border border-surface-2 bg-surface"
@@ -70,7 +74,7 @@ export default function AssistantWindow({ onClose }) {
           type="button"
           onClick={onClose}
           aria-label="Close HR assistant"
-          className="border border-warm/15 px-1.5 text-warm/50 transition-colors hover:text-warm"
+          className="border border-warm/15 px-1.5 text-ink-3 transition-colors hover:text-warm"
         >
           ×
         </button>
@@ -79,7 +83,7 @@ export default function AssistantWindow({ onClose }) {
       {/* Thread */}
       <div ref={threadRef} className="flex-1 overflow-y-auto px-5 py-2">
         {messages.length === 0 && (
-          <p className="py-6 text-center text-caption leading-relaxed text-warm/40">
+          <p className="py-6 text-center text-caption leading-relaxed text-ink-3">
             Ask about company policies — leave, payroll, insurance, hybrid work.
             <br />
             Answers cite the exact paragraph of the policy they use.
@@ -103,7 +107,7 @@ export default function AssistantWindow({ onClose }) {
           placeholder="Ask about a policy…"
           aria-label="Ask the HR assistant"
           maxLength={500}
-          className="w-full bg-surface px-5 py-3.5 text-body text-warm placeholder:text-warm/35 focus:outline-none"
+          className="w-full bg-surface px-5 py-3.5 text-body text-warm placeholder:text-ink-3 focus:outline-none"
         />
         <button
           type="submit"
@@ -133,7 +137,7 @@ function Message({ message }) {
       <p
         className={`max-w-full whitespace-pre-wrap border px-3.5 py-2.5 text-body leading-relaxed ${
           message.role === "error"
-            ? "border-error/40 bg-error/10 text-error"
+            ? "border-error/40 bg-error/10 text-error-deep"
             : "border-surface-2 bg-canvas text-warm"
         }`}
       >

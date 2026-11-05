@@ -17,7 +17,7 @@ const STATUS_STYLES = {
   "In Progress": "text-teal-deep bg-teal/10 border-teal/30",
   "Waiting on Employee": "text-accent-deep bg-accent/10 border-accent/30",
   Resolved: "text-ok-deep bg-ok/10 border-ok/25",
-  Closed: "text-warm/55 bg-warm/5 border-warm/15",
+  Closed: "text-ink-3 bg-warm/5 border-warm/15",
 };
 
 export function StatusBadge({ status, size = "sm" }) {
@@ -29,8 +29,8 @@ export function StatusBadge({ status, size = "sm" }) {
 const PRIORITY_STYLES = {
   Urgent: "text-error-deep bg-error/10 border-error/30",
   High: "text-accent-deep bg-accent/10 border-accent/30",
-  Medium: "text-warm/60 bg-warm/5 border-warm/15",
-  Low: "text-warm/45 bg-warm/5 border-warm/10",
+  Medium: "text-ink-2 bg-warm/5 border-warm/15",
+  Low: "text-ink-3 bg-warm/5 border-warm/10",
 };
 
 export function PriorityBadge({ priority, size = "sm" }) {

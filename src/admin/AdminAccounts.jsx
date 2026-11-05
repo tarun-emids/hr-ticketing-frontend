@@ -96,7 +96,7 @@ export default function AdminAccounts() {
     <div className="mx-auto max-w-4xl">
       <header className="mb-8">
         <h1 className="text-h3 text-warm">Accounts & permissions</h1>
-        <p className="mt-1 text-caption text-warm/45">
+        <p className="mt-1 text-caption text-ink-3">
           Promotions take effect at next login · deletions are refused when history must survive.
         </p>
       </header>
@@ -114,10 +114,7 @@ export default function AdminAccounts() {
       {/* search — above the create tab; matches jump to the top of the list */}
       {rows !== null && !error && (
         <div className="mb-6">
-          <label
-            htmlFor="account-search"
-            className="mono-label mb-2 block text-[10px] text-warm/45"
-          >
+          <label htmlFor="account-search" className="mono-label mb-2 block text-[10px] text-ink-3">
             SEARCH THE DIRECTORY
           </label>
           <input
@@ -127,7 +124,7 @@ export default function AdminAccounts() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a name or email — matches filter the whole directory instantly…"
             aria-label="Search accounts"
-            className="w-full border-2 border-teal/40 bg-surface px-4 py-3.5 text-body-lg text-warm placeholder:text-warm/35 focus:border-teal focus:outline-none"
+            className="w-full border-2 border-teal/40 bg-surface px-4 py-3.5 text-body-lg text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none"
           />
         </div>
       )}
@@ -143,7 +140,7 @@ export default function AdminAccounts() {
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           aria-label="Full name"
-          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none"
         />
         <input
           required
@@ -152,7 +149,7 @@ export default function AdminAccounts() {
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
           aria-label="Work email"
-          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none"
         />
         <select
           value={form.role}
@@ -174,7 +171,7 @@ export default function AdminAccounts() {
           onChange={(e) => setForm({ ...form, password: e.target.value })}
           aria-label="Initial password"
           minLength={8}
-          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none"
         />
         <button
           type="submit"
@@ -207,7 +204,7 @@ function AccountRow({ row, currentUserId, busy, onReRole, onDelete, keepRole }) 
     <div className="flex flex-wrap items-center gap-3 border border-surface-2 bg-surface p-4">
       <span className="min-w-0 flex-1">
         <span className="block truncate text-body-lg text-warm">{row.name}</span>
-        <span className="mono-label block text-[9px] text-warm/35">
+        <span className="mono-label block text-[9px] text-ink-3">
           {row.email}
           {keepRole ? ` · ${row.role.toUpperCase()}` : ""}
         </span>
@@ -231,7 +228,7 @@ function AccountRow({ row, currentUserId, busy, onReRole, onDelete, keepRole }) 
         title={
           row.id === currentUserId ? "You cannot delete your own account here." : "Delete account"
         }
-        className="mono-label border border-error/40 px-2 py-1.5 text-[10px] text-error transition-colors hover:bg-error/10 disabled:opacity-40"
+        className="mono-label border border-error/40 px-2 py-1.5 text-[10px] text-error-deep transition-colors hover:bg-error/10 disabled:opacity-40"
       >
         DELETE
       </button>
@@ -255,7 +252,7 @@ function AccountDirectory({ rows, query, currentUserId, busy, onReRole, onDelete
     });
     return (
       <div className="flex flex-col gap-2">
-        <p className="mono-label text-[10px] text-warm/40">
+        <p className="mono-label text-[10px] text-ink-3">
           SEARCH · {matched.length} MATCH{matched.length === 1 ? "" : "ES"}
         </p>
         {matched.map((row) => (
@@ -294,7 +291,7 @@ function AccountDirectory({ rows, query, currentUserId, busy, onReRole, onDelete
             ))}
           </div>
         ) : (
-          <p className="text-caption text-warm/30">None yet.</p>
+          <p className="text-caption text-ink-3">None yet.</p>
         )}
       </section>
     );

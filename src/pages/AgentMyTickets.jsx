@@ -33,7 +33,7 @@ export default function AgentMyTickets() {
     <div className="mx-auto max-w-6xl">
       <header className="mb-8">
         <h1 className="text-h3 text-warm">My tickets</h1>
-        <p className="mt-1.5 text-caption text-warm/45">
+        <p className="mt-1.5 text-caption text-ink-3">
           {!stats
             ? "Loading your backlog…"
             : stats.totalCount === 0

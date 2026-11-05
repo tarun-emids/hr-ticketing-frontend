@@ -30,7 +30,7 @@ function FilePicker({ value, onChange, existing = null, label = "Policy PDF" }) 
         className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-teal/40 bg-surface px-4 py-3 transition-colors hover:border-teal"
       >
         <IconUpload size={18} aria-hidden className="shrink-0 text-teal" />
-        <span className="min-w-0 flex-1 truncate text-caption text-warm/60">
+        <span className="min-w-0 flex-1 truncate text-caption text-ink-2">
           {value ? value.name : "Click to choose a PDF"}
         </span>
       </label>
@@ -43,17 +43,17 @@ function FilePicker({ value, onChange, existing = null, label = "Policy PDF" }) 
               onClick={() => onChange(null)}
               title="Remove the chosen file"
               aria-label="Remove the chosen file"
-              className="text-error transition-colors hover:text-warm"
+              className="text-error-deep transition-colors hover:text-warm"
             >
               <IconTrash size={13} aria-hidden />
             </button>
           </span>
         ) : existing ? (
-          <span className="mono-label border border-warm/15 px-2 py-1 text-[9px] text-warm/45">
+          <span className="mono-label border border-warm/15 px-2 py-1 text-[9px] text-ink-3">
             attached today: {formatBytes(existing)} · choose a PDF above to replace it
           </span>
         ) : (
-          <span className="mono-label text-[8px] text-warm/25">PDF only · max 5 MB</span>
+          <span className="mono-label text-[8px] text-ink-3">PDF only · max 5 MB</span>
         )}
       </div>
     </div>
@@ -169,7 +169,7 @@ export default function AdminKb() {
     <div className="mx-auto max-w-4xl">
       <header className="mb-8">
         <h1 className="text-h3 text-warm">Knowledge base documents</h1>
-        <p className="mt-1 text-caption text-warm/45">
+        <p className="mt-1 text-caption text-ink-3">
           Upload new PDFs, rewrite metadata, replace files — the assistant citations follow
           automatically.
         </p>
@@ -188,7 +188,7 @@ export default function AdminKb() {
       {/* library search — filters THIS admin list (title/ref/category/keywords);
           results are the same editor rows, not the employee-facing KB cards */}
       <div className="mb-6">
-        <label htmlFor="kb-search" className="mono-label mb-2 block text-[10px] text-warm/45">
+        <label htmlFor="kb-search" className="mono-label mb-2 block text-[10px] text-ink-3">
           SEARCH THE LIBRARY
         </label>
         <input
@@ -198,7 +198,7 @@ export default function AdminKb() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Filter by title, ref, category or keyword…"
           aria-label="Search knowledge-base documents"
-          className="w-full border-2 border-teal/40 bg-surface px-4 py-3.5 text-body-lg text-warm placeholder:text-warm/35 focus:border-teal focus:outline-none"
+          className="w-full border-2 border-teal/40 bg-surface px-4 py-3.5 text-body-lg text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none"
         />
       </div>
 
@@ -215,13 +215,13 @@ export default function AdminKb() {
           required
           placeholder="Policy title"
           aria-label="Policy title"
-          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none"
         />
         <input
           name="category"
           placeholder="Category (e.g. Leave)"
           aria-label="Category"
-          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none"
         />
         <select
           name="audience"
@@ -236,14 +236,14 @@ export default function AdminKb() {
           name="keywords"
           placeholder="keywords, comma separated"
           aria-label="Keywords"
-          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none"
         />
         <div className="grid grid-cols-2 gap-2">
           <input
             name="version"
             placeholder="v1.0"
             aria-label="Version"
-            className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none"
+            className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none"
           />
           <input
             name="effectiveDate"
@@ -257,7 +257,7 @@ export default function AdminKb() {
           placeholder="One-line summary shown on cards"
           rows={2}
           aria-label="Summary"
-          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none sm:col-span-2"
+          className="rounded-px-3 py-2 rounded-lg border border-surface-2 bg-surface px-3 py-2 text-body text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none sm:col-span-2"
         />
         <button
           type="submit"
@@ -336,7 +336,7 @@ export default function AdminKb() {
                       existing={doc.fileSize}
                       label="Replace PDF"
                     />
-                    <p className="mono-label mt-1 text-[8px] text-warm/25">
+                    <p className="mono-label mt-1 text-[8px] text-ink-3">
                       replacing the file re-cuts its citation paragraphs
                     </p>
                   </div>
@@ -351,7 +351,7 @@ export default function AdminKb() {
                     <button
                       type="button"
                       onClick={() => setEdit(null)}
-                      className="mono-label border border-warm/20 px-3 py-1.5 text-[10px] text-warm/60 hover:text-warm"
+                      className="mono-label border border-warm/20 px-3 py-1.5 text-[10px] text-ink-2 hover:text-warm"
                     >
                       CANCEL
                     </button>
@@ -366,7 +366,7 @@ export default function AdminKb() {
                   >
                     {doc.title}
                   </Link>
-                  <span className="mono-label text-[9px] text-warm/30">
+                  <span className="mono-label text-[9px] text-ink-3">
                     {doc.audience === "hr" ? "HR ONLY" : "ALL EMPLOYEES"} · {doc.version || "v1.0"}{" "}
                     · {doc.effectiveDate ? effectiveFormatter(doc.effectiveDate) : "—"}
                     {doc.fileSize ? ` · ${formatBytes(doc.fileSize)}` : ""}
@@ -382,7 +382,7 @@ export default function AdminKb() {
                       })
                     }
                     disabled={busy}
-                    className="mono-label border border-warm/20 px-2 py-1.5 text-[10px] text-warm/70 transition-colors hover:border-teal hover:text-teal disabled:opacity-40"
+                    className="mono-label border border-warm/20 px-2 py-1.5 text-[10px] text-ink-2 transition-colors hover:border-teal hover:text-teal disabled:opacity-40"
                   >
                     EDIT
                   </button>
@@ -391,7 +391,7 @@ export default function AdminKb() {
                     disabled={busy}
                     title={`Delete ${doc.title}`}
                     aria-label={`Delete ${doc.title}`}
-                    className="border border-error/40 p-2 text-error transition-colors hover:bg-error/10 disabled:opacity-40"
+                    className="border border-error/40 p-2 text-error-deep transition-colors hover:bg-error/10 disabled:opacity-40"
                   >
                     <IconTrash size={14} aria-hidden />
                   </button>

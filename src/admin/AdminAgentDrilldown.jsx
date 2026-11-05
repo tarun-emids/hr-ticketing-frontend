@@ -39,7 +39,7 @@ export default function AdminAgentDrilldown() {
     <div className="mx-auto max-w-4xl">
       <Link
         to="/admin/worktable"
-        className="mb-6 inline-flex items-center gap-2 text-body text-warm/45 transition-colors hover:text-teal-deep"
+        className="mb-6 inline-flex items-center gap-2 text-body text-ink-3 transition-colors hover:text-teal-deep"
       >
         <Icon d={PATHS.arrowLeft} className="h-3.5 w-3.5" />
         Back to the worktable
@@ -47,7 +47,7 @@ export default function AdminAgentDrilldown() {
 
       <header className="mb-8">
         <h1 className="text-h3 text-warm">{agent ? agent.name : "Agent"}</h1>
-        {agent && <p className="mt-1 text-caption text-warm/45">{agent.email}</p>}
+        {agent && <p className="mt-1 text-caption text-ink-3">{agent.email}</p>}
       </header>
 
       <AgentMetricsView agentId={agentId} agentName={agent?.name} peers={peers} />

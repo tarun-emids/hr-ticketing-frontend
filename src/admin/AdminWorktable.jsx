@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { useAppSelector } from "../state/hooks";
 import { selectUser } from "../state/authSlice";
 import { agentLeaderboard, adminOverview } from "./api";
-import { Spinner, EmptyState } from "../components/primitives";
+import { Spinner, EmptyState, PageBanner } from "../components/primitives";
+import chartsImg from "../assets/charts-blue.jpg";
 
 const PERIODS = ["24h", "7d", "30d"];
 const TABS = [
@@ -54,11 +55,8 @@ export default function AdminWorktable() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-h3 text-warm">Agents × Tickets</h1>
-        </div>
-        <div className="flex gap-2" role="tablist" aria-label="Period">
+      <PageBanner image={chartsImg} position="75% 45%" title="Agents × Tickets">
+        <div className="mt-4 flex justify-end gap-2" role="tablist" aria-label="Period">
           {PERIODS.map((p) => (
             <button
               key={p}
@@ -68,14 +66,14 @@ export default function AdminWorktable() {
               className={`mono-label border px-3 py-1.5 text-[10px] transition-colors ${
                 period === p
                   ? "border-teal bg-teal text-canvas"
-                  : "border-warm/15 text-warm/50 hover:border-teal hover:text-teal"
+                  : "border-warm/15 text-ink-3 hover:border-teal hover:text-teal"
               }`}
             >
               {p === "24h" ? "24 HOURS" : p === "7d" ? "1 WEEK" : "1 MONTH"}
             </button>
           ))}
         </div>
-      </header>
+      </PageBanner>
 
       {/* the AGENTS / TICKETS toggle */}
       <div className="mb-6 flex gap-2">
@@ -88,14 +86,14 @@ export default function AdminWorktable() {
             className={`mono-label border px-4 py-2 text-[10px] transition-colors ${
               tab === t.key
                 ? "border-teal bg-teal text-canvas"
-                : "border-warm/15 text-warm/50 hover:border-teal hover:text-teal"
+                : "border-warm/15 text-ink-3 hover:border-teal hover:text-teal"
             }`}
           >
             {t.label}
           </button>
         ))}
       </div>
-      <p className="mono-label mb-6 text-[9px] text-warm/30">
+      <p className="mono-label mb-6 text-[9px] text-ink-3">
         {TABS.find((t) => t.key === tab)?.hint}
       </p>
 
@@ -139,7 +137,7 @@ function AgentsPane({ agents, period }) {
             <span className="block truncate text-body-lg font-medium text-warm group-hover:text-teal-deep">
               {agent.name}
             </span>
-            <span className="mono-label block text-[9px] text-warm/35">{agent.email}</span>
+            <span className="mono-label block text-[9px] text-ink-3">{agent.email}</span>
           </span>
           <MiniStat label="Score" value={agent.score == null ? "—" : agent.score} tone="teal" />
           <MiniStat label="Completed" value={agent.completed} tone="ok" />
@@ -151,7 +149,7 @@ function AgentsPane({ agents, period }) {
           />
         </Link>
       ))}
-      <p className="mt-4 text-caption text-warm/30">
+      <p className="mt-4 text-caption text-ink-3">
         Ranked by score out of 100 (SLA compliance 40% · on-target response 30% · throughput 30%) in{" "}
         {labelFor(period)} · click an agent for the full graph view.
       </p>
@@ -163,7 +161,7 @@ function MiniStat({ label, value, tone }) {
   const color = tone === "ok" ? "text-ok-deep" : tone === "teal" ? "text-teal-deep" : "text-warm";
   return (
     <span className="hidden w-24 flex-col items-end sm:flex">
-      <span className="text-[10px] font-medium text-warm/50">{label}</span>
+      <span className="text-[10px] font-medium text-ink-3">{label}</span>
       <span className={`text-body font-semibold tabular-nums ${color}`}>{value}</span>
     </span>
   );
@@ -179,7 +177,7 @@ function RepeatedSubject({ rep, periodLabel }) {
   return (
     <li className="border-l-2 border-teal/40 bg-canvas/60 px-3 py-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-body text-warm/85">
+        <p className="text-body text-ink-2">
           <span className="font-medium text-teal-deep">{rep.count} people</span> asked this in{" "}
           {periodLabel}
         </p>
@@ -187,12 +185,12 @@ function RepeatedSubject({ rep, periodLabel }) {
           type="button"
           onClick={() => setOpenRefs((o) => !o)}
           aria-expanded={openRefs}
-          className="mono-label shrink-0 border border-warm/20 px-2 py-1 text-[9px] text-warm/60 transition-colors hover:border-teal hover:text-teal"
+          className="mono-label shrink-0 border border-warm/20 px-2 py-1 text-[9px] text-ink-2 transition-colors hover:border-teal hover:text-teal"
         >
           {openRefs ? "HIDE TICKETS" : `VIEW THE ${rep.count} TICKETS`}
         </button>
       </div>
-      <p className="mono-label mt-0.5 text-[9px] text-warm/50">{rep.title}</p>
+      <p className="mono-label mt-0.5 text-[9px] text-ink-3">{rep.title}</p>
       {openRefs && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {rep.sampleRefs.map((ref) => (
@@ -227,7 +225,7 @@ function TicketsPane({ overview, period }) {
         <section key={cat.category} className="border border-surface-2 bg-surface p-5">
           <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
             <p className="text-h3 text-warm">{cat.category}</p>
-            <p className="mono-label text-[9px] text-warm/35">
+            <p className="mono-label text-[9px] text-ink-3">
               {cat.total} TICKETS · {cat.open} STILL OPEN
             </p>
           </div>
@@ -236,12 +234,12 @@ function TicketsPane({ overview, period }) {
               {cat.repeatedSubjects.map((rep, i) => (
                 <RepeatedSubject key={i} rep={rep} periodLabel={labelFor(period)} />
               ))}
-              <p className="mt-1 text-caption text-warm/35">
+              <p className="mt-1 text-caption text-ink-3">
                 Same question keeps appearing — consider a policy page or clearer KB entry.
               </p>
             </ul>
           ) : (
-            <p className="text-caption text-warm/40">No repetitive subjects in this category.</p>
+            <p className="text-caption text-ink-3">No repetitive subjects in this category.</p>
           )}
         </section>
       ))}

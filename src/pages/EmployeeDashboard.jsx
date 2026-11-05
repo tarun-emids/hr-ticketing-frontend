@@ -5,27 +5,29 @@ import { useTicketsPage } from "../hooks";
 import { useAppSelector } from "../state/hooks";
 import { selectUser } from "../state/authSlice";
 import { StatusBadge, PriorityBadge } from "../components/Badge";
-import { SkeletonList, EmptyState } from "../components/primitives";
+import { SkeletonList, EmptyState, PageBanner } from "../components/primitives";
 import { timeAgo } from "../utils";
 import { deleteDraft, listDrafts } from "../api/client";
+import cityImg from "../assets/city-teal.jpg";
 
-function TicketRow({ t }) {
+function TicketRow({ t, index = 0 }) {
   return (
     <Link
       to={`/tickets/${t.id}`}
-      className="group block border border-surface-2 bg-surface p-4 transition-colors hover:border-teal/50 hover:bg-surface-2/50"
+      className="lift group block animate-fade-up border border-surface-2 bg-surface p-4 transition-colors hover:border-teal/50 hover:bg-surface-2/50"
+      style={{ animationDelay: `${Math.min(index, 20) * 45}ms` }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="mb-1 flex items-center gap-3">
-            <span className="mono-label text-[10px] text-warm/35">{t.id}</span>
-            <span className="text-caption text-warm/40">{timeAgo(t.updatedAt)}</span>
-            {t.attachment && <IconPaperclip size={16} aria-hidden className="text-warm/30" />}
+            <span className="mono-label text-[10px] text-ink-3">{t.id}</span>
+            <span className="text-caption text-ink-3">{timeAgo(t.updatedAt)}</span>
+            {t.attachment && <IconPaperclip size={16} aria-hidden className="text-ink-3" />}
           </div>
           <p className="truncate text-body-lg font-medium text-warm group-hover:text-teal-deep">
             {t.subject}
           </p>
-          <p className="mono-label mt-1 text-[10px] text-warm/40">{t.category}</p>
+          <p className="mono-label mt-1 text-[10px] text-ink-3">{t.category}</p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1.5">
           <StatusBadge status={t.status} />
@@ -76,18 +78,19 @@ export default function EmployeeDashboard() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <header className="mb-8">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="text-h3 text-warm">My tickets</h1>
-            <p className="mt-1.5 text-caption text-warm/45">
-              {view.loading
-                ? "Loading your requests…"
-                : view.total === 1
-                  ? "1 request"
-                  : `${view.total} requests · updates appear here automatically`}
-            </p>
-          </div>
+      <PageBanner
+        image={cityImg}
+        position="center 45%"
+        title="My tickets"
+        sub={
+          view.loading
+            ? "Loading your requests…"
+            : view.total === 1
+              ? "1 request · updates appear here automatically"
+              : `${view.total} requests · updates appear here automatically`
+        }
+      >
+        <div className="mt-4 flex justify-end">
           <Link
             to="/new-ticket"
             className="inline-flex items-center gap-2 rounded-lg bg-teal px-4 py-2.5 text-body font-medium text-canvas shadow-xs transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
@@ -96,7 +99,7 @@ export default function EmployeeDashboard() {
             New ticket
           </Link>
         </div>
-      </header>
+      </PageBanner>
 
       {searchParams.get("draftSaved") === "1" && (
         <div
@@ -127,7 +130,7 @@ export default function EmployeeDashboard() {
 
       {!draftsLoading && drafts.length > 0 && (
         <section className="mb-8">
-          <h2 className="mb-3 text-caption font-semibold text-warm/60">
+          <h2 className="mb-3 text-caption font-semibold text-ink-2">
             Saved drafts · {drafts.length}
           </h2>
           <div className="flex flex-col gap-2">
@@ -139,17 +142,17 @@ export default function EmployeeDashboard() {
                 <Link to={`/drafts/${draft.id}/edit`} className="group min-w-0 flex-1">
                   <div className="mb-1 flex flex-wrap items-center gap-3">
                     <span className="mono-label text-[10px] text-teal-deep">Draft</span>
-                    <span className="text-caption text-warm/40">
+                    <span className="text-caption text-ink-3">
                       Saved {timeAgo(draft.updatedAt)}
                     </span>
                     {draft.attachment && (
-                      <span className="text-caption text-warm/35">Attachment included</span>
+                      <span className="text-caption text-ink-3">Attachment included</span>
                     )}
                   </div>
                   <p className="truncate text-body-lg font-medium text-warm group-hover:text-teal-deep">
                     {draft.subject || "Untitled draft"}
                   </p>
-                  <p className="mono-label mt-1 text-[10px] text-warm/40">
+                  <p className="mono-label mt-1 text-[10px] text-ink-3">
                     {draft.category} · {draft.priority}
                   </p>
                 </Link>
@@ -164,7 +167,7 @@ export default function EmployeeDashboard() {
                     type="button"
                     onClick={() => removeDraft(draft.id)}
                     disabled={Boolean(deletingDraft)}
-                    className="rounded-lg border border-warm/20 px-3 py-1.5 text-body font-medium text-warm/50 transition-colors hover:border-error/50 hover:text-error-deep disabled:opacity-40"
+                    className="rounded-lg border border-warm/20 px-3 py-1.5 text-body font-medium text-ink-3 transition-colors hover:border-error/50 hover:text-error-deep disabled:opacity-40"
                   >
                     {deletingDraft === draft.id ? "Deleting…" : "Delete"}
                   </button>
@@ -196,24 +199,24 @@ export default function EmployeeDashboard() {
                   </h2>
                   {open.length ? (
                     <div className="flex flex-col gap-2">
-                      {open.map((t) => (
-                        <TicketRow key={t.id} t={t} />
+                      {open.map((t, i) => (
+                        <TicketRow key={t.id} t={t} index={i} />
                       ))}
                     </div>
                   ) : (
-                    <p className="text-caption text-warm/40">
+                    <p className="text-caption text-ink-3">
                       Nothing open — all your requests are settled.
                     </p>
                   )}
                 </section>
                 {settled.length > 0 && (
                   <section>
-                    <h2 className="mb-3 text-caption font-semibold text-warm/60">
+                    <h2 className="mb-3 text-caption font-semibold text-ink-2">
                       Settled · {settled.length} resolved or closed
                     </h2>
                     <div className="flex flex-col gap-2">
-                      {settled.map((t) => (
-                        <TicketRow key={t.id} t={t} />
+                      {settled.map((t, i) => (
+                        <TicketRow key={t.id} t={t} index={i} />
                       ))}
                     </div>
                   </section>

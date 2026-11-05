@@ -48,7 +48,7 @@ export default function NotificationRow({
       </span>
       <span className="min-w-0">
         <span className="block text-body text-warm">{n.message}</span>
-        <span className="mt-0.5 block text-caption text-warm/45">{timeAgo(n.createdAt)}</span>
+        <span className="mt-0.5 block text-caption text-ink-3">{timeAgo(n.createdAt)}</span>
       </span>
     </button>
   );

@@ -77,13 +77,13 @@ function NavItems({ items, onNavigate, collapsed }) {
           className={({ isActive }) =>
             `flex items-center gap-3 rounded-lg px-3 py-2.5 text-body font-medium transition-colors ${
               collapsed ? "lg:justify-center lg:px-2" : ""
-            } ${isActive ? "bg-teal/10 text-teal-deep" : "text-warm/60 hover:bg-surface-2 hover:text-warm"}`
+            } ${isActive ? "bg-teal/10 text-teal-deep" : "text-ink-2 hover:bg-surface-2 hover:text-warm"}`
           }
         >
           {({ isActive }) => (
             <>
               <svg
-                className={`h-4 w-4 shrink-0 ${isActive ? "text-teal-deep" : "text-warm/45"}`}
+                className={`h-4 w-4 shrink-0 ${isActive ? "text-teal-deep" : "text-ink-3"}`}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -115,7 +115,7 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
     >
       <button
         onClick={onHide}
-        className="absolute right-3 top-3 rounded-lg border border-warm/15 p-1.5 text-warm/50 transition-colors hover:bg-surface-2 hover:text-warm lg:hidden"
+        className="absolute right-3 top-3 rounded-lg border border-warm/15 p-1.5 text-ink-3 transition-colors hover:bg-surface-2 hover:text-warm lg:hidden"
         aria-label="Close menu"
       >
         <IconX size={16} aria-hidden />
@@ -132,12 +132,12 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
             <Logo size="nav" markOnly />
           </span>
         )}
-        <p className={`text-caption text-warm/45 ${collapsed ? "lg:hidden" : ""}`}>
+        <p className={`text-caption text-ink-3 ${collapsed ? "lg:hidden" : ""}`}>
           HR desk · internal ticketing
         </p>
         <button
           onClick={onToggleCollapse}
-          className={`hidden rounded-lg border border-warm/15 p-1.5 text-warm/50 transition-colors hover:border-teal hover:text-teal lg:block ${collapsed ? "self-center" : "self-start"}`}
+          className={`hidden rounded-lg border border-warm/15 p-1.5 text-ink-3 transition-colors hover:border-teal hover:text-teal lg:block ${collapsed ? "self-center" : "self-start"}`}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-expanded={!collapsed}
           aria-controls="workspace-navigation"
@@ -165,7 +165,7 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
         className={`flex-1 overflow-y-auto p-4 ${collapsed ? "lg:px-2" : ""}`}
       >
         <p
-          className={`mb-2 px-3 text-micro font-medium text-warm/40 ${collapsed ? "lg:hidden" : ""}`}
+          className={`mb-2 px-3 text-micro font-medium text-ink-3 ${collapsed ? "lg:hidden" : ""}`}
         >
           {isAdmin ? "Admin workspace" : isAgent ? "HR workspace" : "Employee workspace"}
         </p>
@@ -185,7 +185,7 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
           className={({ isActive }) =>
             `mb-4 flex items-center gap-3 border-b border-warm/10 pb-3 text-[10px] mono-label ${
               collapsed ? "lg:justify-center" : ""
-            } ${isActive ? "text-teal" : "text-warm/50 hover:text-warm"}`
+            } ${isActive ? "text-teal" : "text-ink-3 hover:text-warm"}`
           }
         >
           <IconLock size={16} aria-hidden />
@@ -201,13 +201,13 @@ export default function Sidebar({ mobileOpen, collapsed, onToggleCollapse, onNav
           </span>
           <div className={`min-w-0 flex-1 ${collapsed ? "lg:hidden" : ""}`}>
             <p className="truncate text-body font-medium text-warm">{user?.name}</p>
-            <p className="text-caption text-warm/45">{isAgent ? "HR agent" : "Employee"}</p>
+            <p className="text-caption text-ink-3">{isAgent ? "HR agent" : "Employee"}</p>
           </div>
           <button
             onClick={() => dispatch(logout())}
             title="Sign out"
             aria-label="Sign out"
-            className={`rounded-lg p-2 text-warm/50 transition-colors hover:bg-surface-2 hover:text-error-deep ${collapsed ? "lg:self-center" : ""}`}
+            className={`rounded-lg p-2 text-ink-3 transition-colors hover:bg-surface-2 hover:text-error-deep ${collapsed ? "lg:self-center" : ""}`}
           >
             <IconLogout size={16} aria-hidden />
           </button>

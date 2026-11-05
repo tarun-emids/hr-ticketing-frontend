@@ -102,7 +102,7 @@ export default function NotificationBell() {
         aria-expanded={open}
         aria-label={ariaLabel}
         title={ariaLabel}
-        className="relative rounded-lg border border-warm/15 p-2 text-warm/55 transition-colors hover:border-warm/30 hover:text-warm focus:outline-none"
+        className="relative rounded-lg border border-warm/15 p-2 text-ink-3 transition-colors hover:border-warm/30 hover:text-warm focus:outline-none"
       >
         <IconBell size={15} aria-hidden />
         {unread > 0 && (
@@ -121,12 +121,12 @@ export default function NotificationBell() {
           aria-label="Notifications"
           className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-surface-2 bg-surface shadow-lg"
         >
-          <p className="border-b border-surface-2 px-4 py-3 text-caption font-medium text-warm/50">
+          <p className="border-b border-surface-2 px-4 py-3 text-caption font-medium text-ink-3">
             Recent notifications
           </p>
 
           {items.length === 0 ? (
-            <p className="px-4 py-6 text-body text-warm/50">Nothing yet — you're all caught up.</p>
+            <p className="px-4 py-6 text-body text-ink-3">Nothing yet — you're all caught up.</p>
           ) : (
             <ul
               role="menu"
@@ -156,7 +156,7 @@ export default function NotificationBell() {
                 if (user?.id)
                   dispatch(markAllNotificationsRead({ userId: user.id })).catch(() => {});
               }}
-              className="text-caption font-medium text-warm/55 transition-colors hover:text-teal-deep focus:outline-none"
+              className="text-caption font-medium text-ink-3 transition-colors hover:text-teal-deep focus:outline-none"
             >
               Mark all read
             </button>

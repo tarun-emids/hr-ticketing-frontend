@@ -21,6 +21,11 @@
   --app-surface-2: #f4f4f5;
   --app-warm: #18181b;
 
+  /* Muted ink tiers — ≥4.5:1 on canvas/surface for 12px+ text (WCAG AA).
+     Use text-ink-2 for secondary, text-ink-3 for tertiary copy. */
+  --app-ink-2: #55565e;
+  --app-ink-3: #6c6d75;
+
   --app-teal-light: #ccfbf1;
   --app-teal: #0d9488;
   --app-teal-deep: #0f766e;
@@ -47,6 +52,10 @@
   --app-surface-2: #26262b;
   --app-warm: #f4f4f5;
 
+  /* Same muted tiers on the dark ladder (≥4.5:1 on surface). */
+  --app-ink-2: #c3c4cb;
+  --app-ink-3: #97989f;
+
   --app-teal-light: #115e59;
   --app-teal: #2dd4bf;
   --app-teal-deep: #99f6e4;
@@ -70,6 +79,8 @@
   --color-surface: var(--app-surface);
   --color-surface-2: var(--app-surface-2);
   --color-warm: var(--app-warm);
+  --color-ink-2: var(--app-ink-2);
+  --color-ink-3: var(--app-ink-3);
 
   --color-teal-light: var(--app-teal-light);
   --color-teal: var(--app-teal);
@@ -97,6 +108,10 @@
   --text-display--line-height: 1.04;
   --text-display--font-weight: 700;
   --text-display--letter-spacing: -0.02em;
+  --text-h1: 34px;
+  --text-h1--line-height: 1.1;
+  --text-h1--font-weight: 700;
+  --text-h1--letter-spacing: -0.017em;
   --text-h2: 30px;
   --text-h2--line-height: 1.1;
   --text-h2--font-weight: 700;
@@ -143,6 +158,64 @@
     var(--app-teal) 0%,
     color-mix(in srgb, var(--app-teal) 78%, #0f766e) 100%
   );
+}
+
+/* Subtle motion: staggered entrance for card grids and a light hover lift.
+   Both are silenced by the global prefers-reduced-motion guard below. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility animate-fade-up {
+  animation: fade-up 380ms ease-out both;
+}
+
+/* Staggered entrance for card grids: children fade up in sequence. */
+@utility stagger-fade-up {
+  & > * {
+    animation: fade-up 380ms ease-out both;
+  }
+  & > *:nth-child(2) {
+    animation-delay: 55ms;
+  }
+  & > *:nth-child(3) {
+    animation-delay: 110ms;
+  }
+  & > *:nth-child(4) {
+    animation-delay: 165ms;
+  }
+  & > *:nth-child(5) {
+    animation-delay: 220ms;
+  }
+  & > *:nth-child(6) {
+    animation-delay: 275ms;
+  }
+  & > *:nth-child(7) {
+    animation-delay: 330ms;
+  }
+  & > *:nth-child(n + 8) {
+    animation-delay: 385ms;
+  }
+}
+
+@utility lift {
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px -8px rgb(0 0 0 / 0.18);
+  }
 }
 
 body {

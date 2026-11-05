@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useAppSelector } from "../state/hooks";
 import { selectUser } from "../state/authSlice";
 import { adminOverview } from "./api";
-import { Spinner, EmptyState, StatCard } from "../components/primitives";
+import { Spinner, EmptyState, StatCard, PageBanner } from "../components/primitives";
 import { CountBars, Heatmap, HistogramBars, RankedBars, TimeLines } from "./charts";
 import { formatHrs } from "../utils";
+import chartsImg from "../assets/charts-blue.jpg";
 
 const WINDOWS = [
   { key: "all", label: "ALL TIME" },
@@ -38,11 +39,8 @@ export default function AdminOverview() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-h3 text-warm">Ticket analytics</h1>
-        </div>
-        <div className="flex gap-2" role="tablist" aria-label="Window">
+      <PageBanner image={chartsImg} position="75% 45%" title="Ticket analytics">
+        <div className="mt-4 flex justify-end gap-2" role="tablist" aria-label="Window">
           {WINDOWS.map((w) => (
             <button
               key={w.key}
@@ -52,14 +50,14 @@ export default function AdminOverview() {
               className={`mono-label border px-3 py-1.5 text-[10px] transition-colors ${
                 window === w.key
                   ? "border-teal bg-teal text-canvas"
-                  : "border-warm/15 text-warm/50 hover:border-teal hover:text-teal"
+                  : "border-warm/15 text-ink-3 hover:border-teal hover:text-teal"
               }`}
             >
               {w.label}
             </button>
           ))}
         </div>
-      </header>
+      </PageBanner>
 
       {error ? (
         <EmptyState icon="↘" title="Analytics unavailable" body={error} />
@@ -68,7 +66,7 @@ export default function AdminOverview() {
       ) : (
         <>
           {/* ---- KPI band: the requested open / assigned / closed counts ---- */}
-          <div className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="stagger-fade-up mb-8 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <StatCard label="Open" value={data.open} sub="Unpicked, fresh" tone="error" />
             <StatCard
               label="In progress"
@@ -86,7 +84,7 @@ export default function AdminOverview() {
           </div>
 
           {/* ---- time metrics ---- */}
-          <div className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="stagger-fade-up mb-8 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <StatCard
               label="Avg first response"
               value={
@@ -125,7 +123,7 @@ export default function AdminOverview() {
           <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
             {data.responseDistribution?.length > 0 && (
               <section>
-                <p className="mb-3 text-caption font-medium text-warm/50">First response time</p>
+                <p className="mb-3 text-caption font-medium text-ink-3">First response time</p>
                 <div className="border border-surface-2 bg-surface p-4">
                   <HistogramBars
                     data={data.responseDistribution}
@@ -137,7 +135,7 @@ export default function AdminOverview() {
             )}
             {data.solveDistribution?.length > 0 && (
               <section>
-                <p className="mb-3 text-caption font-medium text-warm/50">Time to solve</p>
+                <p className="mb-3 text-caption font-medium text-ink-3">Time to solve</p>
                 <div className="border border-surface-2 bg-surface p-4">
                   <HistogramBars
                     data={data.solveDistribution}
@@ -151,7 +149,7 @@ export default function AdminOverview() {
 
           {/* ---- status split bars ---- */}
           <section className="mb-8">
-            <p className="mb-3 text-caption font-medium text-warm/50">Status split</p>
+            <p className="mb-3 text-caption font-medium text-ink-3">Status split</p>
             <div className="border border-surface-2 bg-surface p-4">
               <CountBars
                 data={[
@@ -172,7 +170,7 @@ export default function AdminOverview() {
           {/* ---- volume + backlog trend (created / resolved / open pile) ---- */}
           {data.trend?.length > 0 && (
             <section className="mb-8">
-              <p className="mb-3 text-caption font-medium text-warm/50">
+              <p className="mb-3 text-caption font-medium text-ink-3">
                 Volume &amp; backlog trend ({WINDOWS.find((w) => w.key === window)?.label} ·
                 creations, resolutions and the open pile at each day's end)
               </p>
@@ -194,7 +192,7 @@ export default function AdminOverview() {
           {/* ---- aging of the unresolved pile (how long the waiting waited) ---- */}
           {data.aging?.length > 0 && (
             <section className="mb-8">
-              <p className="mb-3 text-caption font-medium text-warm/50">
+              <p className="mb-3 text-caption font-medium text-ink-3">
                 Aging of unresolved (all time)
               </p>
               <div className="border border-surface-2 bg-surface p-4">
@@ -213,7 +211,7 @@ export default function AdminOverview() {
           {/* ---- peak activity heatmap (weekday × hour of creation) ---- */}
           {data.heatmap?.total > 0 && (
             <section className="mb-8">
-              <p className="mb-3 text-caption font-medium text-warm/50">
+              <p className="mb-3 text-caption font-medium text-ink-3">
                 Peak activity — creations by weekday × hour (all time)
               </p>
               <div className="border border-surface-2 bg-surface p-4 overflow-x-auto">
@@ -225,7 +223,7 @@ export default function AdminOverview() {
           {/* ---- resolution SLA compliance (per-priority targets) ---- */}
           {data.sla?.resolvable > 0 && (
             <section className="mb-8">
-              <p className="mb-3 text-caption font-medium text-warm/50">
+              <p className="mb-3 text-caption font-medium text-ink-3">
                 Resolution SLA compliance (targets: urgent 8h · high 24h · medium 48h · low 72h)
               </p>
               <div className="border border-surface-2 bg-surface p-5">
@@ -233,7 +231,7 @@ export default function AdminOverview() {
                   <p className="font-mono text-[34px] leading-none text-teal">
                     {data.sla.complianceRate == null ? "—" : `${data.sla.complianceRate}%`}
                   </p>
-                  <p className="text-caption text-warm/40">
+                  <p className="text-caption text-ink-3">
                     {data.sla.withinSla} within target · {data.sla.breached} breached of{" "}
                     {data.sla.resolvable} resolvable
                   </p>
@@ -253,14 +251,12 @@ export default function AdminOverview() {
 
           {/* ---- category load + repetitive subjects (the KB signal) ---- */}
           <section>
-            <p className="mb-3 text-caption font-medium text-warm/50">
-              Where the tickets come from
-            </p>
+            <p className="mb-3 text-caption font-medium text-ink-3">Where the tickets come from</p>
             <div className="border border-surface-2 bg-surface p-5">
               {data.categories?.length ? (
                 <RankedBars rows={data.categories} labelKey="category" valueKey="total" />
               ) : (
-                <p className="text-caption text-warm/40">No tickets in this window yet.</p>
+                <p className="text-caption text-ink-3">No tickets in this window yet.</p>
               )}
             </div>
           </section>

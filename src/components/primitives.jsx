@@ -4,7 +4,7 @@ export function Spinner({ label = "Loading" }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-16">
       <IconLoader2 size={24} className="animate-spin text-teal" />
-      <p className="text-caption text-warm/50">{label}…</p>
+      <p className="text-caption text-ink-3">{label}…</p>
     </div>
   );
 }
@@ -26,13 +26,13 @@ export function EmptyState({ icon = <IconInbox />, title, body }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-warm/20 bg-surface px-6 py-14 text-center">
       <div
-        className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-2 text-warm/50"
+        className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-2 text-ink-3"
         aria-hidden
       >
         {icon}
       </div>
       <h3 className="text-h3 text-warm">{title}</h3>
-      {body && <p className="max-w-sm text-body text-warm/55">{body}</p>}
+      {body && <p className="max-w-sm text-body text-ink-3">{body}</p>}
     </div>
   );
 }
@@ -47,10 +47,10 @@ export function StatCard({ label, value, sub, tone = "warm" }) {
     accent: "text-accent-deep",
   };
   return (
-    <div className="rounded-xl border border-surface-2 bg-surface p-4 shadow-xs">
-      <p className="text-caption font-medium text-warm/50">{label}</p>
+    <div className="lift rounded-xl border border-surface-2 bg-surface p-4 shadow-xs">
+      <p className="text-caption font-medium text-ink-2">{label}</p>
       <p className={`mt-2 text-h3 tabular-nums ${toneColors[tone]}`}>{value}</p>
-      {sub && <p className="mt-1 text-caption text-warm/40">{sub}</p>}
+      {sub && <p className="mt-1 text-caption text-ink-3">{sub}</p>}
     </div>
   );
 }
@@ -86,5 +86,27 @@ export function Button({ as: Comp = "button", className = "", variant = "primary
   };
   return (
     <Comp className={`${base} ${variants[variant] ?? variants.ghost} ${className}`} {...props} />
+  );
+}
+
+/* Page header band over a photo backdrop. The left-to-right canvas scrim
+   keeps the text zone ≥85% opaque so contrast holds in both themes while the
+   photo shows through on the right. */
+export function PageBanner({ image, position = "center", title, sub, children }) {
+  return (
+    <section
+      className="animate-fade-up relative mb-8 overflow-hidden rounded-2xl border border-surface-2 shadow-xs"
+      style={{
+        backgroundImage: `url(${image})`,
+        backgroundSize: "cover",
+        backgroundPosition: position,
+      }}
+    >
+      <div className="relative bg-linear-to-r from-canvas/95 via-canvas/85 to-canvas/30 px-6 py-6 sm:px-8">
+        <h1 className="text-h1 text-warm">{title}</h1>
+        {sub && <p className="mt-1 max-w-xl text-body text-ink-2">{sub}</p>}
+        {children}
+      </div>
+    </section>
   );
 }

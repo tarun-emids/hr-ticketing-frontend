@@ -14,14 +14,14 @@ function Turn({ turn, author, isAgentAuthor }) {
           className={`mb-1 flex flex-wrap items-baseline gap-x-2 ${isAgentAuthor ? "" : "justify-end"}`}
         >
           <span className="text-body font-medium text-warm">{author?.name}</span>
-          <span className="mono-label text-[10px] text-warm/35">
+          <span className="mono-label text-[10px] text-ink-3">
             {isAgentAuthor ? "HR" : "Employee"} · {formatDateTime(turn.at)}
           </span>
         </div>
         <div
           className={`border px-4 py-3 ${
             isAgentAuthor
-              ? "border-surface-2 bg-surface-2/50 text-warm/90"
+              ? "border-surface-2 bg-surface-2/50 text-ink-2"
               : "border-teal/30 bg-teal/10 text-warm"
           }`}
         >
@@ -96,7 +96,7 @@ export default function Thread({ ticket, users, viewer }) {
                   ? "Reply to HR — add any extra detail that helps."
                   : "Write a reply — the response clock and status update automatically."
               }
-              className="w-full resize-y rounded-lg border border-surface-2 bg-surface px-3 py-2.5 text-body text-warm placeholder:text-warm/35 focus:border-teal focus:outline-none"
+              className="w-full resize-y rounded-lg border border-surface-2 bg-surface px-3 py-2.5 text-body text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none"
             />
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap gap-2">
@@ -104,7 +104,7 @@ export default function Thread({ ticket, users, viewer }) {
                   <button
                     type="button"
                     onClick={() => setText(SUGGESTED[ticket.category] ?? SUGGESTED.Other)}
-                    className="rounded-lg border border-warm/25 px-3 py-1.5 text-caption font-medium text-warm/55 transition-colors hover:border-teal hover:text-teal-deep"
+                    className="rounded-lg border border-warm/25 px-3 py-1.5 text-caption font-medium text-ink-3 transition-colors hover:border-teal hover:text-teal-deep"
                     title="Insert a reply frame for this category (mock assist)"
                   >
                     Suggested reply

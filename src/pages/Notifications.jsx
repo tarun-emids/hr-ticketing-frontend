@@ -67,7 +67,7 @@ export default function Notifications() {
               </span>
             )}
           </h1>
-          <p className="mt-2 text-caption text-warm/50">
+          <p className="mt-2 text-caption text-ink-3">
             Your own ticket updates. Notification text stays generic on purpose — open the ticket
             for detail.
           </p>
@@ -77,7 +77,7 @@ export default function Notifications() {
             onClick={() => {
               if (user?.id) dispatch(markAllNotificationsRead({ userId: user.id })).catch(() => {});
             }}
-            className="rounded-lg border border-warm/25 px-3 py-1.5 text-caption font-medium text-warm/55 transition-colors hover:border-teal hover:text-teal-deep"
+            className="rounded-lg border border-warm/25 px-3 py-1.5 text-caption font-medium text-ink-3 transition-colors hover:border-teal hover:text-teal-deep"
           >
             Mark all read
           </button>
@@ -105,7 +105,7 @@ export default function Notifications() {
           <button
             onClick={loadMore}
             disabled={loadingMore}
-            className="inline-flex items-center gap-2 rounded-lg border border-warm/25 px-4 py-2.5 text-body font-medium text-warm/60 transition-colors hover:border-teal hover:text-teal-deep disabled:opacity-40"
+            className="inline-flex items-center gap-2 rounded-lg border border-warm/25 px-4 py-2.5 text-body font-medium text-ink-2 transition-colors hover:border-teal hover:text-teal-deep disabled:opacity-40"
           >
             {loadingMore ? "Loading…" : "Load older"}
             <IconArrowDownRight size={16} aria-hidden />

@@ -210,14 +210,14 @@ export function Heatmap({ heatmap }) {
     <div className="min-w-[560px]">
       <div className="grid grid-cols-[3rem_repeat(24,1fr)]">
         {Array.from({ length: 24 }, (_, h) => (
-          <span key={h} className="pb-1 text-center font-mono text-[9px] text-warm/30">
+          <span key={h} className="pb-1 text-center font-mono text-[9px] text-ink-3">
             {h % 3 === 0 ? String(h).padStart(2, "0") : ""}
           </span>
         ))}
       </div>
       {days.map((day, d) => (
         <div key={day} className="grid grid-cols-[3rem_repeat(24,1fr)] items-center">
-          <span className="text-[10px] font-medium text-warm/50">{day}</span>
+          <span className="text-[10px] font-medium text-ink-3">{day}</span>
           {cells[d].map((count, h) => {
             const isPeak = peak && peak.day === day && peak.hour === h;
             return (
@@ -238,7 +238,7 @@ export function Heatmap({ heatmap }) {
           })}
         </div>
       ))}
-      <p className="mt-3 text-caption text-warm/40">
+      <p className="mt-3 text-caption text-ink-3">
         {peak
           ? `Busiest cell: ${peakLabel(peak.day, peak.hour)} — ${peak.count}`
           : "No creations yet."}
@@ -254,7 +254,7 @@ export function RankedBars({ rows, labelKey, valueKey, max }) {
     <ul className="flex flex-col gap-2">
       {rows.map((row, i) => (
         <li key={i} className="flex items-center gap-3">
-          <span className="w-28 shrink-0 truncate text-caption text-warm/70">{row[labelKey]}</span>
+          <span className="w-28 shrink-0 truncate text-caption text-ink-2">{row[labelKey]}</span>
           <span className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
             <span
               className="block h-2 rounded-full bg-teal"
@@ -262,9 +262,7 @@ export function RankedBars({ rows, labelKey, valueKey, max }) {
               aria-hidden
             />
           </span>
-          <span className="w-10 text-right font-mono text-[11px] text-warm/80">
-            {row[valueKey]}
-          </span>
+          <span className="w-10 text-right font-mono text-[11px] text-ink-2">{row[valueKey]}</span>
         </li>
       ))}
     </ul>

@@ -62,7 +62,7 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
             className={`mono-label border px-3 py-1.5 text-[10px] transition-colors ${
               period === p.key
                 ? "border-teal bg-teal text-canvas"
-                : "border-warm/15 text-warm/50 hover:border-teal hover:text-teal"
+                : "border-warm/15 text-ink-3 hover:border-teal hover:text-teal"
             }`}
           >
             {p.label.toUpperCase()}
@@ -145,7 +145,7 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
           {/* created vs resolved across the window */}
           {metrics.series?.length > 0 && (
             <section className="mb-8">
-              <p className="mb-3 text-caption font-medium text-warm/50">
+              <p className="mb-3 text-caption font-medium text-ink-3">
                 Created vs resolved ({period})
               </p>
               <div className="border border-surface-2 bg-surface p-4">
@@ -165,7 +165,7 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
           {/* response + solve HOURS per bucket — how quickly work moves */}
           {metrics.series?.some((b) => b.avgResponseHrs != null || b.avgSolveHrs != null) && (
             <section className="mb-8">
-              <p className="mb-3 text-caption font-medium text-warm/50">
+              <p className="mb-3 text-caption font-medium text-ink-3">
                 Response &amp; solve speed per {period === "24h" ? "hour" : "day"} ({period})
               </p>
               <div className="border border-surface-2 bg-surface p-4">
@@ -185,9 +185,7 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
           {/* workload by current status of the pending side */}
           {metrics.workload?.length > 0 && (
             <section className="mb-8">
-              <p className="mb-3 text-caption font-medium text-warm/50">
-                Workload by current status
-              </p>
+              <p className="mb-3 text-caption font-medium text-ink-3">Workload by current status</p>
               <div className="border border-surface-2 bg-surface p-4">
                 <CountBars
                   data={metrics.workload}
@@ -204,7 +202,7 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
           {/* what the agent solves, by category */}
           {metrics.categories?.length > 0 && (
             <section className="mb-8">
-              <p className="mb-3 text-caption font-medium text-warm/50">
+              <p className="mb-3 text-caption font-medium text-ink-3">
                 Resolutions by category (completed in window)
               </p>
               <div className="border border-surface-2 bg-surface p-5">
@@ -216,7 +214,7 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
           {/* peer comparison (admin drill-down only — passes leaderboard rows) */}
           {peers?.length > 1 && (
             <section className="mb-8">
-              <p className="mb-3 text-caption font-medium text-warm/50">Team score ({period})</p>
+              <p className="mb-3 text-caption font-medium text-ink-3">Team score ({period})</p>
               <div className="border border-surface-2 bg-surface p-5">
                 <RankedBars rows={peers} labelKey="name" valueKey="score" />
               </div>
@@ -227,7 +225,7 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {metrics.responseDistribution?.length > 0 && (
               <section>
-                <p className="mb-3 text-caption font-medium text-warm/50">First response time</p>
+                <p className="mb-3 text-caption font-medium text-ink-3">First response time</p>
                 <div className="border border-surface-2 bg-surface p-4">
                   <HistogramBars
                     data={metrics.responseDistribution}
@@ -239,7 +237,7 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
             )}
             {metrics.solveDistribution?.length > 0 && (
               <section>
-                <p className="mb-3 text-caption font-medium text-warm/50">Time to resolve</p>
+                <p className="mb-3 text-caption font-medium text-ink-3">Time to resolve</p>
                 <div className="border border-surface-2 bg-surface p-4">
                   <HistogramBars
                     data={metrics.solveDistribution}
@@ -251,7 +249,7 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
             )}
           </div>
 
-          <p className="mt-6 text-caption text-warm/30">
+          <p className="mt-6 text-caption text-ink-3">
             {selfMode
               ? "Your own numbers — nothing here is visible to other agents."
               : `Metrics for ${agentName || "this agent"}`}{" "}
@@ -277,9 +275,9 @@ function Stat({ label, value, sub, tone = "warm" }) {
           : "text-warm";
   return (
     <div className="rounded-xl border border-surface-2 bg-surface p-4 shadow-xs">
-      <p className="text-caption font-medium text-warm/50">{label}</p>
+      <p className="text-caption font-medium text-ink-3">{label}</p>
       <p className={`mt-1.5 text-h2 font-semibold tabular-nums ${toneClass}`}>{value}</p>
-      <p className="mt-1 text-caption text-warm/45">{sub}</p>
+      <p className="mt-1 text-caption text-ink-3">{sub}</p>
     </div>
   );
 }

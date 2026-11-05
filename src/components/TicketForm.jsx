@@ -20,8 +20,8 @@ import { selectUser } from "../state/authSlice";
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB — same cap the backend enforces
 
 const FIELD =
-  "w-full rounded-lg border border-surface-2 bg-surface px-3 py-2.5 text-body text-warm placeholder:text-warm/35 focus:border-teal focus:outline-none";
-const LABEL = "mb-1.5 block text-caption font-medium text-warm/55";
+  "w-full rounded-lg border border-surface-2 bg-surface px-3 py-2.5 text-body text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none";
+const LABEL = "mb-1.5 block text-caption font-medium text-ink-3";
 
 function FieldError({ msg }) {
   if (!msg) return null;
@@ -198,7 +198,7 @@ export default function TicketForm() {
       className="soft-bl border border-surface-2 bg-surface p-6 sm:p-8"
     >
       {loadingDraft ? (
-        <p className="text-body text-warm/55" role="status">
+        <p className="text-body text-ink-3" role="status">
           Loading draft…
         </p>
       ) : draftLoadError ? (
@@ -274,7 +274,7 @@ export default function TicketForm() {
                 className={`${FIELD} resize-y`}
               />
               <FieldError msg={errors.description} />
-              <p className="mt-1.5 mono-label text-[10px] text-warm/30">
+              <p className="mt-1.5 mono-label text-[10px] text-ink-3">
                 {description.trim().length} CHARS
               </p>
             </div>
@@ -289,7 +289,7 @@ export default function TicketForm() {
                   <span className="min-w-0 flex-1 truncate text-body-lg text-warm">
                     {file.name}
                   </span>
-                  <span className="mono-label shrink-0 text-[10px] text-warm/40">
+                  <span className="mono-label shrink-0 text-[10px] text-ink-3">
                     {(file.size / 1024).toFixed(0)} KB
                   </span>
                   <button
@@ -305,7 +305,7 @@ export default function TicketForm() {
                   <span className="min-w-0 flex-1 truncate text-body-lg text-warm">
                     {savedAttachment.name}
                   </span>
-                  <span className="mono-label shrink-0 text-[10px] text-warm/40">
+                  <span className="mono-label shrink-0 text-[10px] text-ink-3">
                     {(savedAttachment.size / 1024).toFixed(0)} KB
                   </span>
                   <label
@@ -325,7 +325,7 @@ export default function TicketForm() {
               ) : (
                 <label
                   htmlFor="tf-file"
-                  className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-warm/25 bg-surface px-3 py-4 text-body text-warm/50 transition-colors hover:border-teal/50 hover:text-warm"
+                  className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-warm/25 bg-surface px-3 py-4 text-body text-ink-3 transition-colors hover:border-teal/50 hover:text-warm"
                 >
                   <IconUpload size={16} aria-hidden className="text-teal-deep/80" />
                   Click to attach a screenshot or document
@@ -340,7 +340,7 @@ export default function TicketForm() {
             <button
               type="button"
               onClick={() => navigate("/my-tickets")}
-              className="rounded-lg px-2 py-2 text-body text-warm/50 hover:text-warm"
+              className="rounded-lg px-2 py-2 text-body text-ink-3 hover:text-warm"
             >
               Cancel
             </button>

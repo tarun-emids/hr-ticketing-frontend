@@ -4,15 +4,16 @@ import { useAppDispatch } from "../state/hooks";
 import { login as loginThunk } from "../state/authSlice";
 import * as api from "../api/client";
 import Logo from "../components/Logo";
+import cityImg from "../assets/city-teal.jpg";
 
 const FIELD =
-  "w-full rounded-lg border border-surface-2 bg-surface px-3 py-2.5 text-body text-warm placeholder:text-warm/30 focus:border-teal focus:outline-none";
-const LABEL = "mb-1.5 block text-caption font-medium text-warm/60";
+  "w-full rounded-lg border border-surface-2 bg-surface px-3 py-2.5 text-body text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none";
+const LABEL = "mb-1.5 block text-caption font-medium text-ink-2";
 
 function FieldError({ msg }) {
   if (!msg) return null;
   return (
-    <p className="mt-1.5 flex items-start gap-1.5 text-caption text-error">
+    <p className="mt-1.5 flex items-start gap-1.5 text-caption text-error-deep">
       <span aria-hidden className="mt-0.5 block h-2 w-2 shrink-0 bg-error" />
       {msg}
     </p>
@@ -129,21 +130,37 @@ export default function Login() {
 
   return (
     <div className="relative flex min-h-screen bg-canvas">
-      {/* Brand plate */}
-      <section className="relative hidden flex-1 flex-col justify-between overflow-hidden border-r border-surface-2 bg-surface p-12 lg:flex">
-        <Logo size="lg" />
+      {/* Brand plate — teal city backplate under a near-opaque surface scrim */}
+      <section
+        className="relative hidden flex-1 flex-col justify-between overflow-hidden border-r border-surface-2 bg-surface p-12 lg:flex"
+        style={{
+          backgroundImage: `url(${cityImg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center 55%",
+        }}
+      >
+        <div
+          className="animate-fade-up absolute inset-0 bg-linear-to-b from-surface/93 via-surface/85 to-surface/95"
+          aria-hidden
+        />
+        <div className="relative flex flex-1 flex-col justify-between py-12">
+          <Logo size="lg" />
 
-        <div className="max-w-xl">
-          <h1 className="text-display text-warm">
-            Outcomes you can <span className="text-teal-deep">track.</span>
-          </h1>
-          <p className="mt-5 max-w-md text-body-lg text-warm/65">
-            Raise requests, follow the thread, know exactly where each ticket stands — without
-            chasing anyone down.
+          <div className="max-w-xl">
+            <div className="rule-teal mb-6" />
+            <h1 className="text-display text-warm">
+              Outcomes you can <span className="text-teal-deep">track.</span>
+            </h1>
+            <p className="mt-5 max-w-md text-body-lg text-ink-2">
+              Raise requests, follow the thread, know exactly where each ticket stands — without
+              chasing anyone down.
+            </p>
+          </div>
+
+          <p className="text-caption font-medium tracking-wide text-ink-3">
+            Emids · HR desk · confidential
           </p>
         </div>
-
-        <p className="text-caption text-warm/35">Emids · HR desk · confidential</p>
       </section>
 
       {/* Sign-in card */}
@@ -160,7 +177,7 @@ export default function Login() {
           <h1 className="text-h3 text-warm">
             {mode === "login" ? "Sign in" : "Reset your password"}
           </h1>
-          <p className="mt-1 text-caption text-warm/50">
+          <p className="mt-1 text-caption text-ink-3">
             Use the account your organisation gave you.
           </p>
           <div className="mt-6" />
@@ -216,7 +233,7 @@ export default function Login() {
 
           {mode === "forgot-reset" && (
             <>
-              <p className="mb-5 text-caption text-warm/60">
+              <p className="mb-5 text-caption text-ink-2">
                 Enter the code sent to <span className="font-medium text-warm">{email}</span> and
                 choose a new password.
               </p>
@@ -271,7 +288,7 @@ export default function Login() {
           )}
 
           {mode === "forgot-request" && (
-            <p className="mb-6 text-caption text-warm/60">
+            <p className="mb-6 text-caption text-ink-2">
               We’ll email a reset code if an account exists for this address.
             </p>
           )}
@@ -317,7 +334,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => changeMode(mode === "forgot-reset" ? "forgot-request" : "login")}
-              className="mt-4 w-full text-center text-caption text-warm/55 underline underline-offset-4 hover:text-warm"
+              className="mt-4 w-full text-center text-caption text-ink-3 underline underline-offset-4 hover:text-warm"
             >
               {mode === "forgot-reset" ? "Use a different email" : "Back to sign in"}
             </button>
@@ -350,7 +367,7 @@ export default function Login() {
           )}
 
           {mode === "login" && (
-            <p className="mt-5 text-center text-caption text-warm/35">
+            <p className="mt-5 text-center text-caption text-ink-3">
               Accounts are provisioned by your organisation — there is no sign-up. Contact HR/IT for
               access.
             </p>
