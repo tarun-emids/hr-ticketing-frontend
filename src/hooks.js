@@ -1,6 +1,19 @@
 import { listTicketsPage } from "./api/client";
 import { useEffect, useRef, useState } from "react";
 
+// The backend's /tickets returns a bare array (server-side pagination not
+// landed yet); normalize it into the paged envelope the call sites expect.
+const normalizePage = (res, fallbackPageSize) =>
+  Array.isArray(res)
+    ? {
+        items: res,
+        page: 1,
+        pageSize: fallbackPageSize,
+        total: res.length,
+        hasNext: false,
+      }
+    : res;
+
 export function useTicketsPage(viewerId, query = {}, pollMs = 0) {
   const [state, setState] = useState({
     items: [],
@@ -25,7 +38,12 @@ export function useTicketsPage(viewerId, query = {}, pollMs = 0) {
     const load = () =>
       listTicketsPage({ viewerId, ...queryRef.current })
         .then((res) => {
-          if (alive) setState({ ...res, loading: false, error: null });
+          if (alive)
+            setState({
+              ...normalizePage(res, queryRef.current.pageSize),
+              loading: false,
+              error: null,
+            });
         })
         .catch((e) => {
           if (alive) {
