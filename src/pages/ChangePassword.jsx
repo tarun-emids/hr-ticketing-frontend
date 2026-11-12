@@ -126,7 +126,7 @@ export default function ChangePassword() {
         <button
           type="submit"
           disabled={submitting}
-          className="mono-label w-full border border-teal bg-teal py-3.5 text-[10px] text-canvas transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
+          className="mono-label w-full border border-teal bg-teal py-3.5 text-[10px] text-teal-ink transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-40"
         >
           {submitting ? "Updating…" : "Change password ↘"}
         </button>

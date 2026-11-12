@@ -30,6 +30,11 @@
   --app-teal: #0d9488;
   --app-teal-deep: #0f766e;
 
+  /* Ink to put ON a teal fill: near-black so it clears 4.5:1 on teal-600
+     (4.65:1); dark theme keeps its dark-on-teal-400 pairing. Use for every
+     bg-teal surface — text-canvas on teal fails AA in light theme. */
+  --app-teal-ink: #18181b;
+
   --app-link: #0284c7;
   --app-ok: #10b981;
   --app-error: #ef4444;
@@ -59,6 +64,7 @@
   --app-teal-light: #115e59;
   --app-teal: #2dd4bf;
   --app-teal-deep: #99f6e4;
+  --app-teal-ink: #131316;
 
   --app-link: #38bdf8;
   --app-ok: #34d399;
@@ -85,6 +91,7 @@
   --color-teal-light: var(--app-teal-light);
   --color-teal: var(--app-teal);
   --color-teal-deep: var(--app-teal-deep);
+  --color-teal-ink: var(--app-teal-ink);
 
   --color-link: var(--app-link);
   --color-ok: var(--app-ok);
@@ -238,9 +245,14 @@ body {
   }
 }
 
+/* Two-tone focus ring: a teal ring kept away from the control by a canvas gap.
+   The gap is what keeps the ring visible on teal fills (a teal ring directly
+   against a teal button reads 1:1 and fails 2.4.7); the teal-deep/white gap
+   pairing clears 3:1 non-text contrast against both the page and teal-600. */
 :focus-visible {
-  outline: 2px solid var(--app-teal);
-  outline-offset: 1px;
+  outline: 2px solid var(--app-teal-deep);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--app-canvas);
 }
 
 ::selection {

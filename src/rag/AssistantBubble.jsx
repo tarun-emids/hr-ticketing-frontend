@@ -15,9 +15,9 @@ export default function AssistantBubble() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Close HR assistant" : "Open HR assistant"}
-        title={open ? "Close HR assistant" : "HR assistant — answers cite the policy paragraph"}
-        className="soft-bl flex h-12 w-12 items-center justify-center border border-teal bg-teal text-canvas transition-colors hover:bg-teal-light"
+        aria-label={open ? "Hide HR assistant" : "Open HR assistant"}
+        title={open ? "Hide HR assistant" : "HR assistant — answers cite the policy paragraph"}
+        className="soft-bl flex h-12 w-12 items-center justify-center border border-teal bg-teal text-teal-ink transition-colors hover:bg-teal-light"
       >
         <Icon d={open ? PATHS.arrowLeft : PATHS.kb} className="h-5 w-5" />
       </button>

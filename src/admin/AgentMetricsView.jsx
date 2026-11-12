@@ -56,12 +56,15 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
         {PERIODS.map((p) => (
           <button
             key={p.key}
+            type="button"
+            id={`period-tab-${p.key}`}
             role="tab"
             aria-selected={period === p.key}
+            aria-controls="metrics-period-panel"
             onClick={() => setPeriod(p.key)}
             className={`mono-label border px-3 py-1.5 text-[10px] transition-colors ${
               period === p.key
-                ? "border-teal bg-teal text-canvas"
+                ? "border-teal bg-teal text-teal-ink"
                 : "border-warm/15 text-ink-3 hover:border-teal hover:text-teal"
             }`}
           >
@@ -70,194 +73,208 @@ export default function AgentMetricsView({ agentId, agentName, selfMode = false,
         ))}
       </div>
 
-      {error ? (
-        <EmptyState icon="↘" title="Metrics unavailable" body={error} />
-      ) : loading || !metrics ? (
-        <Spinner label="Crunching the numbers" />
-      ) : (
-        <>
-          {/* the five counters */}
-          <div className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <Stat
-              label="Accepted"
-              value={metrics.accepted}
-              sub="Assigned · created in window"
-              tone="teal"
-            />
-            <Stat label="Completed" value={metrics.completed} sub="Resolved in window" tone="ok" />
-            <Stat label="Pending" value={metrics.pending} sub="Still open" tone="warm" />
-            <Stat
-              label="Avg solve"
-              value={metrics.avgSolveHrs == null ? "—" : formatHrs(metrics.avgSolveHrs * 3_600_000)}
-              sub={
-                metrics.fastestSolveHrs == null
-                  ? "No completions yet"
-                  : `Fastest ${formatHrs(metrics.fastestSolveHrs * 3_600_000)}`
-              }
-              tone="teal"
-            />
-            <Stat
-              label="Avg first reply"
-              value={
-                metrics.avgFirstResponseHrs == null
-                  ? "—"
-                  : formatHrs(metrics.avgFirstResponseHrs * 3_600_000)
-              }
-              sub={
-                metrics.fastestFirstResponseHrs == null
-                  ? "No replies yet"
-                  : `Fastest ${formatHrs(metrics.fastestFirstResponseHrs * 3_600_000)}`
-              }
-              tone="teal"
-            />
-            <Stat
-              label="Median reply"
-              value={
-                metrics.medianFirstResponseHrs == null
-                  ? "—"
-                  : formatHrs(metrics.medianFirstResponseHrs * 3_600_000)
-              }
-              sub="Half answered within"
-              tone="teal"
-            />
-            <Stat
-              label="Median solve"
-              value={
-                metrics.medianSolveHrs == null ? "—" : formatHrs(metrics.medianSolveHrs * 3_600_000)
-              }
-              sub="Half completed within"
-              tone="teal"
-            />
-            <Stat
-              label="SLA compliance"
-              value={metrics.slaComplianceRate == null ? "—" : `${metrics.slaComplianceRate}%`}
-              sub={`${metrics.slaWithinTarget ?? 0} / ${metrics.slaWindowCompletions ?? 0} completions in target`}
-              tone="ok"
-            />
-            <Stat
-              label="Perf. score"
-              value={metrics.score == null ? "—" : `${metrics.score}/100`}
-              sub="SLA · response · throughput"
-              tone="teal"
-            />
-          </div>
+      {/* one panel whose content the period switch re-queries */}
+      <div id="metrics-period-panel" role="tabpanel" aria-labelledby={`period-tab-${period}`}>
+        {error ? (
+          <EmptyState icon="↘" title="Metrics unavailable" body={error} />
+        ) : loading || !metrics ? (
+          <Spinner label="Crunching the numbers" />
+        ) : (
+          <>
+            {/* the five counters */}
+            <div className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <Stat
+                label="Accepted"
+                value={metrics.accepted}
+                sub="Assigned · created in window"
+                tone="teal"
+              />
+              <Stat
+                label="Completed"
+                value={metrics.completed}
+                sub="Resolved in window"
+                tone="ok"
+              />
+              <Stat label="Pending" value={metrics.pending} sub="Still open" tone="warm" />
+              <Stat
+                label="Avg solve"
+                value={
+                  metrics.avgSolveHrs == null ? "—" : formatHrs(metrics.avgSolveHrs * 3_600_000)
+                }
+                sub={
+                  metrics.fastestSolveHrs == null
+                    ? "No completions yet"
+                    : `Fastest ${formatHrs(metrics.fastestSolveHrs * 3_600_000)}`
+                }
+                tone="teal"
+              />
+              <Stat
+                label="Avg first reply"
+                value={
+                  metrics.avgFirstResponseHrs == null
+                    ? "—"
+                    : formatHrs(metrics.avgFirstResponseHrs * 3_600_000)
+                }
+                sub={
+                  metrics.fastestFirstResponseHrs == null
+                    ? "No replies yet"
+                    : `Fastest ${formatHrs(metrics.fastestFirstResponseHrs * 3_600_000)}`
+                }
+                tone="teal"
+              />
+              <Stat
+                label="Median reply"
+                value={
+                  metrics.medianFirstResponseHrs == null
+                    ? "—"
+                    : formatHrs(metrics.medianFirstResponseHrs * 3_600_000)
+                }
+                sub="Half answered within"
+                tone="teal"
+              />
+              <Stat
+                label="Median solve"
+                value={
+                  metrics.medianSolveHrs == null
+                    ? "—"
+                    : formatHrs(metrics.medianSolveHrs * 3_600_000)
+                }
+                sub="Half completed within"
+                tone="teal"
+              />
+              <Stat
+                label="SLA compliance"
+                value={metrics.slaComplianceRate == null ? "—" : `${metrics.slaComplianceRate}%`}
+                sub={`${metrics.slaWithinTarget ?? 0} / ${metrics.slaWindowCompletions ?? 0} completions in target`}
+                tone="ok"
+              />
+              <Stat
+                label="Perf. score"
+                value={metrics.score == null ? "—" : `${metrics.score}/100`}
+                sub="SLA · response · throughput"
+                tone="teal"
+              />
+            </div>
 
-          {/* created vs resolved across the window */}
-          {metrics.series?.length > 0 && (
-            <section className="mb-8">
-              <p className="mb-3 text-caption font-medium text-ink-3">
-                Created vs resolved ({period})
-              </p>
-              <div className="border border-surface-2 bg-surface p-4">
-                <DualCountLines
-                  data={metrics.series}
-                  lines={[
-                    { key: "created", label: "Created" },
-                    { key: "resolved", label: "Resolved" },
-                  ]}
-                  yLabel="tickets"
-                  xLabel={period === "24h" ? "hour of day" : "day (ends at)"}
-                />
-              </div>
-            </section>
-          )}
-
-          {/* response + solve HOURS per bucket — how quickly work moves */}
-          {metrics.series?.some((b) => b.avgResponseHrs != null || b.avgSolveHrs != null) && (
-            <section className="mb-8">
-              <p className="mb-3 text-caption font-medium text-ink-3">
-                Response &amp; solve speed per {period === "24h" ? "hour" : "day"} ({period})
-              </p>
-              <div className="border border-surface-2 bg-surface p-4">
-                <TimeLines
-                  data={metrics.series}
-                  series={[
-                    { key: "avgResponseHrs", label: "avg first response (h)", color: "#abc7ca" },
-                    { key: "avgSolveHrs", label: "avg time to solve (h)", color: "#47a2b0" },
-                  ]}
-                  yLabel="hours"
-                  xLabel={period === "24h" ? "hour of day" : "day (ends at)"}
-                />
-              </div>
-            </section>
-          )}
-
-          {/* workload by current status of the pending side */}
-          {metrics.workload?.length > 0 && (
-            <section className="mb-8">
-              <p className="mb-3 text-caption font-medium text-ink-3">Workload by current status</p>
-              <div className="border border-surface-2 bg-surface p-4">
-                <CountBars
-                  data={metrics.workload}
-                  xKey="status"
-                  yKey="count"
-                  height={160}
-                  yLabel="open tickets"
-                  xLabel="current status"
-                />
-              </div>
-            </section>
-          )}
-
-          {/* what the agent solves, by category */}
-          {metrics.categories?.length > 0 && (
-            <section className="mb-8">
-              <p className="mb-3 text-caption font-medium text-ink-3">
-                Resolutions by category (completed in window)
-              </p>
-              <div className="border border-surface-2 bg-surface p-5">
-                <RankedBars rows={metrics.categories} labelKey="category" valueKey="resolved" />
-              </div>
-            </section>
-          )}
-
-          {/* peer comparison (admin drill-down only — passes leaderboard rows) */}
-          {peers?.length > 1 && (
-            <section className="mb-8">
-              <p className="mb-3 text-caption font-medium text-ink-3">Team score ({period})</p>
-              <div className="border border-surface-2 bg-surface p-5">
-                <RankedBars rows={peers} labelKey="name" valueKey="score" />
-              </div>
-            </section>
-          )}
-
-          {/* response + solve distributions */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {metrics.responseDistribution?.length > 0 && (
-              <section>
-                <p className="mb-3 text-caption font-medium text-ink-3">First response time</p>
+            {/* created vs resolved across the window */}
+            {metrics.series?.length > 0 && (
+              <section className="mb-8">
+                <p className="mb-3 text-caption font-medium text-ink-3">
+                  Created vs resolved ({period})
+                </p>
                 <div className="border border-surface-2 bg-surface p-4">
-                  <HistogramBars
-                    data={metrics.responseDistribution}
-                    xLabel="tickets"
-                    yLabel="answered within"
+                  <DualCountLines
+                    data={metrics.series}
+                    lines={[
+                      { key: "created", label: "Created" },
+                      { key: "resolved", label: "Resolved" },
+                    ]}
+                    yLabel="tickets"
+                    xLabel={period === "24h" ? "hour of day" : "day (ends at)"}
                   />
                 </div>
               </section>
             )}
-            {metrics.solveDistribution?.length > 0 && (
-              <section>
-                <p className="mb-3 text-caption font-medium text-ink-3">Time to resolve</p>
+
+            {/* response + solve HOURS per bucket — how quickly work moves */}
+            {metrics.series?.some((b) => b.avgResponseHrs != null || b.avgSolveHrs != null) && (
+              <section className="mb-8">
+                <p className="mb-3 text-caption font-medium text-ink-3">
+                  Response &amp; solve speed per {period === "24h" ? "hour" : "day"} ({period})
+                </p>
                 <div className="border border-surface-2 bg-surface p-4">
-                  <HistogramBars
-                    data={metrics.solveDistribution}
-                    xLabel="tickets"
-                    yLabel="solved within"
+                  <TimeLines
+                    data={metrics.series}
+                    series={[
+                      { key: "avgResponseHrs", label: "avg first response (h)", color: "#abc7ca" },
+                      { key: "avgSolveHrs", label: "avg time to solve (h)", color: "#47a2b0" },
+                    ]}
+                    yLabel="hours"
+                    xLabel={period === "24h" ? "hour of day" : "day (ends at)"}
                   />
                 </div>
               </section>
             )}
-          </div>
 
-          <p className="mt-6 text-caption text-ink-3">
-            {selfMode
-              ? "Your own numbers — nothing here is visible to other agents."
-              : `Metrics for ${agentName || "this agent"}`}{" "}
-            · basis: accepted/pending = assigned tickets created in the window, completed = tickets
-            resolved in the window.
-          </p>
-        </>
-      )}
+            {/* workload by current status of the pending side */}
+            {metrics.workload?.length > 0 && (
+              <section className="mb-8">
+                <p className="mb-3 text-caption font-medium text-ink-3">
+                  Workload by current status
+                </p>
+                <div className="border border-surface-2 bg-surface p-4">
+                  <CountBars
+                    data={metrics.workload}
+                    xKey="status"
+                    yKey="count"
+                    height={160}
+                    yLabel="open tickets"
+                    xLabel="current status"
+                  />
+                </div>
+              </section>
+            )}
+
+            {/* what the agent solves, by category */}
+            {metrics.categories?.length > 0 && (
+              <section className="mb-8">
+                <p className="mb-3 text-caption font-medium text-ink-3">
+                  Resolutions by category (completed in window)
+                </p>
+                <div className="border border-surface-2 bg-surface p-5">
+                  <RankedBars rows={metrics.categories} labelKey="category" valueKey="resolved" />
+                </div>
+              </section>
+            )}
+
+            {/* peer comparison (admin drill-down only — passes leaderboard rows) */}
+            {peers?.length > 1 && (
+              <section className="mb-8">
+                <p className="mb-3 text-caption font-medium text-ink-3">Team score ({period})</p>
+                <div className="border border-surface-2 bg-surface p-5">
+                  <RankedBars rows={peers} labelKey="name" valueKey="score" />
+                </div>
+              </section>
+            )}
+
+            {/* response + solve distributions */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {metrics.responseDistribution?.length > 0 && (
+                <section>
+                  <p className="mb-3 text-caption font-medium text-ink-3">First response time</p>
+                  <div className="border border-surface-2 bg-surface p-4">
+                    <HistogramBars
+                      data={metrics.responseDistribution}
+                      xLabel="tickets"
+                      yLabel="answered within"
+                    />
+                  </div>
+                </section>
+              )}
+              {metrics.solveDistribution?.length > 0 && (
+                <section>
+                  <p className="mb-3 text-caption font-medium text-ink-3">Time to resolve</p>
+                  <div className="border border-surface-2 bg-surface p-4">
+                    <HistogramBars
+                      data={metrics.solveDistribution}
+                      xLabel="tickets"
+                      yLabel="solved within"
+                    />
+                  </div>
+                </section>
+              )}
+            </div>
+
+            <p className="mt-6 text-caption text-ink-3">
+              {selfMode
+                ? "Your own numbers — nothing here is visible to other agents."
+                : `Metrics for ${agentName || "this agent"}`}{" "}
+              · basis: accepted/pending = assigned tickets created in the window, completed =
+              tickets resolved in the window.
+            </p>
+          </>
+        )}
+      </div>
     </div>
   );
 }

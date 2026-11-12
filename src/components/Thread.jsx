@@ -114,7 +114,7 @@ export default function Thread({ ticket, users, viewer }) {
               <button
                 type="submit"
                 disabled={sending || text.trim().length < 2}
-                className="inline-flex items-center gap-2 rounded-lg bg-teal px-4 py-2.5 text-body font-medium text-canvas shadow-xs transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                className="inline-flex items-center gap-2 rounded-lg bg-teal px-4 py-2.5 text-body font-medium text-teal-ink shadow-xs transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {sending ? "Sending…" : "Send reply"}
                 <IconArrowDownRight size={16} aria-hidden />

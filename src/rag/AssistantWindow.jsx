@@ -34,6 +34,18 @@ export default function AssistantWindow({ onClose }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  // True modal (2.4.3/4.1.2): the panel covers page content, so mark the page
+  // itself inert while open — everything tabbable outside the dialog is removed
+  // from the tab order and hidden from assistive tech, complementing the
+  // focus trap and Escape handling above.
+  useEffect(() => {
+    // main + asides = the app shell (sidebar, tab content); the focus trap
+    // owns Tab and Escape owns dismissal inside the dialog itself.
+    const targets = document.querySelectorAll("main, aside");
+    targets.forEach((el) => el.setAttribute("inert", ""));
+    return () => targets.forEach((el) => el.removeAttribute("inert"));
+  }, []);
+
   // Keep the newest message in view.
   useEffect(() => {
     const el = threadRef.current;
@@ -64,6 +76,7 @@ export default function AssistantWindow({ onClose }) {
     <div
       ref={dialogRef}
       role="dialog"
+      aria-modal="true"
       aria-label="HR assistant"
       className="soft-bl flex w-80 flex-col border border-surface-2 bg-surface"
       style={{ maxHeight: "70vh" }}
@@ -81,7 +94,7 @@ export default function AssistantWindow({ onClose }) {
       </div>
 
       {/* Thread */}
-      <div ref={threadRef} className="flex-1 overflow-y-auto px-5 py-2">
+      <div ref={threadRef} aria-live="polite" className="flex-1 overflow-y-auto px-5 py-2">
         {messages.length === 0 && (
           <p className="py-6 text-center text-caption leading-relaxed text-ink-3">
             Ask about company policies — leave, payroll, insurance, hybrid work.
@@ -112,7 +125,7 @@ export default function AssistantWindow({ onClose }) {
         <button
           type="submit"
           disabled={!input.trim() || sending}
-          className="mono-label m-2.5 border border-teal bg-teal px-3 text-[10px] text-canvas transition-colors hover:bg-teal-light disabled:pointer-events-none disabled:opacity-40"
+          className="mono-label m-2.5 border border-teal bg-teal px-3 text-[10px] text-teal-ink transition-colors hover:bg-teal-light disabled:pointer-events-none disabled:opacity-40"
         >
           Ask
         </button>

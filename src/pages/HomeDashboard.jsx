@@ -311,7 +311,7 @@ export default function HomeDashboard() {
               </div>
               <button
                 type="submit"
-                className="rounded-l-none rounded-r-xl bg-teal px-5 py-3 text-body font-medium text-canvas transition-colors hover:opacity-90"
+                className="rounded-l-none rounded-r-xl bg-teal px-5 py-3 text-body font-medium text-teal-ink transition-colors hover:opacity-90"
               >
                 Search
               </button>

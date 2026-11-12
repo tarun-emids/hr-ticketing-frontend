@@ -60,12 +60,15 @@ export default function AdminWorktable() {
           {PERIODS.map((p) => (
             <button
               key={p}
+              type="button"
+              id={`worktable-period-tab-${p}`}
               role="tab"
               aria-selected={period === p}
+              aria-controls="worktable-period-panel"
               onClick={() => setPeriod(p)}
               className={`mono-label border px-3 py-1.5 text-[10px] transition-colors ${
                 period === p
-                  ? "border-teal bg-teal text-canvas"
+                  ? "border-teal bg-teal text-teal-ink"
                   : "border-warm/15 text-ink-3 hover:border-teal hover:text-teal"
               }`}
             >
@@ -75,37 +78,44 @@ export default function AdminWorktable() {
         </div>
       </PageBanner>
 
-      {/* the AGENTS / TICKETS toggle */}
-      <div className="mb-6 flex gap-2">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            aria-pressed={tab === t.key}
-            title={t.hint}
-            className={`mono-label border px-4 py-2 text-[10px] transition-colors ${
-              tab === t.key
-                ? "border-teal bg-teal text-canvas"
-                : "border-warm/15 text-ink-3 hover:border-teal hover:text-teal"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-      <p className="mono-label mb-6 text-[9px] text-ink-3">
-        {TABS.find((t) => t.key === tab)?.hint}
-      </p>
+      {/* one panel whose content the period switch re-queries */}
+      <div
+        id="worktable-period-panel"
+        role="tabpanel"
+        aria-labelledby={`worktable-period-tab-${period}`}
+      >
+        {/* the AGENTS / TICKETS toggle */}
+        <div className="mb-6 flex gap-2">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              aria-pressed={tab === t.key}
+              title={t.hint}
+              className={`mono-label border px-4 py-2 text-[10px] transition-colors ${
+                tab === t.key
+                  ? "border-teal bg-teal text-teal-ink"
+                  : "border-warm/15 text-ink-3 hover:border-teal hover:text-teal"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <p className="mono-label mb-6 text-[9px] text-ink-3">
+          {TABS.find((t) => t.key === tab)?.hint}
+        </p>
 
-      {error ? (
-        <EmptyState icon="↘" title="Worktable unavailable" body={error} />
-      ) : loading || !agents || !overview ? (
-        <Spinner label="Ranking the work" />
-      ) : tab === "agents" ? (
-        <AgentsPane agents={agents} period={period} />
-      ) : (
-        <TicketsPane overview={overview} period={period} />
-      )}
+        {error ? (
+          <EmptyState icon="↘" title="Worktable unavailable" body={error} />
+        ) : loading || !agents || !overview ? (
+          <Spinner label="Ranking the work" />
+        ) : tab === "agents" ? (
+          <AgentsPane agents={agents} period={period} />
+        ) : (
+          <TicketsPane overview={overview} period={period} />
+        )}
+      </div>
     </div>
   );
 }

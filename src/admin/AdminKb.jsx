@@ -262,7 +262,7 @@ export default function AdminKb() {
         <button
           type="submit"
           disabled={busy}
-          className="mono-label border border-teal bg-teal px-4 py-2 text-[10px] text-canvas transition hover:bg-teal-light disabled:opacity-40 sm:col-span-2"
+          className="mono-label border border-teal bg-teal px-4 py-2 text-[10px] text-teal-ink transition hover:bg-teal-light disabled:opacity-40 sm:col-span-2"
         >
           UPLOAD PDF
         </button>
@@ -344,7 +344,7 @@ export default function AdminKb() {
                     <button
                       type="submit"
                       disabled={busy}
-                      className="mono-label border border-teal bg-teal px-3 py-1.5 text-[10px] text-canvas hover:bg-teal-light disabled:opacity-40"
+                      className="mono-label border border-teal bg-teal px-3 py-1.5 text-[10px] text-teal-ink hover:bg-teal-light disabled:opacity-40"
                     >
                       SAVE
                     </button>

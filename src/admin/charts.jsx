@@ -66,80 +66,97 @@ export function CountBars({
   xLabel,
 }) {
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} margin={{ top: 8, right: 12, bottom: xLabel ? 34 : 10, left: 12 }}>
-        <CartesianGrid stroke={GRID} vertical={false} />
-        <XAxis
-          dataKey={xKey}
-          axisLine={{ stroke: AXIS_STYLE.stroke }}
-          tickLine={false}
-          style={AXIS_STYLE.tick}
-        >
-          {xLabel && <Label value={xLabel} offset={10} position="bottom" style={Y_LABEL_STYLE} />}
-        </XAxis>
-        <YAxis
-          allowDecimals={false}
-          axisLine={false}
-          tickLine={false}
-          style={AXIS_STYLE.tick}
-          label={{ value: yLabel, angle: -90, position: "left", style: Y_LABEL_STYLE }}
-        />
-        <Tooltip cursor={{ fill: "rgba(13,148,136,0.08)" }} {...tooltipStyle} />
-        <Bar
-          dataKey={yKey}
-          fill={TEAL}
-          maxBarSize={28}
-          radius={[3, 3, 0, 0]}
-          name={`${yKey}${suffix}`}
-        />
-      </BarChart>
-    </ResponsiveContainer>
+    <ChartFrame
+      caption={`Bar chart of ${yLabel} by ${xLabel ?? "point"}`}
+      columns={[xLabel ?? "Point", yLabel]}
+      rows={data.map((d) => [d[xKey], d[yKey]])}
+    >
+      <ResponsiveContainer width="100%" height={height}>
+        <BarChart data={data} margin={{ top: 8, right: 12, bottom: xLabel ? 34 : 10, left: 12 }}>
+          <CartesianGrid stroke={GRID} vertical={false} />
+          <XAxis
+            dataKey={xKey}
+            axisLine={{ stroke: AXIS_STYLE.stroke }}
+            tickLine={false}
+            style={AXIS_STYLE.tick}
+          >
+            {xLabel && <Label value={xLabel} offset={10} position="bottom" style={Y_LABEL_STYLE} />}
+          </XAxis>
+          <YAxis
+            allowDecimals={false}
+            axisLine={false}
+            tickLine={false}
+            style={AXIS_STYLE.tick}
+            label={{ value: yLabel, angle: -90, position: "left", style: Y_LABEL_STYLE }}
+          />
+          <Tooltip cursor={{ fill: "rgba(13,148,136,0.08)" }} {...tooltipStyle} />
+          <Bar
+            dataKey={yKey}
+            fill={TEAL}
+            maxBarSize={28}
+            radius={[3, 3, 0, 0]}
+            name={`${yKey}${suffix}`}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartFrame>
   );
 }
 
 // One line per series: [ { key, label, color? }, ... ] over {label, ...values}.
 export function TimeLines({ data, series, height = 220, yLabel = "tickets", xLabel }) {
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <LineChart data={data} margin={{ top: 8, right: 12, bottom: xLabel ? 34 : 10, left: 12 }}>
-        <CartesianGrid stroke={GRID} vertical={false} />
-        <XAxis
-          dataKey="label"
-          axisLine={{ stroke: AXIS_STYLE.stroke }}
-          tickLine={false}
-          style={AXIS_STYLE.tick}
-          interval="preserveStartEnd"
-        >
-          {xLabel && <Label value={xLabel} offset={10} position="bottom" style={Y_LABEL_STYLE} />}
-        </XAxis>
-        <YAxis
-          allowDecimals={false}
-          axisLine={false}
-          tickLine={false}
-          style={AXIS_STYLE.tick}
-          label={{ value: yLabel, angle: -90, position: "left", style: Y_LABEL_STYLE }}
-        />
-        <Tooltip {...tooltipStyle} />
-        <Legend
-          verticalAlign="top"
-          align="center"
-          wrapperStyle={{ fontSize: 11, color: CONSUMED_CAPTION, opacity: 0.65, paddingBottom: 6 }}
-        />
-        {series.map((s) => (
-          <Line
-            key={s.key}
-            type="monotone"
-            dataKey={s.key}
-            name={s.label}
-            stroke={s.color || TEAL}
-            strokeWidth={1.5}
-            dot={false}
-            activeDot={{ r: 3 }}
-            connectNulls
+    <ChartFrame
+      caption={`Line chart of ${series.map((s) => s.label).join(" and ")} per point`}
+      columns={[xLabel ?? "Point", ...series.map((s) => s.label)]}
+      rows={data.map((d) => [d.label, ...series.map((s) => d[s.key])])}
+    >
+      <ResponsiveContainer width="100%" height={height}>
+        <LineChart data={data} margin={{ top: 8, right: 12, bottom: xLabel ? 34 : 10, left: 12 }}>
+          <CartesianGrid stroke={GRID} vertical={false} />
+          <XAxis
+            dataKey="label"
+            axisLine={{ stroke: AXIS_STYLE.stroke }}
+            tickLine={false}
+            style={AXIS_STYLE.tick}
+            interval="preserveStartEnd"
+          >
+            {xLabel && <Label value={xLabel} offset={10} position="bottom" style={Y_LABEL_STYLE} />}
+          </XAxis>
+          <YAxis
+            allowDecimals={false}
+            axisLine={false}
+            tickLine={false}
+            style={AXIS_STYLE.tick}
+            label={{ value: yLabel, angle: -90, position: "left", style: Y_LABEL_STYLE }}
           />
-        ))}
-      </LineChart>
-    </ResponsiveContainer>
+          <Tooltip {...tooltipStyle} />
+          <Legend
+            verticalAlign="top"
+            align="center"
+            wrapperStyle={{
+              fontSize: 11,
+              color: CONSUMED_CAPTION,
+              opacity: 0.65,
+              paddingBottom: 6,
+            }}
+          />
+          {series.map((s) => (
+            <Line
+              key={s.key}
+              type="monotone"
+              dataKey={s.key}
+              name={s.label}
+              stroke={s.color || TEAL}
+              strokeWidth={1.5}
+              dot={false}
+              activeDot={{ r: 3 }}
+              connectNulls
+            />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartFrame>
   );
 }
 
@@ -161,41 +178,47 @@ export function DualCountLines({ data, lines, height = 220 }) {
 // xLabel captions the numeric axis, yLabel (optional) the bucket column.
 export function HistogramBars({ data, height = 180, xLabel = "tickets", yLabel = null }) {
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, bottom: 26, left: 8 }}>
-        <CartesianGrid stroke={GRID} horizontal={false} />
-        <XAxis
-          type="number"
-          allowDecimals={false}
-          axisLine={false}
-          tickLine={false}
-          style={AXIS_STYLE.tick}
-        >
-          <Label value={xLabel} offset={10} position="bottom" style={Y_LABEL_STYLE} />
-        </XAxis>
-        <YAxis
-          type="category"
-          dataKey="to"
-          axisLine={false}
-          tickLine={false}
-          width={64}
-          style={AXIS_STYLE.tick}
-          label={
-            yLabel
-              ? {
-                  value: yLabel,
-                  angle: -90,
-                  position: "insideLeft",
-                  offset: 10,
-                  style: Y_LABEL_STYLE,
-                }
-              : undefined
-          }
-        />
-        <Tooltip cursor={{ fill: "rgba(13,148,136,0.08)" }} {...tooltipStyle} />
-        <Bar dataKey="count" fill={TEAL} maxBarSize={16} name="tickets" radius={[0, 2, 2, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
+    <ChartFrame
+      caption={`Histogram of ${xLabel} per ${yLabel ?? "bucket"}`}
+      columns={[yLabel ?? "Bucket", xLabel]}
+      rows={data.map((d) => [d.to, d.count])}
+    >
+      <ResponsiveContainer width="100%" height={height}>
+        <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, bottom: 26, left: 8 }}>
+          <CartesianGrid stroke={GRID} horizontal={false} />
+          <XAxis
+            type="number"
+            allowDecimals={false}
+            axisLine={false}
+            tickLine={false}
+            style={AXIS_STYLE.tick}
+          >
+            <Label value={xLabel} offset={10} position="bottom" style={Y_LABEL_STYLE} />
+          </XAxis>
+          <YAxis
+            type="category"
+            dataKey="to"
+            axisLine={false}
+            tickLine={false}
+            width={64}
+            style={AXIS_STYLE.tick}
+            label={
+              yLabel
+                ? {
+                    value: yLabel,
+                    angle: -90,
+                    position: "insideLeft",
+                    offset: 10,
+                    style: Y_LABEL_STYLE,
+                  }
+                : undefined
+            }
+          />
+          <Tooltip cursor={{ fill: "rgba(13,148,136,0.08)" }} {...tooltipStyle} />
+          <Bar dataKey="count" fill={TEAL} maxBarSize={16} name="tickets" radius={[0, 2, 2, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartFrame>
   );
 }
 
@@ -207,7 +230,15 @@ export function Heatmap({ heatmap }) {
   const { days, cells, peak } = heatmap;
   const max = Math.max(1, ...cells.flat());
   return (
-    <div className="min-w-[560px]">
+    <div
+      role="img"
+      className="min-w-[560px]"
+      aria-label={`Ticket creation heat map, weekday × hour of day.${
+        peak
+          ? ` Busiest cell: ${peakLabel(peak.day, peak.hour)} — ${peak.count} tickets.`
+          : " No creations yet."
+      }`}
+    >
       <div className="grid grid-cols-[3rem_repeat(24,1fr)]">
         {Array.from({ length: 24 }, (_, h) => (
           <span key={h} className="pb-1 text-center font-mono text-[9px] text-ink-3">
@@ -266,5 +297,39 @@ export function RankedBars({ rows, labelKey, valueKey, max }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SVG chart text alternatives (WCAG 1.1.1): every recharts surface is wrapped
+// aria-hidden and paired with a visually-hidden table carrying the exact
+// plotted values, so screen-reader users get the data, not just the shape.
+
+function ChartFrame({ caption, columns, rows, children }) {
+  return (
+    <div>
+      <table className="sr-only">
+        <caption>{caption}</caption>
+        <thead>
+          <tr>
+            {columns.map((c) => (
+              <th key={c} scope="col">
+                {c}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((cells, i) => (
+            <tr key={i}>
+              {cells.map((v, j) => (
+                <td key={j}>{v == null ? "—" : v}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div aria-hidden="true">{children}</div>
+    </div>
   );
 }

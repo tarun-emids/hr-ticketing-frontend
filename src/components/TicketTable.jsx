@@ -43,15 +43,18 @@ function FilterSelect({ label, value, options, onChange }) {
 
 function SortButton({ label, mode, sortMode, setSortMode }) {
   const active = sortMode === mode || sortMode === `-${mode}`;
+  const dir = active ? (sortMode === `-${mode}` ? "descending" : "ascending") : null;
   return (
     <button
+      type="button"
       onClick={() => setSortMode(active ? `-${mode}` : mode)}
       className={`text-caption font-medium inline-flex items-center gap-1 transition-colors ${
         active ? "text-teal-deep" : "text-ink-3 hover:text-warm"
       }`}
-      title={`Sort by ${label}`}
+      title={`Sort by ${label}${dir ? ` (currently ${dir})` : ""}`}
     >
       {label}
+      {dir && <span className="sr-only">, sorted {dir}</span>}
       <span
         aria-hidden
         className={active ? "opacity-100" : "opacity-0 group-hover/head:opacity-40"}
@@ -113,6 +116,10 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
 
   const totalPages = Math.max(1, Math.ceil(view.total / view.pageSize));
 
+  // aria-sort value for a column header, from the current sortMode.
+  const sortState = (mode) =>
+    sortMode === mode ? "ascending" : sortMode === `-${mode}` ? "descending" : "none";
+
   return (
     <section>
       {view.error && (
@@ -136,7 +143,7 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
               className="w-full rounded-lg border border-surface-2 bg-surface py-2.5 pl-9 pr-3 text-body text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none"
             />
           </div>
-          <p className="shrink-0 text-caption text-ink-3">
+          <p aria-live="polite" className="shrink-0 text-caption text-ink-3">
             {view.loading
               ? "loading…"
               : `${view.total} ticket${view.total === 1 ? "" : "s"} · page ${view.page} of ${totalPages}`}
@@ -192,9 +199,12 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
       {/* Desktop table */}
       <div className="hidden overflow-x-auto rounded-b-xl border border-surface-2 bg-surface shadow-xs md:block">
         <table className="w-full text-left">
+          <caption className="sr-only">
+            Tickets — activate a column heading to sort; activate again to reverse.
+          </caption>
           <thead>
             <tr className="group/head border-b border-surface-2 bg-surface-2/60">
-              <th className="px-5 py-3">
+              <th scope="col" aria-sort={sortState("subject")} className="px-5 py-3">
                 <SortButton
                   label="Ticket"
                   mode="subject"
@@ -202,7 +212,7 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
                   setSortMode={setSortMode}
                 />
               </th>
-              <th className="px-3 py-3">
+              <th scope="col" aria-sort={sortState("employee")} className="px-3 py-3">
                 <SortButton
                   label="Employee"
                   mode="employee"
@@ -210,8 +220,10 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
                   setSortMode={setSortMode}
                 />
               </th>
-              <th className="px-3 py-3 text-caption font-medium text-ink-3">Category</th>
-              <th className="px-3 py-3">
+              <th scope="col" className="px-3 py-3 text-caption font-medium text-ink-3">
+                Category
+              </th>
+              <th scope="col" aria-sort={sortState("priority")} className="px-3 py-3">
                 <SortButton
                   label="Priority"
                   mode="priority"
@@ -219,7 +231,7 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
                   setSortMode={setSortMode}
                 />
               </th>
-              <th className="px-3 py-3">
+              <th scope="col" aria-sort={sortState("status")} className="px-3 py-3">
                 <SortButton
                   label="Status"
                   mode="status"
@@ -227,8 +239,14 @@ export default function TicketTable({ viewerId, users, fixedAssignee }) {
                   setSortMode={setSortMode}
                 />
               </th>
-              <th className="px-3 py-3 text-caption font-medium text-ink-3">Assignee</th>
-              <th className="py-3 pl-3 pr-5 text-right">
+              <th scope="col" className="px-3 py-3 text-caption font-medium text-ink-3">
+                Assignee
+              </th>
+              <th
+                scope="col"
+                aria-sort={sortState("updated")}
+                className="py-3 pl-3 pr-5 text-right"
+              >
                 <SortButton
                   label="Updated"
                   mode="updated"

@@ -176,7 +176,7 @@ export default function AdminAccounts() {
         <button
           type="submit"
           disabled={busy}
-          className="mono-label border border-teal bg-teal px-4 text-[10px] text-canvas transition hover:bg-teal-light disabled:opacity-40"
+          className="mono-label border border-teal bg-teal px-4 text-[10px] text-teal-ink transition hover:bg-teal-light disabled:opacity-40"
         >
           CREATE
         </button>
