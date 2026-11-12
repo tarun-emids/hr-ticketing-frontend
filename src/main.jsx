@@ -53,11 +53,43 @@ function UsersLoader() {
   return null;
 }
 
+// Route-aware <title> (2.4.2): every view names itself after the site identity.
+const ROUTE_TITLES = [
+  [/^\/admin\/agents/, "Agent drilldown"],
+  [/^\/admin\/worktable/, "Agents × Tickets"],
+  [/^\/admin\/accounts/, "Accounts"],
+  [/^\/admin\/kb/, "Policy knowledge base"],
+  [/^\/admin/, "Ticket analytics"],
+  [/^\/inbox/, "HR inbox"],
+  [/^\/hr-dashboard/, "HR dashboard"],
+  [/^\/my-tickets/, "My tickets"],
+  [/^\/new-ticket/, "New ticket"],
+  [/^\/drafts\//, "Edit draft"],
+  [/^\/tickets\//, "Ticket"],
+  [/^\/notifications/, "Notifications"],
+  [/^\/kb\/.*/, "Policy document"],
+  [/^\/kb/, "Knowledge base search"],
+  [/^\/change-password/, "Change password"],
+  [/^\/assigned-to-me/, "Assigned to me"],
+  [/^\/dashboard/, "Home"],
+  [/^\/login/, "Sign in"],
+];
+
+function DocumentTitle() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const match = ROUTE_TITLES.find(([re]) => re.test(pathname));
+    document.title = match ? `${match[1]} — HR Desk / Emids` : "HR Desk / Emids";
+  }, [pathname]);
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Provider store={store}>
         <UsersLoader />
+        <DocumentTitle />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route

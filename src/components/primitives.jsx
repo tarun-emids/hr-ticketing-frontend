@@ -59,7 +59,7 @@ export function Avatar({ name, tone = "surface", size = "h-8 w-8 text-[11px]" })
   const tones = {
     surface: "bg-surface-2 text-teal-deep",
     dark: "bg-canvas text-warm",
-    teal: "bg-teal text-canvas",
+    teal: "bg-teal text-teal-ink",
   };
   return (
     <span

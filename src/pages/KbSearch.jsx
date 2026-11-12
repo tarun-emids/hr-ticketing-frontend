@@ -87,7 +87,7 @@ export default function KbSearch() {
         />
         <button
           type="submit"
-          className="rounded-r-xl bg-teal px-4 py-2.5 text-body font-medium text-canvas transition-colors hover:opacity-90"
+          className="rounded-r-xl bg-teal px-4 py-2.5 text-body font-medium text-teal-ink transition-colors hover:opacity-90"
         >
           Search
         </button>

@@ -355,7 +355,7 @@ export default function TicketForm() {
             <button
               type="submit"
               disabled={submitting || savingDraft}
-              className="inline-flex items-center gap-2 rounded-lg bg-teal px-4 py-2.5 text-body font-medium text-canvas shadow-xs transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-lg bg-teal px-4 py-2.5 text-body font-medium text-teal-ink shadow-xs transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {submitting ? "Submitting…" : "Submit ticket"}
               <IconArrowDownRight size={16} aria-hidden />

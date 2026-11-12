@@ -10,15 +10,28 @@ const FIELD =
   "w-full rounded-lg border border-surface-2 bg-surface px-3 py-2.5 text-body text-warm placeholder:text-ink-3 focus:border-teal focus:outline-none";
 const LABEL = "mb-1.5 block text-caption font-medium text-ink-2";
 
-function FieldError({ msg }) {
+function FieldError({ id, msg, announce = true }) {
   if (!msg) return null;
   return (
-    <p className="mt-1.5 flex items-start gap-1.5 text-caption text-error-deep">
+    <p
+      id={id}
+      role={announce ? "alert" : undefined}
+      className="mt-1.5 flex items-start gap-1.5 text-caption text-error-deep"
+    >
       <span aria-hidden className="mt-0.5 block h-2 w-2 shrink-0 bg-error" />
       {msg}
     </p>
   );
 }
+
+// Field keys → input ids, for focusing the first invalid field on submit.
+const FIELD_ID = {
+  email: "login-email",
+  password: "login-password",
+  otp: "reset-otp",
+  newPassword: "reset-new-password",
+  confirmPassword: "reset-confirm-password",
+};
 
 export default function Login() {
   const dispatch = useAppDispatch();
@@ -40,6 +53,15 @@ export default function Login() {
     setNotice("");
   };
 
+  // Records validation errors and moves focus to the first invalid field, so
+  // keyboard and screen-reader users land where the problem is (3.3.1/3.3.3).
+  const applyErrors = (e) => {
+    setErrors(e);
+    const first = Object.keys(FIELD_ID).find((key) => e[key]);
+    if (first) document.getElementById(FIELD_ID[first])?.focus();
+    return Object.keys(e).length > 0;
+  };
+
   const onSubmit = async (ev) => {
     ev.preventDefault();
 
@@ -49,8 +71,7 @@ export default function Login() {
       e.email = "That doesn't look like a valid email address.";
     if (mode === "login") {
       if (!password) e.password = "Enter your password.";
-      setErrors(e);
-      if (Object.keys(e).length > 0) return;
+      if (applyErrors(e)) return;
 
       setSubmitting(true);
       try {
@@ -73,8 +94,7 @@ export default function Login() {
     }
 
     if (mode === "forgot-request") {
-      setErrors(e);
-      if (Object.keys(e).length > 0) return;
+      if (applyErrors(e)) return;
       setSubmitting(true);
       try {
         const result = await api.requestPasswordReset(email.trim());
@@ -94,8 +114,7 @@ export default function Login() {
     if (Array.from(newPassword).length < 8) e.newPassword = "Use at least 8 characters.";
     else if (passwordBytes > 72) e.newPassword = "Your password must be at most 72 UTF-8 bytes.";
     if (newPassword !== confirmPassword) e.confirmPassword = "The passwords do not match.";
-    setErrors(e);
-    if (Object.keys(e).length > 0) return;
+    if (applyErrors(e)) return;
 
     setSubmitting(true);
     try {
@@ -148,9 +167,9 @@ export default function Login() {
 
           <div className="max-w-xl">
             <div className="rule-teal mb-6" />
-            <h1 className="text-display text-warm">
+            <h2 className="text-display text-warm">
               Outcomes you can <span className="text-teal-deep">track.</span>
-            </h1>
+            </h2>
             <p className="mt-5 max-w-md text-body-lg text-ink-2">
               Raise requests, follow the thread, know exactly where each ticket stands — without
               chasing anyone down.
@@ -197,9 +216,11 @@ export default function Login() {
                   setEmail(event.target.value);
                   clearError("email");
                 }}
+                aria-invalid={errors.email ? true : undefined}
+                aria-describedby={errors.email ? "login-email-error" : undefined}
                 className={`${FIELD} mb-5`}
               />
-              <FieldError msg={errors.email} />
+              <FieldError id="login-email-error" msg={errors.email} />
             </>
           )}
 
@@ -218,9 +239,11 @@ export default function Login() {
                   clearError("password");
                 }}
                 placeholder="Your HR Desk password"
+                aria-invalid={errors.password ? true : undefined}
+                aria-describedby={errors.password ? "login-password-error" : undefined}
                 className={`${FIELD} mb-6`}
               />
-              <FieldError msg={errors.password} />
+              <FieldError id="login-password-error" msg={errors.password} />
               <button
                 type="button"
                 onClick={() => changeMode("forgot-request")}
@@ -251,9 +274,11 @@ export default function Login() {
                   setOtp(event.target.value);
                   clearError("otp");
                 }}
+                aria-invalid={errors.otp ? true : undefined}
+                aria-describedby={errors.otp ? "reset-otp-error" : undefined}
                 className={`${FIELD} mb-5`}
               />
-              <FieldError msg={errors.otp} />
+              <FieldError id="reset-otp-error" msg={errors.otp} />
               <label htmlFor="reset-new-password" className={LABEL}>
                 New password
               </label>
@@ -266,9 +291,11 @@ export default function Login() {
                   setNewPassword(event.target.value);
                   clearError("newPassword");
                 }}
+                aria-invalid={errors.newPassword ? true : undefined}
+                aria-describedby={errors.newPassword ? "reset-new-password-error" : undefined}
                 className={`${FIELD} mb-5`}
               />
-              <FieldError msg={errors.newPassword} />
+              <FieldError id="reset-new-password-error" msg={errors.newPassword} />
               <label htmlFor="reset-confirm-password" className={LABEL}>
                 Confirm new password
               </label>
@@ -281,9 +308,13 @@ export default function Login() {
                   setConfirmPassword(event.target.value);
                   clearError("confirmPassword");
                 }}
+                aria-invalid={errors.confirmPassword ? true : undefined}
+                aria-describedby={
+                  errors.confirmPassword ? "reset-confirm-password-error" : undefined
+                }
                 className={`${FIELD} mb-6`}
               />
-              <FieldError msg={errors.confirmPassword} />
+              <FieldError id="reset-confirm-password-error" msg={errors.confirmPassword} />
             </>
           )}
 
@@ -296,7 +327,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={submitting}
-            className="mt-2 w-full rounded-lg bg-teal py-2.5 text-body font-medium text-canvas shadow-xs transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            className="mt-2 w-full rounded-lg bg-teal py-2.5 text-body font-medium text-teal-ink shadow-xs transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {submitting
               ? "Please wait…"
@@ -362,7 +393,7 @@ export default function Login() {
               role="alert"
               className="mt-4 rounded-lg border border-error/35 bg-error/10 px-3 py-2.5"
             >
-              <FieldError msg={errors._form} />
+              <FieldError id="login-form-error" msg={errors._form} announce={false} />
             </div>
           )}
 

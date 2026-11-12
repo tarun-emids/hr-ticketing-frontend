@@ -108,7 +108,7 @@ export default function NotificationBell() {
         {unread > 0 && (
           <span
             data-testid="unread-badge"
-            className="absolute -right-1.5 -top-1.5 min-w-[16px] rounded-full bg-teal px-1 text-center text-[10px] font-medium leading-4 text-canvas"
+            className="absolute -right-1.5 -top-1.5 min-w-[16px] rounded-full bg-teal px-1 text-center text-[10px] font-medium leading-4 text-teal-ink"
           >
             {badge}
           </span>
@@ -119,6 +119,7 @@ export default function NotificationBell() {
         <div
           role="dialog"
           aria-label="Notifications"
+          aria-live="polite"
           className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-surface-2 bg-surface shadow-lg"
         >
           <p className="border-b border-surface-2 px-4 py-3 text-caption font-medium text-ink-3">
